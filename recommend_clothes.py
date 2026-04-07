@@ -10,8 +10,27 @@ def get_target_level(temp):
     elif temp >= 0:  return 8
     elif temp >= -5: return 9
     else: return 10
+
+# [상의 + 아우터 조합 생성 함수]
+def get_top_combinations(clothes_db, target_lv):
+    tops = [c for c in clothes_db if c['main_category'] == '상의']  # 상의 리스트
+    outers = [c for c in clothes_db if c['main_category'] == '아우터']  # 아우터 리스트
+    valid_combos = []   # 가능한 조합 저장 리스트
+    
+    # 상의 단독 조합
+    for top in tops:
+        if top['temp_level'] == target_lv:
+            valid_combos.append([top])
+
+    # 상의 + 아우터 조합        
+    for top in tops:
+        for outer in outers:
+            if top['temp_level'] + outer['temp_level'] == target_lv:
+                valid_combos.append([top, outer])
+                
+    return valid_combos
         
-#옷 추천 함수(current_temp 테스트 과정 중 입력으로 대체)
+# [옷 추천 함수](current_temp 테스트 과정 중 입력으로 대체)
 def recommend_clothes(current_temp, clothes_db):
     target_lv = get_target_level(current_temp)
     
