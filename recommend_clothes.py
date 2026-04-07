@@ -1,3 +1,6 @@
+# 하의 선택 시 허용할 온도 레벨 오차 범위 (±1 레벨까지 허용)
+BOTTOM_TOLERANCE = 1
+
 #레벨 별 온도 기준
 def get_target_level(temp):
     if temp >= 30: return 1
@@ -10,6 +13,11 @@ def get_target_level(temp):
     elif temp >= 0:  return 8
     elif temp >= -5: return 9
     else: return 10
+
+# [하의 필터링 함수]
+def get_bottoms(clothes_db, target_lv):
+    return [c for c in clothes_db if c['main_category'] == '하의' 
+            and abs(c['temp_level'] - target_lv) <= BOTTOM_TOLERANCE]
 
 # [상의 + 아우터 조합 생성 함수]
 def get_top_combinations(clothes_db, target_lv):
