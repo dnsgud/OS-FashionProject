@@ -1,5 +1,7 @@
 # 하의 선택 시 허용할 온도 레벨 오차 범위 (±1 레벨까지 허용)
 BOTTOM_TOLERANCE = 1
+# 기본 색상(무채색 계열)
+NEUTRAL_COLORS = ["블랙", "화이트", "그레이", "네이비", "아이보리", "베이지"] # 패션 기본/무채색
 
 #레벨 별 온도 기준
 def get_target_level(temp):
@@ -45,6 +47,32 @@ def calculate_style_score(full_outfit, target_tpo):
     for cloth in full_outfit:
         if target_tpo in cloth.get('tpo', []):
             score += 1
+    return score
+
+# [색상 점수 계산 함수]
+def calculate_color_score(top_combo, bottom):
+    """상의(가장 겉옷)와 하의의 색상 조화 점수 계산"""
+    score = 0
+    # 가장 바깥쪽 상의의 색상 (아우터 있으면 아우터, 없으면 상의)
+    main_top_color = top_combo[-1]['color']
+    bottom_color = bottom['color']
+
+    # 각각 무채색인지 여부 판단
+    top_is_neutral = main_top_color in NEUTRAL_COLORS
+    bottom_is_neutral = bottom_color in NEUTRAL_COLORS
+
+    # 1. 무채색 매치 (안정적인 코디)
+    if top_is_neutral or bottom_is_neutral:
+        score += 1.0
+
+    # 2. 톤온톤 / 깔맞춤 가점
+    if main_top_color == bottom_color:
+        score += 0.5
+        
+    # 3. 투머치 방지 (둘 다 튀는 색상인데 색이 다름)
+    if not top_is_neutral and not bottom_is_neutral and main_top_color != bottom_color:
+        score -= 1.0
+
     return score
         
 # [옷 추천 함수](current_temp 테스트 과정 중 입력으로 대체)
