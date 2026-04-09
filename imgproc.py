@@ -12,7 +12,7 @@ def step2_db_integration():  # DB 연동 작업을 수행하는 함수를 정의
     file_path = "test.jpg"  # 로컬에 저장되어 있는 이미지 파일의 경로를 지정
     storage_path = "test_upload.jpg"  # Supabase 스토리지에 저장될 때 사용할 파일의 이름을 정함
 
-    
+    try:
         print("\n--- 1단계 Storage 업로드 시도 중... ---")  # 작업 시작을 알리는 로그를 출력
         with open(file_path, 'rb') as f:  # 사진 파일을 (rb) 모드로 열어 f라는 이름으로 사용
             supabase.storage.from_('test-clothes-imgaes').upload(  # 지정한 버킷에 접근하여 업로드를 실행
@@ -41,4 +41,13 @@ def step2_db_integration():  # DB 연동 작업을 수행하는 함수를 정의
 
         print("--- 3단계 DB 저장 시도 중... ---")
         supabase.table('clothes').insert(data).execute()  # DB에 데이터를 삽입
-        print("모든단계 성공, DB에 데이터 저장완료")    
+        print("모든단계 성공, DB에 데이터 저장완료")   
+
+    except Exception as e:# 예외 처리로 에러가 발생 시 프로그램이 갑자기 종료 방지
+        print(f"\n❌ [에러 발생] 몇 단계에서 멈췄는지 확인")#에러 발생시 정확히 확인하기 위한 코드 작성
+        print(f"에러 메시지: {e}")
+        import traceback
+        traceback.print_exc()
+
+if __name__ == "__main__": 
+    step2_db_integration() #정의해둔 함수 실행하여 프로그램 시작
