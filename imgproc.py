@@ -23,3 +23,22 @@ def step2_db_integration():  # DB 연동 작업을 수행하는 함수를 정의
         print("--- 2단계 이미지 URL 확보 시도 중... ---")  # 2단계 시작
         image_url = supabase.storage.from_('test-clothes-imgaes').get_public_url(storage_path)  # 주소를 생성
         print(f"🔗 이미지 URL 확보: {image_url}")  # 생성된 주소를 터미널에 출력
+    
+        MY_USER_ID = "UUID"  # 내 계정의 고유 아이디 값을 변수에 담기
+
+        data = {  # 테이블 컬럼에 맞춰서 데이터를 딕셔너리로 묶음
+            "user_id": MY_USER_ID,
+            "main_category": "상의",
+            "sub_category": "이너",
+            "name": "직접 찍은 테스트 옷",
+            "temp_level": 5,
+            "color": "black",
+            "style": ["캐주얼"],
+            "image_url": image_url,
+            "ai_tags": ["direct_photo", "test"],
+            "is_verified": False
+        }
+
+        print("--- 3단계 DB 저장 시도 중... ---")
+        supabase.table('clothes').insert(data).execute()  # DB에 데이터를 삽입
+        print("모든단계 성공, DB에 데이터 저장완료")    
