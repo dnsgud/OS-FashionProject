@@ -1,4 +1,5 @@
 import os
+import time  # 시간 모듈 추가
 import traceback
 from dotenv import load_dotenv
 from supabase import create_client
@@ -10,7 +11,7 @@ supabase = create_client(url, key) # 주소와 키 사용하여 실제 supabase 
 
 def step2_db_integration():  # DB 연동 작업을 수행하는 함수를 정의
     file_path = "test.jpg"  # 로컬에 저장되어 있는 이미지 파일의 경로를 지정
-    storage_path = "test_upload.jpg"  # Supabase 스토리지에 저장될 때 사용할 파일의 이름을 정함
+    storage_path = f"test_{int(time.time())}.jpg" #사진 파일의 이름을 time.time()이 현재 시간을 아주 정밀한 숫자로 알려주는것 이용
 
     try:
         print("\n--- 1단계 Storage 업로드 시도 중... ---")  # 작업 시작을 알리는 로그를 출력
@@ -40,8 +41,9 @@ def step2_db_integration():  # DB 연동 작업을 수행하는 함수를 정의
         }
 
         print("--- 3단계 DB 저장 시도 중... ---")
-        supabase.table('clothes').insert(data).execute()  # DB에 데이터를 삽입
+        response = supabase.table('clothes').insert(data).execute()#DB에 데이터가 삽입된 걸 검사하기 위한 작성
         print("모든단계 성공, DB에 데이터 저장완료")   
+        print(f"새로운 옷 ID: {response.data[0]['id']}")
 
     except Exception as e:# 예외 처리로 에러가 발생 시 프로그램이 갑자기 종료 방지
         print(f"\n❌ [에러 발생] 몇 단계에서 멈췄는지 확인")#에러 발생시 정확히 확인하기 위한 코드 작성
