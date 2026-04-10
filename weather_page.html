@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>실시간 날씨</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: #e3f2fd;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .temp {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0288d1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>청주 날씨 🌤️</h2>
+        <div id="data-box">데이터 로딩 중...</div>
+        <br>
+        <a href="/">메인으로 돌아가기</a>
+    </div>
+
+    <script>
+        fetch('/api/weather')
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.temp !== undefined) {
+                    document.getElementById('data-box').innerHTML = `
+                    <div class="temp">${data.temp}°C</div>
+                    <p>위치: 청주시</p> <p>현재 상태: ${data.status}</p>
+                `;
+                } else {
+                    document.getElementById('data-box').innerText = "데이터 호출 실패: 데이터를 찾을 수 없습니다.";
+                }
+            })
+            .catch(err => {
+                document.getElementById('data-box').innerText = "서버 연결 실패: " + err;
+            });
+    </script>
+</body>
+
+</html>
