@@ -80,22 +80,35 @@ def calculate_color_score(top_combo, bottom):
     is_top_neutral = s1 < NEUTRAL_CHROMA or l1 < NEUTRAL_LIGHTNESS_LOW or l1 > NEUTRAL_LIGHTNESS_HIGH
     is_bottom_neutral = s2 < NEUTRAL_CHROMA or l2 < NEUTRAL_LIGHTNESS_LOW or l2 > NEUTRAL_LIGHTNESS_HIGH
 
-    # 색상 차이(Hue Difference) 계산
+    # 색상/명도/채도 차이 계산
     hue_diff = abs(h1 - h2)
-    if hue_diff > 180: 
-        hue_diff = 360 - hue_diff
+    if hue_diff > 180: hue_diff = 360 - hue_diff
+
+    chroma_diff = abs(s1 - s2)
+    light_diff = abs(l1 - l2)
 
     # 1. 무채색이 하나라도 있으면 가산점
     if is_top_neutral or is_bottom_neutral:
         score += 1.5
 
-    # 2. 톤온톤(비슷한 색상) 가산점
+    # 둘다 무채색이 아닌 경우
     if not is_top_neutral and not is_bottom_neutral:
-        if hue_diff < 30 and abs(l1 - l2) > 20:
-            score += 1.0    
-    # 3. 보색 패널티
-        elif hue_diff > 150:
-            score -= 1.0
+        
+        # 2. 톤온톤 (동일 색상, 다른 명도)
+        if hue_diff < 30:
+            if light_diff > 20:
+                score += 1.5
+            else: # 명도가 비슷한 경우 보다 적은 가산점 
+                score += 0.5
+
+        # 3. 톤앤톤 (다른 색상, 비슷한 명도/채도)
+        elif hue_diff >= 30:
+            if chroma_diff < 15 and light_diff < 15:
+                score += 1.2
+            
+        # 4. 보색 감점
+            elif hue_diff > 150:
+                score -= 1.0
 
     return score
 
