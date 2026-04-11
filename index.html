@@ -275,6 +275,12 @@
             { image: "./images/barselona.jpg", title: "바르셀로나 홈 유니폼", desc: "유니크한 블록코어 룩" },
             { image: "./images/munchen.jpg", title: "바이에른 뮌헨 홈 유니폼", desc: "강렬한 레드 컬러 포인트" }
         ];
+               const randomIndex = Math.floor(Math.random() * items.length);
+        const selectedItem = items[randomIndex];
+        document.querySelector('.pick-image').src = selectedItem.image;
+        document.querySelector('.pick-info h4').innerText = selectedItem.title;
+        document.querySelector('.pick-info p').innerText = selectedItem.desc;
+    }
 
 
             
