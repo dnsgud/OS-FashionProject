@@ -67,27 +67,35 @@ def calculate_style_score(full_outfit, target_tpo):
 
 # [색상 점수 계산 함수]
 def calculate_color_score(top_combo, bottom):
-    """상의(가장 겉옷)와 하의의 색상 조화 점수 계산"""
-    score = 0
     # 가장 바깥쪽 상의의 색상 (아우터 있으면 아우터, 없으면 상의)
-    main_top_color = top_combo[-1]['color']
-    bottom_color = bottom['color']
+    top_hex = top_combo[-1]['color'] 
+    bottom_hex = bottom['color']
 
-    # 각각 무채색인지 여부 판단
-    top_is_neutral = main_top_color in NEUTRAL_COLORS
-    bottom_is_neutral = bottom_color in NEUTRAL_COLORS
+    h1, s1, l1 = hex_to_hsl(top_hex)
+    h2, s2, l2 = hex_to_hsl(bottom_hex)
 
-    # 1. 무채색 매치 (안정적인 코디)
-    if top_is_neutral or bottom_is_neutral:
-        score += 1.0
+    score = 0
 
-    # 2. 톤온톤 / 깔맞춤 가점
-    if main_top_color == bottom_color:
-        score += 0.5
-        
-    # 3. 투머치 방지 (둘 다 튀는 색상인데 색이 다름)
-    if not top_is_neutral and not bottom_is_neutral and main_top_color != bottom_color:
-        score -= 1.0
+    # 무채색(Neutral) 여부 판별
+    is_top_neutral = s1 < NEUTRAL_CHROMA or l1 < NEUTRAL_LIGHTNESS_LOW or l1 > NEUTRAL_LIGHTNESS_HIGH
+    is_bottom_neutral = s2 < NEUTRAL_CHROMA or l2 < NEUTRAL_LIGHTNESS_LOW or l2 > NEUTRAL_LIGHTNESS_HIGH
+
+    # 색상 차이(Hue Difference) 계산
+    hue_diff = abs(h1 - h2)
+    if hue_diff > 180: 
+        hue_diff = 360 - hue_diff
+
+    # 1. 무채색이 하나라도 있으면 가산점
+    if is_top_neutral or is_bottom_neutral:
+        score += 1.5
+
+    # 2. 톤온톤(비슷한 색상) 가산점
+    if not is_top_neutral and not is_bottom_neutral:
+        if hue_diff < 30 and abs(l1 - l2) > 20:
+            score += 1.0    
+    # 3. 보색 패널티
+        elif hue_diff > 150:
+            score -= 1.0
 
     return score
 
