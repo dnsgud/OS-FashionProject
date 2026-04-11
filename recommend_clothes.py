@@ -1,8 +1,11 @@
 from test_data import test_db   #테스트용 데이터베이스
 # 하의 선택 시 허용할 온도 레벨 오차 범위 (±1 레벨까지 허용)
 BOTTOM_TOLERANCE = 1 
+
 # 기본 색상(무채색 계열)
-NEUTRAL_COLORS = ["블랙", "화이트", "그레이", "네이비", "아이보리", "베이지"] # 패션 기본/무채색
+NEUTRAL_CHROMA = 15           # 채도가 15% 미만이면 무채색으로 간주
+NEUTRAL_LIGHTNESS_LOW = 15    # 명도가 15% 이하이면 블랙 계열(무채색)
+NEUTRAL_LIGHTNESS_HIGH = 90   # 명도가 90% 이상이면 화이트 계열(무채색)
 
 #레벨 별 온도 기준
 def get_target_level(temp):
