@@ -192,6 +192,12 @@
         "#기모슬랙스": { img: "images/slacks.jpg", desc: "칼바람에도 다리를 따뜻하게 지켜주는 마법의 슬랙스예요." },
         "#목폴라": { img: "images/turtle.jpg", desc: "목을 감싸주어 체감 온도를 확 높여주는 이너 아이템입니다." }
     };
+         function openModal(tagName) {
+        document.getElementById('modal-title').innerText = tagName;
+        const data = keywordDetails[tagName] || {
+            img: "https://via.placeholder.com/400x300?text=CodiPick",
+            desc: "이 키워드에 대한 멋진 코디 추천을 준비하고 있어요!"
+        };
     </script>
 </body>
 </html>
