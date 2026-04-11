@@ -155,6 +155,13 @@
     <div id="keyword-modal" class="modal-overlay" onclick="if(event.target == this) closeModal()">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal()">&times;</button>
+              <div class="modal-body" style="padding: 20px; text-align: center;">
+                <h3 id="modal-title" style="font-size: 24px; margin-bottom: 15px;">#키워드</h3>
+                <p id="modal-desc" style="color: #666; line-height: 1.6;">상세 설명이 여기에 나옵니다.</p>
+                <button onclick="closeModal()" style="margin-top: 20px; padding: 10px 20px; background: #000; color: #fff; border: none; border-radius: 10px; cursor: pointer;">닫기</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
