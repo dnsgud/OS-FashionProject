@@ -302,10 +302,14 @@
             content: "제1조 (수집하는 개인정보의 항목)\n회사는 원활한 서비스 제공을 위해 회원가입 시 아이디, 비밀번호, 닉네임을 수집합니다. 또한 맞춤형 날씨 정보를 제공하기 위해 사용자의 현재 위치 정보가 수집될 수 있습니다.\n\n제2조 (개인정보의 수집 및 이용 목적)\n수집된 정보는 회원 식별 및 로그인 유지, 그리고 현재 위치 기반의 실시간 날씨 연동과 맞춤형 코디 추천 기능을 제공하는 데에만 활용됩니다.\n\n제3조 (개인정보의 보유 및 파기)\n이용자의 개인정보는 원칙적으로 회원 탈퇴 시 즉시 파기됩니다. 단, 관련 법령에 따라 일정 기간 보존할 의무가 있는 정보는 안전하게 분리 보관됩니다.\n\n제4조 (이용자의 권리)\n이용자는 언제든지 내 정보 메뉴에서 자신의 개인정보를 열람하거나 수정할 수 있으며, 회원 탈퇴를 통해 개인정보 제공 동의를 철회할 수 있습니다."
         }
     };
-
-
-            
-
+        function openPolicyModal(type) {
+        document.getElementById('policy-title').innerText = policyData[type].title;
+        document.getElementById('policy-desc').innerText = policyData[type].content;
+        document.getElementById('policy-modal').style.display = 'block';
+    }
+    function closePolicyModal() {
+        document.getElementById('policy-modal').style.display = 'none';
+    }
     </script>
 </body>
 </html>
