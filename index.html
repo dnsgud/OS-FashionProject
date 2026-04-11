@@ -248,6 +248,11 @@
             if (data) {
                 const temp = data.temperature || data.temp || 18; // 데이터 없으면 기본값 18
                 const status = data.status || data.weather || "맑음";
+
+                 document.querySelector('.city').innerText = data.city || "청주시";
+                document.querySelector('.temp').innerText = `${temp}°C`;
+                document.querySelector('.humidity').innerText = data.humidity;
+                document.querySelector('.status').innerText = status;
             
 
     </script>
