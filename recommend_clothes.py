@@ -1,4 +1,6 @@
 from test_data import test_db   #테스트용 데이터베이스
+import colorsys
+
 # 하의 선택 시 허용할 온도 레벨 오차 범위 (±1 레벨까지 허용)
 BOTTOM_TOLERANCE = 1 
 
@@ -44,6 +46,15 @@ def get_top_combinations(clothes_db, target_lv):
                 
     return valid_combos
 
+# [#FFFFFF 형식의 헥사 코드를 HSL로 변환하는 함수]
+def hex_to_hsl(hex_str):
+    try:
+        hex_str = hex_str.lstrip('#')
+        r, g, b = tuple(int(hex_str[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+        h, l, s = colorsys.rgb_to_hls(r, g, b) # H, L, S 순서로 반환
+        return h * 360, s * 100, l * 100
+    except:
+        return 0, 0, 0 # 에러 발생 시 기본값
 
 # [스타일 점수 계산 함수]
 def calculate_style_score(full_outfit, target_tpo):
