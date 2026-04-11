@@ -220,6 +220,15 @@
   function updateKeywords(temp, status) {
         let selectedTags = [];
         const st = status.toLowerCase();
+
+       if (st.includes('비') || st.includes('rain')) selectedTags = [...weatherKeywords.rainy];
+        else if (st.includes('맑음') || st.includes('clear')) selectedTags = [...weatherKeywords.sunny];
+        else if (st.includes('흐림') || st.includes('cloud') || st.includes('구름')) selectedTags = [...weatherKeywords.cloudy];
+        else if (st.includes('눈') || st.includes('snow')) selectedTags = [...weatherKeywords.snowy];
+        else selectedTags = ["#오늘의코디", "#데일리룩", "#패션스타그램", "#OOTD", "#추천아이템", "#신상"];
+
+        if (temp >= 28) selectedTags = [...weatherKeywords.hot];
+        else if (temp <= 5) selectedTags = [...weatherKeywords.cold];
             
 
     </script>
