@@ -66,7 +66,7 @@ def calculate_style_score(full_outfit, target_tpo):
     return score
 
 # [색상 점수 계산 함수]
-def calculate_color_score(top_combo, bottom):
+def calculate_color_score(top_combo, bottom, target_lv):
     # 가장 바깥쪽 상의의 색상 (아우터 있으면 아우터, 없으면 상의)
     top_hex = top_combo[-1]['color'] 
     bottom_hex = bottom['color']
@@ -83,7 +83,6 @@ def calculate_color_score(top_combo, bottom):
     # 색상/명도/채도 차이 계산
     hue_diff = abs(h1 - h2)
     if hue_diff > 180: hue_diff = 360 - hue_diff
-
     chroma_diff = abs(s1 - s2)
     light_diff = abs(l1 - l2)
 
@@ -94,21 +93,31 @@ def calculate_color_score(top_combo, bottom):
     # 둘다 무채색이 아닌 경우
     if not is_top_neutral and not is_bottom_neutral:
         
-        # 2. 톤온톤 (동일 색상, 다른 명도)
+    # 2. 톤온톤 (동일 색상, 다른 명도)
         if hue_diff < 30:
             if light_diff > 20:
                 score += 1.5
             else: # 명도가 비슷한 경우 보다 적은 가산점 
                 score += 0.5
 
-        # 3. 톤앤톤 (다른 색상, 비슷한 명도/채도)
+    # 3. 톤앤톤 (다른 색상, 비슷한 명도/채도)
         elif hue_diff >= 30:
             if chroma_diff < 15 and light_diff < 15:
                 score += 1.2
             
-        # 4. 보색 감점
+    # 4. 보색 감점
             elif hue_diff > 150:
                 score -= 1.0
+
+    # 5. 계절별 어울리는 색상 가산점
+    # 여름 -> 밝은색(고명도) 추천
+    if target_lv <= 3:
+        if l1 >= 70: score += 0.8   # 상의
+        if l2 >= 60: score += 0.4   # 하의    
+    # 겨울 -> 어두운색(저명도) 추천
+    elif target_lv >= 7:
+        if l1 <= 30: score += 0.8   # 상의
+        if l2 <= 40: score += 0.4   # 하의
 
     return score
 
@@ -133,7 +142,7 @@ def recommend_clothes(current_temp, target_tpo, clothes_db):
             
             # 각 항목 점수 계산
             style_score = calculate_style_score(full_outfit, target_tpo)
-            color_score = calculate_color_score(top_combo, bottom)
+            color_score = calculate_color_score(top_combo, bottom, target_lv)
             
             # 총점
             total_score = style_score + color_score
