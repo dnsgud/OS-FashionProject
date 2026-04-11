@@ -237,6 +237,17 @@
             ).join('');
         }
     }
+
+         async function getWeatherData() {
+        try {
+            const response = await fetch('https://milissa-waterish-theron.ngrok-free.dev/', {
+                headers: { "ngrok-skip-browser-warning": "69420" }
+            });
+            const data = await response.json();
+
+            if (data) {
+                const temp = data.temperature || data.temp || 18; // 데이터 없으면 기본값 18
+                const status = data.status || data.weather || "맑음";
             
 
     </script>
