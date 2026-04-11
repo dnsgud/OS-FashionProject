@@ -253,6 +253,16 @@
                 document.querySelector('.temp').innerText = `${temp}°C`;
                 document.querySelector('.humidity').innerText = data.humidity;
                 document.querySelector('.status').innerText = status;
+
+                 const iconEl = document.querySelector('.status-icon');
+                if (iconEl) {
+                    iconEl.className = 'fas status-icon'; 
+                    if (status.includes('맑음') || status.includes('Clear')) iconEl.classList.add('fa-sun', 'sunny');
+                    else if (status.includes('흐림') || status.includes('Cloud')) iconEl.classList.add('fa-cloud', 'cloudy');
+                    else if (status.includes('비') || status.includes('Rain')) iconEl.classList.add('fa-cloud-showers-heavy', 'rainy');
+                    else iconEl.classList.add('fa-smog');
+                }
+
             
 
     </script>
