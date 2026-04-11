@@ -281,6 +281,13 @@
         document.querySelector('.pick-info h4').innerText = selectedItem.title;
         document.querySelector('.pick-info p').innerText = selectedItem.desc;
     }
+         function handleVote(choice) {
+        document.getElementById('bar-a').style.width = '65%';
+        document.getElementById('bar-b').style.width = '35%';
+        document.getElementById('percent-a').innerText = '65%';
+        document.getElementById('percent-b').innerText = '35%';
+        alert(choice === 'A' ? '스포티룩 투표 완료!' : '가디건룩 투표 완료!');
+    }
 
 
             
