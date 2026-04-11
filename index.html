@@ -262,6 +262,13 @@
                     else if (status.includes('비') || status.includes('Rain')) iconEl.classList.add('fa-cloud-showers-heavy', 'rainy');
                     else iconEl.classList.add('fa-smog');
                 }
+                         updateKeywords(temp, status);
+            }
+        } catch (error) {
+            console.error("데이터 가져오기 실패:", error);
+        }
+    }
+
 
             
 
