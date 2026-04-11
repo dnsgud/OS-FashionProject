@@ -1,1 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모던 코디 추천 - Codi Pick</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">CODI PICK</div>
+            <ul>
+                <li><i class="fas fa-book"></i> Guide</li>
+                <li><i class="fas fa-tshirt"></i> Codi</li>
+                <li><i class="fas fa-user"></i> My</li>
+                <li>
+                    <button class="login-btn" onclick="location.href='login.html'">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
 
+    <main>
+        <div class="dashboard">
+            <section class="weather-widget">
+                <div class="weather-main-icon">
+                    <i class="fa-solid fa-sun status-icon"></i>
+                    <h2 class="temp">--°C</h2>
+                    <p class="status">데이터 불러오는 중...</p>
+                </div>
+            </section>
+        </div> 
+
+        <section class="trend-section">
+            <h3 class="section-title">🔥 지금 뜨는 트렌드 키워드</h3>
+            <div class="hashtag-box">
+                </div>
+        </section>
+
+        <section class="vote-section">
+            <h3 class="section-title">✨ 오늘의 날씨, 당신의 취향은?</h3>
+            <div class="vote-container">
+                </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
