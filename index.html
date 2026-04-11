@@ -229,6 +229,14 @@
 
         if (temp >= 28) selectedTags = [...weatherKeywords.hot];
         else if (temp <= 5) selectedTags = [...weatherKeywords.cold];
+
+       const hashtagBox = document.querySelector('.hashtag-box');
+        if (hashtagBox) {
+            hashtagBox.innerHTML = selectedTags.slice(0, 6).map(tag => 
+                `<span class="hashtag" style="cursor:pointer;" onclick="openModal('${tag}')">${tag}</span>`
+            ).join('');
+        }
+    }
             
 
     </script>
