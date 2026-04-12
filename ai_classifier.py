@@ -43,3 +43,26 @@ def analyze_cloth(image_path):
     # 3. 색상 및 스타일 분석: 색상과 분위기 파악
     color_eng = query(["black", "white", "brown", "sky blue", "gray"])
     style_eng = query(["casual", "business", "date", "street"])
+
+
+    # 최종 데이터 구성:Supabase 테이블 컬럼명과 1:1로 매칭
+    return {
+        "main_category": TRANSLATE_MAP.get(main_eng, "상의"),
+        "sub_category": TRANSLATE_MAP.get(sub_eng, "이너"),
+        "name": TRANSLATE_MAP.get(name_eng, "직접 찍은 테스트 옷"), # 인식 안되면 기본값 사용(에러 대비)
+        "color": TRANSLATE_MAP.get(color_eng, color_eng),
+        "style": [TRANSLATE_MAP.get(style_eng, "캐주얼")], # DB의 text[] 형식을 위해 리스트로 저장
+        "ai_tags": [main_eng, sub_eng, name_eng],       # AI가 찾은 원래 태그들
+        "is_verified": False                            # 기본 FALSE 설정
+    }
+
+# 모듈 테스트 실행부
+if __name__ == "__main__":
+    try:
+        # test.jpg으로 실제 DB 저장 형태 테스트
+        test_result = analyze_cloth("test.jpg")
+        print(f"\n DB 저장용 최종 데이터 셋:")
+        for key, value in test_result.items():
+            print(f"{key}: {value}")
+    except Exception as e:
+        print(f" 분석 에러: {e}")
