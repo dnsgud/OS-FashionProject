@@ -2,7 +2,7 @@ from test_data import test_db   #테스트용 데이터베이스
 import colorsys
 
 # 하의 선택 시 허용할 온도 레벨 오차 범위 (±1 레벨까지 허용)
-BOTTOM_TOLERANCE = 1 
+BOTTOM_TOLERANCE = 1
 
 # 기본 색상(무채색 계열)
 NEUTRAL_CHROMA = 15           # 채도가 15% 미만이면 무채색으로 간주
@@ -24,25 +24,27 @@ def get_target_level(temp):
 
 # [하의 필터링 함수]
 def get_bottoms(clothes_db, target_lv):
-    return [c for c in clothes_db if c['main_category'] == '하의' 
+    return [c for c in clothes_db if c.get('main_category') == '하의' 
             and abs(c['temp_level'] - target_lv) <= BOTTOM_TOLERANCE]
 
 # [상의 + 아우터 조합 생성 함수]
 def get_top_combinations(clothes_db, target_lv):
-    tops = [c for c in clothes_db if c['main_category'] == '상의']  # 상의 리스트
-    outers = [c for c in clothes_db if c['main_category'] == '아우터']  # 아우터 리스트
+    inners = [c for c in clothes_db if c.get('main_category') == '상의' and c.get('sub_category') == '이너']
+    outers = [c for c in clothes_db if c.get('main_category') == '상의' and c.get('sub_category') == '아우터']
+    
     valid_combos = []   # 가능한 조합 저장 리스트
     
-    # 상의 단독 조합
-    for top in tops:
-        if top['temp_level'] == target_lv:
-            valid_combos.append([top])
+    # 이너 단독 조합
+    for inner in inners:
+        if inner['temp_level'] == target_lv:
+            valid_combos.append([inner])
 
-    # 상의 + 아우터 조합        
-    for top in tops:
+    # 2. 이너 + 아우터 조합
+    for inner in inners:
         for outer in outers:
-            if top['temp_level'] + outer['temp_level'] == target_lv:
-                valid_combos.append([top, outer])
+            # 두 옷의 온도 레벨 합이 목표 레벨과 일치하면 조합 저장
+            if inner['temp_level'] + outer['temp_level'] == target_lv:
+                valid_combos.append([inner, outer])
                 
     return valid_combos
 
