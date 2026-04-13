@@ -3,7 +3,7 @@ from PIL import Image
 import collections
 
 # 1. AI 모델 초기화: 이미지 분류를 위한 CLIP 모델 로드
-print(" 패션 분석 AI 엔진 시동 중 (정확도 강화 버전 2-헥사코드 추출)...")
+print(" 패션 분석 AI 엔진 시동 중 (정확도 강화 버전 3-네 모서리 픽셀 분석)")
 detector = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
 
 # AI가 분석한 영어 결과를 DB 테이블 규격에 맞는 한글 데이터로 치환함
@@ -19,20 +19,46 @@ TRANSLATE_MAP = {
 def get_hex_color(image):
     
     #이미지 중앙 영역의 픽셀을 분석하여 지배적인 색상을 헥사 코드로 추출하는 함수
+    #(배경색 간섭을 무시하고 실제 '옷'의 색상만 찾아내는 로직 추가)
     
-    # 분석 효율을 위해 이미지 크기 최적화
-    small_img = image.copy().resize((100, 100))
+    # 분석 효율을 위해 이미지 크기 최적화 및 RGB 모드 변환 (알파 채널 에러 방지)
+    small_img = image.copy().resize((100, 100)).convert('RGB')
     
-    # 배경 간섭을 피하기 위해 중앙 60% 영역만 크롭
+    # 개선 1. 배경색 추정: 사진의 네 모서리 색상을 가져와 평균 내기
+    corners = [
+        small_img.getpixel((5, 5)),   # 좌상단
+        small_img.getpixel((95, 5)),  # 우상단
+        small_img.getpixel((5, 95)),  # 좌하단
+        small_img.getpixel((95, 95))  # 우하단
+    ]
+    bg_r = sum(c[0] for c in corners) / 4
+    bg_g = sum(c[1] for c in corners) / 4
+    bg_b = sum(c[2] for c in corners) / 4
+
+    # 개선 2. 크롭 영역 축소: 배경이 덜 섞이도록 중앙 40% 영역만 아주 타이트하게 크롭
     width, height = small_img.size
-    left, top, right, bottom = width * 0.2, height * 0.2, width * 0.8, height * 0.8
+    left, top, right, bottom = width * 0.3, height * 0.3, width * 0.7, height * 0.7
     center_img = small_img.crop((left, top, right, bottom))
     
-    # 대표 색상 16개로 단순화 및 최빈 색상 추출
-    result = center_img.convert('P', palette=Image.ADAPTIVE, colors=16).convert('RGB')
+    # 대표 색상 8개로 단순화 (색상을 너무 많이 쪼개지 않게 조절-비슷한 색상 묶어서 정확도 향상)
+    result = center_img.convert('P', palette=Image.ADAPTIVE, colors=8).convert('RGB')
     colors = result.getcolors(100 * 100)
-    most_common_color = sorted(colors, key=lambda x: x[0], reverse=True)[0][1]
     
+    # 픽셀 개수 기준으로 내림차순 정렬
+    colors.sort(key=lambda x: x[0], reverse=True)
+    
+    # 개선 3. 배경색 필터링: 배경색과 확연히 다른 색상을 1순위로 찾기
+    most_common_color = colors[0][1] # 기본값은 가장 많이 발견된 색
+    
+    for count, color in colors:
+        # 현재 색상과 모서리(배경) 색상의 RGB 차이를 수학적으로 계산
+        dist = ((color[0] - bg_r)**2 + (color[1] - bg_g)**2 + (color[2] - bg_b)**2) ** 0.5
+        
+        # 색상 차이가 크면(50 이상) 배경이 아닌 '옷'으로 간주하고 즉시 채택
+        if dist > 50:
+            most_common_color = color
+            break
+
     # RGB를 헥사 코드로 변환 (#000000 형태)
     return '#{:02x}{:02x}{:02x}'.format(*most_common_color).upper()
 
