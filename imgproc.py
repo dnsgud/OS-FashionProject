@@ -4,52 +4,66 @@ import traceback
 from dotenv import load_dotenv
 from supabase import create_client
 
+# AI 모듈을 불러오기
+from ai_classifier import analyze_cloth
+
 load_dotenv()
 url = os.getenv("SUPABASE_URL") # supabase 주소를 가져와 url에 저장
 key = os.getenv("SUPABASE_KEY") # api 키를 가져와 key 변수에 저장
-supabase = create_client(url, key) # 주소와 키 사용하여 실제 supabase 접속 객체 생성
+supabase = create_client(url, key)
 
-def step2_db_integration():  # DB 연동 작업을 수행하는 함수를 정의
-    file_path = "test.jpg"  # 로컬에 저장되어 있는 이미지 파일의 경로를 지정
-    storage_path = f"test_{int(time.time())}.jpg" #사진 파일의 이름을 time.time()이 현재 시간을 아주 정밀한 숫자로 알려주는것 이용
+# 함수가 '어떤 파일'을 '누구의 아이디'로 저장할지 밖에서 받을 수 있게 (매개변수) 수정
+def process_user_upload(file_path, user_id): 
+    storage_path = f"cloth_{int(time.time())}.jpg" #사진 파일의 이름을 time.time()이 현재 시간을 아주 정밀한 숫자로 알려주는것 이용
 
     try:
-        print("\n--- 1단계 Storage 업로드 시도 중... ---")  # 작업 시작을 알리는 로그를 출력
+        # AI 분석을 가장 먼저 실행 (여기서 1~2초 소요됨)
+        print("\n 1단계: AI 의류 분석 시작...")
+        ai_result = analyze_cloth(file_path)
+        print(f" AI 분석 완료: {ai_result['name']} ({ai_result['color']})")
+
+        print("--- 2단계: Storage 업로드 시도 중... ---")
         with open(file_path, 'rb') as f:  # 사진 파일을 (rb) 모드로 열어 f라는 이름으로 사용
             supabase.storage.from_('test-clothes-imgaes').upload(  # 지정한 버킷에 접근하여 업로드를 실행
                 path=storage_path,  # 위에서 정한 storage_path 이름으로 서버에 저장
                 file=f  # 실제로 열어둔 파일 객체 f를 서버로 전송
             )
 
-        print("--- 2단계 이미지 URL 확보 시도 중... ---")  # 2단계 시작
+        print("--- 3단계: 이미지 URL 확보 시도 중... ---")
         image_url = supabase.storage.from_('test-clothes-imgaes').get_public_url(storage_path)  # 주소를 생성
         print(f"🔗 이미지 URL 확보: {image_url}")  # 생성된 주소를 터미널에 출력
-    
-        MY_USER_ID = "UUID"  # 내 계정의 고유 아이디 값을 변수에 담기
 
-        data = {  # 테이블 컬럼에 맞춰서 데이터를 딕셔너리로 묶음
-            "user_id": MY_USER_ID,
-            "main_category": "상의",
-            "sub_category": "이너",
-            "name": "직접 찍은 테스트 옷",
-            "temp_level": 5,
-            "color": "black",
-            "style": ["캐주얼"],
-            "image_url": image_url,
-            "ai_tags": ["direct_photo", "test"],
+        #가짜 데이터 대신 AI가 분석한 진짜 데이터(ai_result)를 삽입
+        data = {
+            "user_id": user_id,                              # 입력받은 실제 유저 ID
+            "main_category": ai_result["main_category"],     # AI 결과
+            "sub_category": ai_result["sub_category"],       # AI 결과
+            "name": ai_result["name"],                       # AI 결과
+            "temp_level": 5,                                 # (일단 고정)
+            "color": ai_result["color"],                     # AI 결과 (#000000 등)
+            "style": ai_result["style"],                     # AI 결과
+            "image_url": image_url,                          # 방금 올린 스토리지 주소
+            "ai_tags": ai_result["ai_tags"],                 # AI 원본 태그
             "is_verified": False
         }
 
-        print("--- 3단계 DB 저장 시도 중... ---")
+        print("--- 4단계: DB 저장 시도 중... ---")
         response = supabase.table('clothes').insert(data).execute()#DB에 데이터가 삽입된 걸 검사하기 위한 작성
         print("모든단계 성공, DB에 데이터 저장완료")   
         print(f"새로운 옷 ID: {response.data[0]['id']}")
+        
+        return response.data[0] # 웹 서버 쪽에 성공했다고 결과를 돌려줌
 
     except Exception as e:# 예외 처리로 에러가 발생 시 프로그램이 갑자기 종료 방지
-        print(f"\n❌ [에러 발생] 몇 단계에서 멈췄는지 확인")#에러 발생시 정확히 확인하기 위한 코드 작성
+        print(f"\n [에러 발생]")
         print(f"에러 메시지: {e}")
-        import traceback
         traceback.print_exc()
+        return None
 
+# 로컬 테스트용 블록
 if __name__ == "__main__": 
-    step2_db_integration() #정의해둔 함수 실행하여 프로그램 시작
+    # 내 컴퓨터에서 먼저 잘 합쳐졌는지 테스트
+    TEST_FILE = "test2.jpg"
+    TEST_UUID = "YOUR UUID" # (DB에 있는 실제 uuid 값으로 테스트)
+    
+    process_user_upload(TEST_FILE, TEST_UUID)
