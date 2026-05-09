@@ -63,3 +63,35 @@ nav ul li i {
     gap: 30px;
     width: 100%; /* 중복된 weather-widget 스타일 통합 */
 }
+.widget-left {
+    text-align: center;
+    flex: 1;
+}
+.widget-left i {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+.temp-box {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+.temp {
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1;
+    color: #111111;
+    letter-spacing: -3px;
+}
+.celsius {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111111;
+    margin-top: 8px;
+}
+.status {
+    font-size: 18px;
+    font-weight: 500;
+    color: #868e96;
+    margin-top: 10px;
+}
