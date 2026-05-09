@@ -60,6 +60,7 @@
     <input type="text" placeholder="아이디" required>
     <input type="password" placeholder="비밀번호" required>
     <button type="submit" class="submit-btn">로그인</button>
+            <form class="login-form" onsubmit="handleLogin(event)">
 </form>
         <div class="login-footer">
     아직 회원이 아니신가요? <a href="#">회원가입</a>
@@ -73,5 +74,12 @@
 </div>
 </div>
     </div>
+    <script>
+    function handleLogin(event) {
+        event.preventDefault();
+        alert("로그인 기능은 백엔드 연결 후 작동해! 일단 메인으로 보낼게.");
+        location.href = "index.html";
+    }
+</script>
 </body>
 </html>
