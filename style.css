@@ -36,3 +36,12 @@ nav ul li i {
     margin-right: 8px;
     color: #495057;
 }
+.dashboard {
+    display: flex !important;
+    justify-content: center;
+    align-items: stretch;
+    gap: 25px;
+    max-width: 1300px;
+    margin: 50px auto;
+    padding: 0 20px;
+}
