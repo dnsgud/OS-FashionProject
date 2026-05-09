@@ -117,3 +117,27 @@ nav ul li i {
     width: 30px;
     text-align: center;
 }
+.info-text {
+    text-align: left;
+}
+.label {
+    display: block;
+    font-size: 13px;
+    color: #adb5bd;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+.info-text strong {
+    font-size: 20px;
+    color: #343a40;
+    font-weight: 700;
+}
+.weather-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.weather-item i {
+    font-size: 24px;
+    color: #4A90E2;
+}
