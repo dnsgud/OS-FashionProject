@@ -322,3 +322,24 @@ nav ul li i {
     height: 100%;
     object-fit: cover;
 }
+.progress-bg {
+    width: 100%;
+    height: 12px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #74c0fc, #5c7cfa);
+    border-radius: 10px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.percent {
+    display: block;
+    text-align: center;
+    font-weight: 700;
+    color: #5c7cfa;
+}
