@@ -186,3 +186,33 @@ nav ul li i {
 .fashion-diary:hover {
     transform: translateY(-5px);
 }
+.diary-content {
+    text-align: left;
+}
+.diary-badge {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    background-color: rgba(255, 255, 255, 0.25);
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+.diary-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+.diary-desc {
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.95;
+    line-height: 1.5;
+}
+.diary-icon i {
+    font-size: 60px;
+    color: rgba(255, 255, 255, 0.9);
+}
