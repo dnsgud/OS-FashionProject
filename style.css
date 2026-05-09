@@ -7,3 +7,18 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
     letter-spacing: -0.3px;
 }
+header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #E9ECEF;
+    padding: 1rem 2rem;
+}
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo {
+    font-weight: bold;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
