@@ -141,3 +141,16 @@ nav ul li i {
     font-size: 24px;
     color: #4A90E2;
 }
+.status-icon.sunny { color: #ff922b !important; }
+.status-icon.cloudy { color: #adb5bd !important; }
+.status-icon.rainy { color: #228be6 !important; }
+
+.info span {
+    display: block;
+    font-size: 12px;
+    color: #868e96;
+}
+.info strong {
+    font-size: 18px;
+    color: #212529;
+}
