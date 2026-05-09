@@ -250,3 +250,37 @@ nav ul li i {
     max-height: 100%;
     object-fit: contain;
 }
+.section-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    color: #212529;
+}
+.trend-section {
+    max-width: 1400px;
+    margin: 0 auto 80px auto;
+    padding: 0 20px;
+}
+.hashtag-box {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.hashtag {
+    background-color: #f8f9fa;
+    color: #495057;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+.hashtag:hover {
+    background-color: #343a40;
+    color: #ffffff;
+    transform: translateY(-3px);
+}
