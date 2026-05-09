@@ -171,3 +171,18 @@ nav ul li i {
 .login-btn:hover {
     background-color: #495057;
 }
+.fashion-diary {
+    margin: 0;
+    flex: 1;
+    background: linear-gradient(135deg, #a5d8ff 0%, #74c0fc 100%);
+    border-radius: 32px;
+    padding: 35px 40px;
+    color: white;
+    box-shadow: 0 15px 30px rgba(116, 192, 252, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.fashion-diary:hover {
+    transform: translateY(-5px);
+}
