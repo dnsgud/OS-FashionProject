@@ -410,3 +410,13 @@ footer {
     margin: 0 10px;
     font-size: 13px;
 }
+.footer-info {
+    color: #adb5bd;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+.footer-copyright {
+    color: #ced4da;
+    font-size: 11px;
+}
