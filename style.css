@@ -387,3 +387,26 @@ nav ul li i {
     padding: 12px 30px; border-radius: 50px;
     font-weight: 700; cursor: pointer;
 }
+footer {
+    background-color: #f8f9fa;
+    padding: 40px 20px;
+    margin-top: 60px;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+.footer-logo {
+    font-size: 18px;
+    font-weight: 800;
+    color: #adb5bd;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+.footer-links {
+    margin-bottom: 15px;
+}
+.footer-links a {
+    color: #868e96;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 13px;
+}
