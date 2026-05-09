@@ -45,22 +45,22 @@
                 <div class="hourly-item">
                     <p class="time">오후 3시</p>
                     <i class="fas fa-sun"></i>
-                    <p class="h-temp">-°</p>
+                    <p class="h-temp">30°</p>
                 </div>
                 <div class="hourly-item">
                     <p class="time">오후 6시</p>
                     <i class="fas fa-cloud-sun"></i>
-                    <p class="h-temp">-°</p>
+                    <p class="h-temp">25°</p>
                 </div>
                 <div class="hourly-item">
                     <p class="time">오후 9시</p>
                     <i class="fas fa-cloud"></i>
-                    <p class="h-temp">-°</p>
+                    <p class="h-temp">20°</p>
                 </div>
                 <div class="hourly-item">
                     <p class="time">오전 12시</p>
                     <i class="fas fa-moon"></i>
-                    <p class="h-temp">-°</p>
+                    <p class="h-temp">15°</p>
                 </div>
             </div>
         </section>
@@ -104,11 +104,8 @@
         // HTML의 해당 위치에 글자 넣기
         document.getElementById('current-date').innerText = dateString;
     }
-
-    // 페이지가 열리자마자 날짜 함수 실행!
     window.onload = () => {
         displayCurrentDate();
-        // 만약 상세 페이지에서도 백엔드 데이터를 가져오고 싶다면 여기에 추가하면 돼!
     };
 </script>
 </body>
