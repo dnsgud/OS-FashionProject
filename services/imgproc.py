@@ -75,6 +75,18 @@ def confirm_ai_analysis(cloth_id, user_id):
         print(f"[DB 에러] 승인 업데이트 실패: {e}")
         return None
 
+def modify_and_confirm_ai_analysis(cloth_id, user_id, modified_data):
+    """사용자가 직접 수정한 데이터를 반영"""
+    try:
+        update_data = modified_data.copy()
+        update_data["is_verified"] = True
+        
+        response = supabase.table('clothes').update(update_data).eq('id', cloth_id).eq('user_id', user_id).execute()
+        return response.data
+    except Exception as e:
+        print(f"[DB 에러] 수정 및 승인 업데이트 실패: {e}")
+        return None
+    
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
