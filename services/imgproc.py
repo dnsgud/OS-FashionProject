@@ -65,6 +65,16 @@ def process_user_upload(file_path, user_id):
         traceback.print_exc()
         return None
 
+def confirm_ai_analysis(cloth_id, user_id):
+    """AI 분석 결과 정확, 사용자가 승인하는 DB 로직"""
+    try:
+        update_data = {"is_verified": True}
+        response = supabase.table('clothes').update(update_data).eq('id', cloth_id).eq('user_id', user_id).execute()
+        return response.data
+    except Exception as e:
+        print(f"[DB 에러] 승인 업데이트 실패: {e}")
+        return None
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
