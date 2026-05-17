@@ -112,6 +112,24 @@ def insert_manual_cloth_to_db(user_id, input_data):
         print(f"[DB 에러] 수동 옷 등록 실패: {e}")
         return None
 
+def handle_cloth_registration(register_type, user_id, payload):
+    """
+    사용자의 선택(register_type)에 따라 데이터 흐름을 분기하는 통합 알고리즘
+    - 'photo': payload가 파일 경로(file_path)로 들어옴
+    - 'manual': payload가 사용자가 입력한 딕셔너리(input_data)로 들어옴
+    """
+    if register_type == 'photo':
+        print("[알고리즘 로그] 사진 등록 방식 선택 -> AI 분석 파이프라인으로 라우팅")
+        return process_user_upload(payload, user_id)
+        
+    elif register_type == 'manual':
+        print("[알고리즘 로그] 직접 등록 방식 선택 -> 수동 DB 저장 파이프라인으로 라우팅")
+        return insert_manual_cloth_to_db(user_id, payload)
+        
+    else:
+        print(f"[알고리즘 에러] 알 수 없는 등록 방식이다: {register_type}")
+        return None
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
