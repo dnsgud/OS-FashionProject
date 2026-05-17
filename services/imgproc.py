@@ -101,6 +101,17 @@ def build_manual_cloth_data(user_id, input_data):
         "is_verified": True  
     }
 
+def insert_manual_cloth_to_db(user_id, input_data):
+    """구조화된 수동 입력 데이터를 Supabase DB에 직접 저장"""
+    try:
+        final_data = build_manual_cloth_data(user_id, input_data)
+        response = supabase.table('clothes').insert(final_data).execute()
+        print(f"[DB 로그] 수동 옷 등록 완료: {final_data['name']}")
+        return response.data[0]
+    except Exception as e:
+        print(f"[DB 에러] 수동 옷 등록 실패: {e}")
+        return None
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
