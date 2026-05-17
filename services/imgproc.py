@@ -87,6 +87,20 @@ def modify_and_confirm_ai_analysis(cloth_id, user_id, modified_data):
         print(f"[DB 에러] 수정 및 승인 업데이트 실패: {e}")
         return None
     
+def build_manual_cloth_data(user_id, input_data):
+    """프론트엔드 전달 수동 입력 데이터를 DB 스키마에 맞게 구조화"""
+    return {
+        "user_id": user_id,
+        "main_category": input_data.get("main_category", "상의"),
+        "sub_category": input_data.get("sub_category", "이너"),
+        "name": input_data.get("name", "기본 의류"),
+        "temp_level": int(input_data.get("temp_level", 5)),
+        "color": input_data.get("color", "#FFFFFF"),
+        "style": input_data.get("style", []),
+        "image_url": None,   
+        "is_verified": True  
+    }
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
