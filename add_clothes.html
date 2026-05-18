@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>옷 등록하기 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        .add-clothes-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #0f172a;
+            margin-bottom: 40px;
+            font-weight: 800;
+        }
+
+        .upload-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 50px;
+            border: 1px solid #f1f5f9;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .image-section {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            box-sizing: border-box;
+        }
+
+        .image-section:hover {
+            border-color: #4f46e5;
+            background: #e0e7ff;
+        }
+
+        .image-section i {
+            font-size: 4rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .image-section p {
+            color: #64748b;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        #preview-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: center;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.05rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 16px 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            border-color: #4f46e5;
+        }
+
+        .color-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .color-group input[type="color"] {
+            width: 55px;
+            height: 55px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .color-group input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .color-group input[type="color"]::-webkit-color-swatch {
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+        }
+
+        .tpo-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-bottom: 12px;
+            scrollbar-width: none; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .tpo-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tpo-tag {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .tpo-tag.selected {
+            background: #e0e7ff;
+            color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .button-group {
+            display: flex;
+            margin-top: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 저장 버튼 하나만 큼직하게 꽉 채우기 */
+        .btn-main-save {
+            width: 100%;
+            padding: 20px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-main-save:hover {
+            background: #4338ca;
+        }
+
+        /* 팝업창 모달 배경 */
+        .confirm-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 팝업창 본체 */
+        .confirm-modal-box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            animation: popUp 0.3s ease;
+        }
+
+        .confirm-modal-box h3 {
+            font-size: 1.4rem;
+            color: #0f172a;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        /* 팝업창 안의 취소, 확인 버튼 */
+        .modal-btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .m-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .m-btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .m-btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .m-btn-confirm {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .m-btn-confirm:hover {
+            background: #4338ca;
+        }
+
+        @keyframes popUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @media (max-width: 900px) {
+            .upload-card {
+                grid-template-columns: 1fr;
+            }
+            .image-section {
+                aspect-ratio: auto;
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
