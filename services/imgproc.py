@@ -130,6 +130,12 @@ def handle_cloth_registration(register_type, user_id, payload):
         print(f"[알고리즘 에러] 알 수 없는 등록 방식이다: {register_type}")
         return None
 
+def _filter_closet_keys(edit_data):
+    """[알고리즘] 허용된 컬럼만 통과시키는 내부 필터링 함수"""
+    allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style']
+    filtered = {k: v for k, v in edit_data.items() if k in allowed}
+    return filtered
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
