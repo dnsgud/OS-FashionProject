@@ -106,13 +106,18 @@ def _sanitize_color_input(color_str):
     
 def build_manual_cloth_data(user_id, input_data):
     """프론트엔드 전달 수동 입력 데이터를 DB 스키마에 맞게 구조화"""
+    # 3줄 이상의 명확한 정제 로직 전개
+    raw_color = input_data.get("color", "#FFFFFF")
+    safe_color = _sanitize_color_input(raw_color)
+    input_data["color"] = safe_color  # 검증된 색상으로 원본 데이터 덮어쓰기
+
     return {
         "user_id": user_id,
         "main_category": input_data.get("main_category", "상의"),
         "sub_category": input_data.get("sub_category", "이너"),
         "name": input_data.get("name", "기본 의류"),
         "temp_level": int(input_data.get("temp_level", 5)),
-        "color": input_data.get("color", "#FFFFFF"),
+        "color": input_data["color"],  # 정제 완료된 데이터 매핑
         "style": input_data.get("style", []),
         "image_url": None,   
         "is_verified": True  
