@@ -1,1 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>옷 상세 정보 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
+        header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #64748b;
+            cursor: pointer;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+
+        .header-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        main {
+            flex: 1;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .detail-container {
+            background: white;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+        }
+
+        .image-area {
+            width: 100%;
+            height: 300px;
+            background-color: #f1f5f9;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .cloth-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .no-img-icon {
+            font-size: 4rem;
+            color: #cbd5e1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+            font-weight: 600;
+            box-sizing: border-box;
+            background: #f8fafc;
+            color: #0f172a;
+            transition: all 0.2s ease;
+        }
+
+        /* 읽기 전용 상태일 때의 스타일 */
+        .form-input[readonly] {
+            background: #ffffff;
+            border-color: transparent;
+            padding-left: 0;
+            font-size: 1.1rem;
+            cursor: default;
+        }
+
+        /* 수정 모드일 때 강조 스타일 */
+        .form-input:not([readonly]):focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 35px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #4338ca;
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #ef4444;
+            max-width: 120px;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .cancel-btn {
+            background: #e2e8f0;
+            color: #475569;
+            display: none;
+            max-width: 120px;
+        }
+
+        .cancel-btn:hover {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
