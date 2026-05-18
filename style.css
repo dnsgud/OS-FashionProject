@@ -554,3 +554,28 @@ footer {
     color: #4f46e5;
     font-weight: bold;
 }
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translate(-50%, -10px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+.codi-page-container {
+    max-width: 1100px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.codi-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.codi-header h2 {
+    font-size: 2.2rem;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.codi-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+}
