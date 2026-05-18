@@ -96,6 +96,14 @@ def _is_valid_hex(color_str):
     pattern = r'^#(?:[0-9a-fA-F]{3}){1,2}$'
     return bool(re.match(pattern, color_str))
 
+def _sanitize_color_input(color_str):
+    """[알고리즘] 색상 값을 검증, 실패 시 안전한 기본값을 반환하는 래퍼 함수"""
+    if _is_valid_hex(color_str):
+        return color_str
+    else:
+        print(f"[알고리즘 경고] 비정상 색상 데이터 감지({color_str}). 기본값(#FFFFFF) 강제 적용.")
+        return "#FFFFFF"
+    
 def build_manual_cloth_data(user_id, input_data):
     """프론트엔드 전달 수동 입력 데이터를 DB 스키마에 맞게 구조화"""
     return {
