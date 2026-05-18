@@ -147,10 +147,26 @@ def _validate_closet_types(filtered_data):
     return filtered_data
 
 def _execute_closet_update_query(cloth_id, user_id, clean_data):
-    """[DB] Supabase에 접근하여 실제 업데이트 쿼리를 수행한다."""
+    """[DB] Supabase에 접근하여 실제 업데이트 쿼리를 수행"""
     query = supabase.table('clothes').update(clean_data)
     response = query.eq('id', cloth_id).eq('user_id', user_id).execute()
     return response.data
+
+def update_closet_cloth(cloth_id, user_id, edit_data):
+    """옷장 의류 정보 수정을 위한 전체 데이터 파이프라인을 제어"""
+    try:
+        # 1. 분리해둔 모듈들을 순차적으로 실행
+        filtered = _filter_closet_keys(edit_data)
+        clean_data = _validate_closet_types(filtered)
+        
+        # 2. DB 업데이트 실행
+        result = _execute_closet_update_query(cloth_id, user_id, clean_data)
+        
+        print(f"[DB 로그] 수정 완료: {cloth_id}")
+        return result
+    except Exception as e:
+        print(f"[DB 에러] 파이프라인 수정 실패: {e}")
+        return None
 
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
