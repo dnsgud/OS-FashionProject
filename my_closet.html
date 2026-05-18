@@ -72,3 +72,109 @@
         .horizontal-scroll-box::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+/
+        .closet-item {
+            flex: 0 0 auto; 
+            width: 140px;
+            height: 140px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .closet-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: #4f46e5;
+        }
+
+        .closet-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 8px 0;
+            font-weight: 600;
+            border-top: 1px solid #e2e8f0;
+        }
+
+
+        .fab-button {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            background-color: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+            cursor: pointer;
+            text-decoration: none;
+            z-index: 1000;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .fab-button:hover {
+            transform: scale(1.1);
+            background-color: #3730a3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html" style="color: inherit; text-decoration: none;">Look_Up</a>
+            </div>
+            <ul>
+                <li>
+                    <a href="guide.html" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-book"></i> Guide
+                    </a>
+                </li>
+                <li>
+                    <a href="codi.html" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-tshirt"></i> Codi
+                    </a>
+                </li>
+                <li class="dropdown-wrapper">
+                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;" onclick="toggleDropdown(event)">
+                        <i class="fas fa-user"></i> My
+                    </a>
+                    <div class="dropdown-menu" id="my-dropdown">
+                        <a href="my_closet.html">👗 내 옷장</a>
+                        <a href="my_scrap.html">🔖 스크랩북</a>
+                        <a href="my_profile.html">⚙️ 스타일 설정</a>
+                    </div>
+                </li>
+                <li>
+                    <button class="login-btn" onclick="location.href='login.html'">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
