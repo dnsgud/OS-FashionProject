@@ -204,6 +204,24 @@ def _execute_unverified_delete_query(cloth_id, user_id):
     
     return response.data
 
+def delete_unverified_cloth(cloth_id, user_id):
+    """미승인 임시 데이터를 삭제하는 메인 컨트롤러 함수이"""
+    try:
+        # 1. 분리해둔 DB 실행 모듈 호출
+        deleted_data = _execute_unverified_delete_query(cloth_id, user_id)
+        
+        # 2. 결과 검증 및 응답 처리
+        if deleted_data:
+            print(f"[DB 로그] 미승인 데이터 삭제(Rollback) 완료: {cloth_id}")
+            return True
+            
+        print(f"[DB 경고] 삭제할 미승인 데이터가 없거나 조건 불일치: {cloth_id}")
+        return False
+        
+    except Exception as e:
+        print(f"[DB 에러] 미승인 데이터 삭제 파이프라인 실패: {e}")
+        return False
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 함
 if __name__ == "__main__": 
