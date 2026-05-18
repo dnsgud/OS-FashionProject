@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 사진 등록 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none; border: none; font-size: 1.2rem; color: #64748b; cursor: pointer; text-decoration: none;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        /* 메인 컨테이너: 직접 등록 화면과 똑같은 2단 구성 */
+        .registration-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            position: relative;
+        }
+
+        /* 왼쪽: 이미지 영역 */
+        .image-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-box {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .upload-box img {
+            width: 100%; height: 100%; object-fit: cover; display: none;
+        }
+
+        .upload-box i { font-size: 3rem; color: #94a3b8; margin-bottom: 10px; }
+        .upload-box p { font-size: 0.9rem; color: #94a3b8; font-weight: 600; text-align: center; }
+
+        /* AI 로딩 오버레이 */
+        .ai-loading {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 오른쪽: 입력 폼 영역 */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 0.9rem; font-weight: 700; color: #475569; }
+
+        .form-input {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        .form-input:focus { outline: none; border-color: var(--primary); background: white; }
+
+        /* TPO 해시태그 디자인 */
+        .tpo-group { margin-top: 10px; }
+        .hashtag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            background: #f1f5f9;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 하단 저장 버튼 */
+        .save-btn {
+            grid-column: span 2;
+            margin-top: 20px;
+            padding: 18px;
+            background: #1e293b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover { background: #0f172a; }
+
+        #file-input { display: none; }
+
+        @media (max-width: 800px) {
+            .registration-card { grid-template-columns: 1fr; }
+            .save-btn { grid-column: span 1; }
+        }
+    </style>
+</head>
