@@ -146,6 +146,12 @@ def _validate_closet_types(filtered_data):
         
     return filtered_data
 
+def _execute_closet_update_query(cloth_id, user_id, clean_data):
+    """[DB] Supabase에 접근하여 실제 업데이트 쿼리를 수행한다."""
+    query = supabase.table('clothes').update(clean_data)
+    response = query.eq('id', cloth_id).eq('user_id', user_id).execute()
+    return response.data
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
