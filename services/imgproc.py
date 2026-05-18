@@ -196,12 +196,18 @@ def update_closet_cloth(cloth_id, user_id, edit_data):
         print(f"[DB 에러] 파이프라인 수정 실패: {e}")
         return None
 
-
+def _execute_unverified_delete_query(cloth_id, user_id):
+    """[DB] 미승인 데이터 삭제 쿼리를 전담하여 실행하는 계층"""
+    # 안전장치: eq('is_verified', False)를 DB 레벨에서 강제 적용
+    query = supabase.table('clothes').delete()
+    response = query.eq('id', cloth_id).eq('user_id', user_id).eq('is_verified', False).execute()
+    
+    return response.data
 
 # [수정 2] 로컬 테스트 블록 보호
-# 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
+# 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 함
 if __name__ == "__main__": 
-    # 테스트가 필요할 때만 아래 주석을 풀고 실행하세요.
+    # 테스트가 필요할 때만 아래 주석을 풀고 실행
     # TEST_FILE = "test2.jpg"
     # TEST_UUID = "your-test-uuid"
     # process_user_upload(TEST_FILE, TEST_UUID)
