@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        /* 네가 원했던 2x3 완벽한 비율의 그리드 디자인이야! */
+        
         .main-grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -16,7 +16,7 @@
             margin: 40px 0;
         }
 
-        /* 6개의 상자 크기와 모양을 완벽하게 통일했어 */
+      
         .grid-box {
             background: #ffffff;
             border-radius: 20px;
@@ -31,7 +31,7 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-decoration: none;
             color: #0f172a;
-            height: 240px; /* 모든 네모의 높이를 똑같이 맞춤 */
+            height: 240px; 
             position: relative;
             box-sizing: border-box;
         }
@@ -41,20 +41,19 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
-        /* Tip 상자는 특별하게 파란색 그라데이션으로 포인트 */
+       
         .tip-box {
             background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
             color: white;
             border: none;
         }
 
-        /* 내 옷장 상자도 눈에 확 띄게 테두리와 색상을 줬어 */
         .closet-box {
             border: 2px solid #4f46e5;
             background: #f5f7ff;
         }
 
-        /* 화면이 작아지면 2칸, 1칸으로 자연스럽게 줄어들게 처리 */
+    
         @media (max-width: 850px) {
             .main-grid-container {
                 grid-template-columns: repeat(2, 1fr);
