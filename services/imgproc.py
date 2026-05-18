@@ -166,6 +166,12 @@ def _validate_closet_types(filtered_data):
     if 'temp_level' in filtered_data:
         filtered_data['temp_level'] = int(filtered_data['temp_level'])
         
+    
+    if 'color' in filtered_data:
+        original_color = filtered_data['color']
+        safe_color = _sanitize_color_input(original_color)
+        filtered_data['color'] = safe_color
+        
     return filtered_data
 
 def _execute_closet_update_query(cloth_id, user_id, clean_data):
