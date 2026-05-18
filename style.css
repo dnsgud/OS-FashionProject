@@ -617,3 +617,64 @@ footer {
     background-color: #0f172a;
     border-radius: 3px 3px 0 0;
 }
+.tab-content {
+    display: none; /* 기본으로 다 숨겨두고 JS로 조절해 */
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-content.active-tab {
+    display: block;
+}
+
+.codi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.codi-card {
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+    transition: transform 0.3s ease;
+}
+
+.codi-card:hover {
+    transform: translateY(-8px);
+}
+
+.codi-img-box img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+}
+
+.codi-info {
+    padding: 25px;
+}
+
+.codi-info h3 {
+    font-size: 1.3rem;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.codi-info p {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.tag {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
