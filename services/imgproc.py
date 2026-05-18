@@ -136,6 +136,16 @@ def _filter_closet_keys(edit_data):
     filtered = {k: v for k, v in edit_data.items() if k in allowed}
     return filtered
 
+def _validate_closet_types(filtered_data):
+    """[알고리즘] 데이터 무결성을 검증, 타입을 강제 변환하는 함수"""
+    if not filtered_data:
+        raise ValueError("유효한 수정 데이터가 존재 X.")
+        
+    if 'temp_level' in filtered_data:
+        filtered_data['temp_level'] = int(filtered_data['temp_level'])
+        
+    return filtered_data
+
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
 if __name__ == "__main__": 
