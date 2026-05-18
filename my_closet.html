@@ -262,3 +262,22 @@
     </a>
 
     <script>
+ function toggleDropdown(event) {
+            event.preventDefault();
+            document.getElementById("my-dropdown").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.nav-link') && !event.target.closest('#my-menu-btn')) {
+                const dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    let openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
