@@ -1,6 +1,7 @@
 import os
 import time
 import traceback
+import re
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -87,6 +88,14 @@ def modify_and_confirm_ai_analysis(cloth_id, user_id, modified_data):
         print(f"[DB 에러] 수정 및 승인 업데이트 실패: {e}")
         return None
     
+def _is_valid_hex(color_str):
+    """[알고리즘] 순수하게 헥사코드 형식이 맞는지 True/False만 반환하는 순수 함수"""
+    if not color_str or not isinstance(color_str, str):
+        return False
+        
+    pattern = r'^#(?:[0-9a-fA-F]{3}){1,2}$'
+    return bool(re.match(pattern, color_str))
+
 def build_manual_cloth_data(user_id, input_data):
     """프론트엔드 전달 수동 입력 데이터를 DB 스키마에 맞게 구조화"""
     return {
@@ -167,6 +176,8 @@ def update_closet_cloth(cloth_id, user_id, edit_data):
     except Exception as e:
         print(f"[DB 에러] 파이프라인 수정 실패: {e}")
         return None
+
+
 
 # [수정 2] 로컬 테스트 블록 보호
 # 서버 실행 시 이 부분이 지멋대로 실행되지 않도록 합니다.
