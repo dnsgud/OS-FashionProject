@@ -515,3 +515,22 @@ footer {
 .back-home a:hover {
     color: #0f172a;
 }
+/* 마이페이지 드롭다운 상세 메뉴 스타일 */
+.dropdown-wrapper {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none; /* 평소에는 숨겨둬 */
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ffffff;
+    min-width: 150px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 10px 0;
+    z-index: 1000;
+    margin-top: 15px;
+}
