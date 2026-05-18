@@ -177,3 +177,109 @@
         }
     </style>
 </head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1 class="header-title" id="page-title">옷 상세 정보</h1>
+    </header>
+
+    <main>
+        <div class="detail-container">
+            <div class="image-area">
+                <i class="fas fa-tshirt no-img-icon" id="no-image" style="display: none;"></i>
+                <img id="cloth-image" class="cloth-img" src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=500" alt="옷 이미지">
+            </div>
+
+            <div class="form-group">
+                <label>옷 이름</label>
+                <input type="text" id="cloth-name" class="form-input" value="흰색 무지 티" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>카테고리</label>
+                <input type="text" id="cloth-category" class="form-input" value="상의" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>주요 색상</label>
+                <input type="text" id="cloth-color" class="form-input" value="화이트" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>추천 계절</label>
+                <input type="text" id="cloth-season" class="form-input" value="봄, 여름" readonly>
+            </div>
+
+            <div class="btn-group">
+                <button class="action-btn delete-btn" id="left-btn" onclick="deleteClothes()">
+                    <i class="fas fa-trash-alt"></i> 삭제
+                </button>
+                <button class="action-btn cancel-btn" id="cancel-btn" onclick="toggleEditMode(false)">
+                    취소
+                </button>
+                <button class="action-btn edit-btn" id="main-btn" onclick="handleMainAction()">
+                    <i class="fas fa-edit"></i> 수정하기
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let isEditMode = false;
+
+     
+        function toggleEditMode(edit) {
+            isEditMode = edit;
+            
+            const inputs = document.querySelectorAll('.form-input');
+            const mainBtn = document.getElementById('main-btn');
+            const leftBtn = document.getElementById('left-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const pageTitle = document.getElementById('page-title');
+
+            if (isEditMode) {
+                
+                inputs.forEach(input => input.removeAttribute('readonly'));
+                inputs[0].focus(); 
+
+                pageTitle.innerText = "옷 정보 수정";
+                mainBtn.innerHTML = "<i class='fas fa-check'></i> 저장하기";
+                mainBtn.style.background = "#10b981";
+                
+                leftBtn.style.display = "none"; 
+                cancelBtn.style.display = "flex";
+            } else {
+               
+                inputs.forEach(input => input.setAttribute('readonly', true));
+
+                pageTitle.innerText = "옷 상세 정보";
+                mainBtn.innerHTML = "<i class='fas fa-edit'></i> 수정하기";
+                mainBtn.style.background = "#4f46e5";
+                
+                leftBtn.style.display = "flex";
+                cancelBtn.style.display = "none";
+            }
+        }
+
+
+        function handleMainAction() {
+            if (!isEditMode) {
+                toggleEditMode(true);
+            } else {
+   
+                alert('옷 정보가 성공적으로 수정되었어!');
+                toggleEditMode(false);
+            }
+        }
+
+  
+        function deleteClothes() {
+            if (confirm('정말로 이 옷을 옷장에서 삭제할 거야?')) {
+                alert('삭제가 완료되었어.');
+                location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
