@@ -420,3 +420,98 @@ footer {
     color: #ced4da;
     font-size: 11px;
 }
+.guide-page-container {
+    max-width: 1000px;
+    margin: 80px auto;
+    padding: 0 20px;
+}
+
+.guide-main-title {
+    text-align: center;
+    font-size: 2.2rem;
+    color: #1e293b;
+    margin-bottom: 50px;
+    font-weight: 700;
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.guide-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    border: 1px solid #f1f5f9;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.guide-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+}
+
+.guide-card h2 {
+    font-size: 1.5rem;
+    color: #0f172a;
+    margin-bottom: 15px;
+}
+
+.guide-card p {
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.guide-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.guide-card ul li {
+    padding: 10px 0;
+    color: #475569;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 0.95rem;
+}
+
+.guide-card ul li:last-child {
+    border-bottom: none;
+}
+
+.guide-card button {
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    margin-top: 10px;
+}
+
+.guide-card button:hover {
+    background: #334155;
+}
+
+.back-home {
+    text-align: center;
+    margin-top: 60px;
+}
+
+.back-home a {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.back-home a:hover {
+    color: #0f172a;
+}
