@@ -709,3 +709,22 @@ footer {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+.fab-button {
+    position: fixed; /* 스크롤을 내려도 항상 화면에 고정! */
+    bottom: 40px; /* 아래에서 40px 띄우기 */
+    right: 40px; /* 오른쪽에서 40px 띄우기 */
+    width: 60px;
+    height: 60px;
+    background-color: #4f46e5; /* Look_Up 메인 포인트 컬러 */
+    color: white;
+    border-radius: 50%; /* 완벽한 동그라미 만들기 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); /* 예쁜 그림자 */
+    cursor: pointer;
+    text-decoration: none;
+    z-index: 1000; /* 다른 요소들보다 무조건 맨 위에 오도록 설정 */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
