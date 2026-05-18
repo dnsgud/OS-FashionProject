@@ -1,1 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맞춤 코디 추천 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html" style="color: inherit; text-decoration: none;">Look_Up</a>
+            </div>
+            <ul>
+                <li>
+                    <a href="guide.html" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-book"></i> Guide
+                    </a>
+                </li>
+                <li>
+                    <a href="codi.html" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-tshirt"></i> Codi
+                    </a>
+                </li>
+                <li class="dropdown-wrapper">
+                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;" onclick="toggleDropdown(event)">
+                        <i class="fas fa-user"></i> My
+                    </a>
+                    <div class="dropdown-menu" id="my-dropdown">
+                        <a href="my_closet.html">👗 내 옷장</a>
+                        <a href="my_scrap.html">🔖 스크랩북</a>
+                        <a href="my_profile.html">⚙️ 스타일 설정</a>
+                    </div>
+                </li>
+                <li>
+                    <button class="login-btn" onclick="location.href='login.html'">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
 
+    <main class="codi-page-container">
+        <div class="codi-header">
+            <h2>오늘 당신을 위한 맞춤 코디</h2>
+            <p>날씨, 스타일 레벨, 내 옷장 아이템에 맞춰 완벽한 룩을 제안해 줄게!</p>
+        </div>
+
+        <div class="tab-menu">
+            <button class="tab-link active" onclick="openTab(event, 'weather-codi')">🌤️ 날씨 맞춤</button>
+            <button class="tab-link" onclick="openTab(event, 'level-codi')">🌱 레벨별 추천</button>
+            <button class="tab-link" onclick="openTab(event, 'closet-codi')">👗 내 옷장 믹스</button>
+        </div>
+
+        <div id="weather-codi" class="tab-content active-tab">
+            <div class="codi-grid">
+                <div class="codi-card">
+                    <div class="codi-img-box">
+                        <img src="./images/cardigan.jpg" alt="가디건 코디" onerror="this.src='https://via.placeholder.com/300x400?text=Weather+Look'">
+                    </div>
+                    <div class="codi-info">
+                        <h3>일교차가 큰 오늘을 위한 레이어드 룩</h3>
+                        <p>18°C 날씨에는 입고 벗기 편한 가디건이 최고야. 안에는 얇은 반팔을 입어서 온도를 조절해 봐!</p>
+                        <span class="tag">#가디건</span> <span class="tag">#18도코디</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="level-codi" class="tab-content">
+            <div class="level-selector">
+                <button class="lv-btn active">Lv.1 기본템</button>
+                <button class="lv-btn">Lv.2 컬러포인트</button>
+                <button class="lv-btn">Lv.3 트렌드세터</button>
+            </div>
+            <div class="codi-grid">
+                <div class="codi-card">
+                    <div class="codi-img-box">
+                        <img src="./images/shirt.jpg" alt="기본 코디" onerror="this.src='https://via.placeholder.com/300x400?text=Level+1+Look'">
+                    </div>
+                    <div class="codi-info">
+                        <h3>실패 없는 흰 셔츠 + 슬랙스 조합</h3>
+                        <p>코디가 너무 어렵다면 기본 색상부터 시작해 봐. 깔끔한 모나미 룩은 언제나 평타 이상!</p>
+                        <span class="tag">#초보자추천</span> <span class="tag">#깔끔룩</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="closet-codi" class="tab-content">
+            <div class="codi-grid">
+                <div class="codi-card closet-special">
+                    <div class="codi-img-box">
+                        <img src="./images/arsenal_uniform.jpg" alt="내 옷장 코디" onerror="this.src='https://via.placeholder.com/300x400?text=My+Closet+Look'">
+                    </div>
+                    <div class="codi-info">
+                        <h3>보유하신 '아스널 유니폼'을 활용한 코디</h3>
+                        <p>옷장에 있는 스포티한 상의에 넉넉한 와이드 팬츠를 매치해서 힙한 블록코어 룩을 연출해 보는 건 어떨까?</p>
+                        <span class="tag">#내옷장아이템</span> <span class="tag">#블록코어</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Look_Up</div>
+            <p class="footer-copyright">&copy; 2026 CODI PICK. All rights reserved.</p>
+        </div>
+    </footer>
