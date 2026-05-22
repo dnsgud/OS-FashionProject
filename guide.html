@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - Fashion Guide</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo"><a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+            </div>
+            <ul>
+                <li><a href="{{ url_for('guide_page') }}"><i class="fas fa-book"></i> Guide</a></li>
+                <li><a href="{{ url_for('codi_page') }}"><i class="fas fa-tshirt"></i> Codi</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="guide-page-container" style="padding: 40px;">
+        <h1 class="guide-main-title">Fashion Guide for Beginners</h1>
+
+        <div class="guide-grid">
+            <section class="guide-card">
+                <h2>🧺 캡슐 워드롭</h2>
+                <p>돌려 입기 좋은 최소한의 필수 아이템 리스트</p>
+            </section>
+
+            <section class="guide-card">
+                <h2>👤 체형별 가이드</h2>
+                <p>자신의 체형에 맞는 최적의 실루엣 추천</p>
+                <button onclick="alert('준비 중인 기능입니다!')">자세히 보기</button>
+            </section>
+
+        </div>
+
+        <div class="back-home" style="margin-top: 40px;">
+            <a href="{{ url_for('home') }}">← 메인으로 돌아가기</a>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

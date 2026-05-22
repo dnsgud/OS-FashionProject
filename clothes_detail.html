@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>옷 상세 정보 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #64748b;
+            cursor: pointer;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+
+        .header-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        main {
+            flex: 1;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .detail-container {
+            background: white;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+        }
+
+        .image-area {
+            width: 100%;
+            height: 300px;
+            background-color: #f1f5f9;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .cloth-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .no-img-icon {
+            font-size: 4rem;
+            color: #cbd5e1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+            font-weight: 600;
+            box-sizing: border-box;
+            background: #f8fafc;
+            color: #0f172a;
+            transition: all 0.2s ease;
+        }
+
+        /* 읽기 전용 상태일 때의 스타일 */
+        .form-input[readonly] {
+            background: #ffffff;
+            border-color: transparent;
+            padding-left: 0;
+            font-size: 1.1rem;
+            cursor: default;
+        }
+
+        /* 수정 모드일 때 강조 스타일 */
+        .form-input:not([readonly]):focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 35px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #4338ca;
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #ef4444;
+            max-width: 120px;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .cancel-btn {
+            background: #e2e8f0;
+            color: #475569;
+            display: none;
+            max-width: 120px;
+        }
+
+        .cancel-btn:hover {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="{{ url_for('my_closet') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1 class="header-title" id="page-title">옷 상세 정보</h1>
+    </header>
+
+    <main>
+        <div class="detail-container">
+            <div class="image-area">
+                {% if cloth and cloth.image_url %}
+                <img id="cloth-image" class="cloth-img" src="{{ cloth.image_url }}" alt="옷 이미지">
+                <i class="fas fa-tshirt no-img-icon" id="no-image" style="display: none;"></i>
+                {% else %}
+                <img id="cloth-image" class="cloth-img" src="" alt="옷 이미지" style="display: none;">
+                <i class="fas fa-tshirt no-img-icon" id="no-image"></i>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label>옷 이름</label>
+                <input type="text" id="cloth-name" class="form-input" value="{{ cloth.name if cloth else '이름 없음' }}"
+                    readonly>
+            </div>
+
+            <div class="form-group">
+                <label>대분류 카테고리</label>
+                <input type="text" id="cloth-main-category" class="form-input"
+                    value="{{ cloth.main_category if cloth else '' }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>세부 카테고리</label>
+                <input type="text" id="cloth-sub-category" class="form-input"
+                    value="{{ cloth.sub_category if cloth else '' }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>주요 색상</label>
+                <input type="text" id="cloth-color" class="form-input" value="{{ cloth.color if cloth else '' }}"
+                    readonly>
+            </div>
+
+            <div class="form-group">
+                <label>TPO 태그</label>
+                <input type="text" id="cloth-tpo" class="form-input" value="{{ cloth.tpo if cloth else '' }}" readonly
+                    placeholder="예: 데일리, 캠퍼스">
+            </div>
+
+            <div class="btn-group">
+                <button class="action-btn delete-btn" id="left-btn" onclick="deleteClothes()">
+                    <i class="fas fa-trash-alt"></i> 삭제
+                </button>
+                <button class="action-btn cancel-btn" id="cancel-btn" onclick="toggleEditMode(false)">
+                    취소
+                </button>
+                <button class="action-btn edit-btn" id="main-btn" onclick="handleMainAction()">
+                    <i class="fas fa-edit"></i> 수정하기
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let isEditMode = false;
+        // [연동 4] 자바스크립트에서 백엔드로 수정/삭제 API를 요청할 때 식별하기 위해 고유 ID를 Jinja 문법으로 바인딩
+        const clothId = "{{ cloth.id if cloth else 0 }}";
+
+        // 기존에 원본 데이터를 보관해두고 취소 눌렀을 때 되돌리기 위한 변수
+        let originalData = {};
+
+        function toggleEditMode(edit) {
+            isEditMode = edit;
+
+            const inputs = document.querySelectorAll('.form-input');
+            const mainBtn = document.getElementById('main-btn');
+            const leftBtn = document.getElementById('left-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const pageTitle = document.getElementById('page-title');
+
+            if (isEditMode) {
+                // 수정 취소 시 복구하기 위해 기존 상태 기억
+                originalData = {
+                    name: document.getElementById('cloth-name').value,
+                    mainCat: document.getElementById('cloth-main-category').value,
+                    subCat: document.getElementById('cloth-sub-category').value,
+                    color: document.getElementById('cloth-color').value,
+                    tpo: document.getElementById('cloth-tpo').value,
+                };
+
+                inputs.forEach(input => input.removeAttribute('readonly'));
+                inputs[0].focus();
+
+                pageTitle.innerText = "옷 정보 수정";
+                mainBtn.innerHTML = "<i class='fas fa-check'></i> 저장하기";
+                mainBtn.style.background = "#10b981";
+
+                leftBtn.style.display = "none";
+                cancelBtn.style.display = "flex";
+            } else {
+                // 취소 버튼을 눌러 모드가 꺼진 경우라면 원래 데이터로 복구
+                if (Object.keys(originalData).length > 0 && !edit) {
+                    document.getElementById('cloth-name').value = originalData.name;
+                    document.getElementById('cloth-main-category').value = originalData.mainCat;
+                    document.getElementById('cloth-sub-category').value = originalData.subCat;
+                    document.getElementById('cloth-color').value = originalData.color;
+                    document.getElementById('cloth-tpo').value = originalData.tpo;
+                }
+
+                inputs.forEach(input => input.setAttribute('readonly', true));
+
+                pageTitle.innerText = "옷 상세 정보";
+                mainBtn.innerHTML = "<i class='fas fa-edit'></i> 수정하기";
+                mainBtn.style.background = "#4f46e5";
+
+                leftBtn.style.display = "flex";
+                cancelBtn.style.display = "none";
+            }
+        }
+
+
+        function handleMainAction() {
+            if (!isEditMode) {
+                toggleEditMode(true);
+            } else {
+                // [연동 5] 진짜 수정하기(저장) 버튼을 눌렀을 때 백엔드로 수정된 데이터를 JSON 형태로 빌드하여 발송
+                updateClothesDetails();
+            }
+        }
+
+        // [신규 구현] 백엔드 DB 업데이트 비동기 함수
+        async function updateClothesDetails() {
+            const updatedData = {
+                name: document.getElementById('cloth-name').value,
+                main_category: document.getElementById('cloth-main-category').value,
+                sub_category: document.getElementById('cloth-sub-category').value,
+                color: document.getElementById('cloth-color').value,
+                tpo: document.getElementById('cloth-tpo').value
+            };
+
+            try {
+                // Flask에 새롭게 추가할 업데이트 API 라우터 주소로 요청 발송
+                const response = await fetch(`/api/clothes/update/${clothId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('옷 정보가 성공적으로 수정되었어!');
+                    toggleEditMode(false);
+                } else {
+                    alert('수정 실패: ' + (result.error || '알 수 없는 오류'));
+                }
+            } catch (error) {
+                console.error("Error updating cloth:", error);
+                alert("서버와 통신에 실패했습니다.");
+            }
+        }
+
+
+        // [연동 6] 삭제 버튼 클릭 시 가짜 알림이 아닌, 실제 백엔드 삭제 API 라우터로 요청 발송
+        async function deleteClothes() {
+            if (confirm('정말로 이 옷을 옷장에서 삭제할 거야?')) {
+                try {
+                    const response = await fetch(`/api/clothes/delete/${clothId}`, {
+                        method: 'POST'
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert('삭제가 완료되었어.');
+                        // 삭제 후 일반 파일명이 아닌 Flask가 관리하는 내 옷장(my_closet) 화면으로 복귀
+                        location.href = "{{ url_for('my_closet') }}";
+                    } else {
+                        alert('삭제 실패: ' + (result.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    console.error("Error deleting cloth:", error);
+                    alert("서버 연결에 실패했습니다.");
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

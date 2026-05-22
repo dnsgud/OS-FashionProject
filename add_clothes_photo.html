@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 사진 등록 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #64748b;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        /* 메인 컨테이너: 직접 등록 화면과 똑같은 2단 구성 */
+        .registration-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            position: relative;
+        }
+
+        /* 왼쪽: 이미지 영역 */
+        .image-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-box {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .upload-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .upload-box i {
+            font-size: 3rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .upload-box p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* AI 로딩 오버레이 */
+        .ai-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 오른쪽: 입력 폼 영역 */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .form-input {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        /* TPO 해시태그 디자인 */
+        .tpo-group {
+            margin-top: 10px;
+        }
+
+        .hashtag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            background: #f1f5f9;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 하단 저장 버튼 */
+        .save-btn {
+            grid-column: span 2;
+            margin-top: 20px;
+            padding: 18px;
+            background: #1e293b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover {
+            background: #0f172a;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        @media (max-width: 800px) {
+            .registration-card {
+                grid-template-columns: 1fr;
+            }
+
+            .save-btn {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="{{ url_for('my_closet') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+    </header>
+
+    <main>
+        <h1 class="page-title">AI로 옷 분석하기</h1>
+
+        <div class="registration-card">
+            <div class="image-section">
+                <div class="upload-box" id="upload-box" onclick="document.getElementById('file-input').click()">
+                    <div class="ai-loading" id="ai-loading">
+                        <div class="spinner"></div>
+                        <p style="color:var(--primary)">AI 분석 중...</p>
+                    </div>
+                    <i class="fas fa-arrow-up" id="upload-icon"></i>
+                    <p id="upload-text">클릭해서 사진 선택하기</p>
+                    <img id="preview-img" src="" alt="미리보기">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="input-group">
+                    <label>이름</label>
+                    <input type="text" id="name" class="form-input" placeholder="예: 무신사 스탠다드 검정 슬랙스">
+                </div>
+
+                <div class="input-group">
+                    <label>옷 종류</label>
+                    <select id="category-main" class="form-input">
+                        <option value="">대분류 선택</option>
+                        <option value="상의">상의</option>
+                        <option value="하의">하의</option>
+                        <option value="아우터">아우터</option>
+                        <option value="신발">신발</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>옷 종류 (세부)</label>
+                    <select id="category-sub" class="form-input">
+                        <option value="">먼저 대분류를 선택해 줘!</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>색상</label>
+                    <input type="color" id="color" class="form-input"
+                        style="height: 50px; padding: 5px; cursor: pointer;">
+                </div>
+
+                <div class="tpo-group">
+                    <label style="font-size: 0.9rem; font-weight: 700; color: #475569;">TPO (가로로 밀어서 선택해 봐!)</label>
+                    <div class="hashtag-container">
+                        <span class="tag" onclick="toggleTag(this)">#데일리</span>
+                        <span class="tag" onclick="toggleTag(this)">#데이트</span>
+                        <span class="tag" onclick="toggleTag(this)">#캠퍼스</span>
+                        <span class="tag" onclick="toggleTag(this)">#면접/격식</span>
+                        <span class="tag" onclick="toggleTag(this)">#운동/스포티</span>
+                        <span class="tag" onclick="toggleTag(this)">#피크닉</span>
+                        <span class="tag" onclick="toggleTag(this)">#파티</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="saveItem()">저장</button>
+        </div>
+
+        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+    </main>
+
+    <script>
+        // 사진 선택 시 동작
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // 사진 미리보기 보여주기
+                const previewImg = document.getElementById('preview-img');
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                document.getElementById('upload-icon').style.display = 'none';
+                document.getElementById('upload-text').style.display = 'none';
+
+                // AI 로딩 시작
+                startAIAnalysis();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // AI 분석 시뮬레이션
+        function startAIAnalysis() {
+            const loading = document.getElementById('ai-loading');
+            loading.style.display = 'flex';
+
+            // 2초 뒤 AI가 폼을 자동으로 채움
+            setTimeout(() => {
+                loading.style.display = 'none';
+
+                // AI 분석 결과값들 셋팅
+                document.getElementById('name').value = "네이비 와이드 데님 팬츠";
+                document.getElementById('category-main').value = "하의";
+                updateSubCategory(); // 소분류 업데이트
+                document.getElementById('category-sub').value = "데님";
+                document.getElementById('color').value = "#000080"; // 네이비색
+
+                // 태그도 자동으로 하나 선택 (예: 데일리)
+                const tags = document.querySelectorAll('.tag');
+                tags[0].classList.add('active');
+                tags[2].classList.add('active'); // 캠퍼스
+            }, 2000);
+        }
+
+        // 대분류에 따른 소분류 변경
+        const subData = {
+            "상의": ["반팔 티셔츠", "긴팔 티셔츠", "셔츠/블라우스", "맨투맨/후드", "니트/스웨터"],
+            "하의": ["데님", "슬랙스", "트레이닝/조거", "치마", "반바지"],
+            "아우터": ["코트", "자켓", "패딩", "가디건", "바람막이"],
+            "신발": ["스니커즈", "구두", "부츠", "샌들/슬리퍼"]
+        };
+
+        document.getElementById('category-main').onchange = updateSubCategory;
+
+        function updateSubCategory() {
+            const main = document.getElementById('category-main').value;
+            const subSelect = document.getElementById('category-sub');
+            subSelect.innerHTML = "";
+
+            if (subData[main]) {
+                subData[main].forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.innerText = item;
+                    subSelect.appendChild(opt);
+                });
+            } else {
+                subSelect.innerHTML = "<option>먼저 대분류를 선택해 줘!</option>";
+            }
+        }
+
+        // 태그 토글
+        function toggleTag(el) {
+            el.classList.toggle('active');
+        }
+
+        // 저장 버튼
+        function saveItem() {
+            if (!document.getElementById('name').value) {
+                alert('옷의 이름을 입력해줘!');
+                return;
+            }
+            alert('성공적으로 저장되었어!');
+
+            location.href = "{{ url_for('my_closet') }}";
+        }
+    </script>
+</body>
+
+</html>

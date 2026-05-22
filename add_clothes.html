@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>옷 등록하기 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        .add-clothes-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #0f172a;
+            margin-bottom: 40px;
+            font-weight: 800;
+        }
+
+        .upload-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            border: 1px solid #f1f5f9;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .image-section {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            box-sizing: border-box;
+        }
+
+        .image-section:hover {
+            border-color: #4f46e5;
+            background: #e0e7ff;
+        }
+
+        .image-section i {
+            font-size: 4rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .image-section p {
+            color: #64748b;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        #preview-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: center;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.05rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 16px 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            border-color: #4f46e5;
+        }
+
+        .color-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .color-group input[type="color"] {
+            width: 55px;
+            height: 55px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .color-group input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-group input[type="color"]::-webkit-color-swatch {
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+        }
+
+        .tpo-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-bottom: 12px;
+            scrollbar-width: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .tpo-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tpo-tag {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .tpo-tag.selected {
+            background: #e0e7ff;
+            color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .button-group {
+            display: flex;
+            margin-top: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-main-save {
+            width: 100%;
+            padding: 20px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-main-save:hover {
+            background: #4338ca;
+        }
+
+        .confirm-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .confirm-modal-box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            animation: popUp 0.3s ease;
+        }
+
+        .confirm-modal-box h3 {
+            font-size: 1.4rem;
+            color: #0f172a;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .m-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .m-btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .m-btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .m-btn-confirm {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .m-btn-confirm:hover {
+            background: #4338ca;
+        }
+
+        @keyframes popUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .upload-card {
+                grid-template-columns: 1fr;
+            }
+
+            .image-section {
+                aspect-ratio: auto;
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="{{ url_for('home_page') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+            </div>
+            <ul>
+                <li><a href="{{ url_for('home_page') }}" class="nav-link"
+                        style="color: inherit; text-decoration: none;"><i class="fas fa-home"></i> Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="add-clothes-container">
+        <h2 class="page-title">내 옷장에 새 옷 추가하기</h2>
+
+        <div class="upload-card">
+            <div class="image-section" onclick="document.getElementById('file-input').click()">
+                <div id="upload-placeholder" style="text-align: center;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>클릭해서 사진 선택하기</p>
+                </div>
+                <img id="preview-img" alt="옷 미리보기">
+                <input type="file" id="file-input" accept="image/*" style="display: none;"
+                    onchange="previewImage(event)">
+            </div>
+
+            <div class="form-section">
+
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" id="cloth-name" placeholder="예: 무신사 스탠다드 검정 슬랙스">
+                </div>
+
+                <div class="form-group">
+                    <label>옷 종류</label>
+                    <select id="main-category" onchange="updateSubCategory()">
+                        <option value="">대분류 선택</option>
+                        <option value="top">상의</option>
+                        <option value="bottom">하의</option>
+                        <option value="outer">아우터</option>
+                        <option value="shoes">신발</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>옷 종류 (세부)</label>
+                    <select id="sub-category">
+                        <option value="">먼저 대분류를 선택해 줘!</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>색상</label>
+                    <div class="color-group">
+                        <input type="color" id="cloth-color" value="#000000" onchange="updateColorText()">
+                        <input type="text" id="cloth-color-text" value="#000000" readonly
+                            style="width: 120px; background: #f8fafc; text-align: center;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>TPO (가로로 밀어서 선택해 봐!)</label>
+                    <div class="tpo-scroll-container">
+                        <span class="tpo-tag" onclick="toggleTag(this)">#데일리</span>
+                        <span class="tpo-tag" onclick="toggleTag(this)">#데이트</span>
+                        <span class="tpo-tag" onclick="toggleTag(this)">#캠퍼스</span>
+                        <span class="tpo-tag" onclick="toggleTag(this)">#면접/격식</span>
+                        <span class="tpo-tag" onclick="toggleTag(this)">#운동/스포티</span>
+                        <span class="tpo-tag" onclick="toggleTag(this)">#피크닉</span>
+                        <span class="tpo-tag" onclick="toggleTag(this)">#파티</span>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-main-save" onclick="openSaveModal()">저장</button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="saveConfirmModal" class="confirm-modal-overlay" onclick="if(event.target == this) closeSaveModal()">
+        <div class="confirm-modal-box">
+            <h3>저장하시겠습니까?</h3>
+            <div class="modal-btn-group">
+                <button class="m-btn m-btn-cancel" onclick="closeSaveModal()">취소</button>
+                <button class="m-btn m-btn-confirm" onclick="executeSave()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const previewImg = document.getElementById('preview-img');
+                    const placeholder = document.getElementById('upload-placeholder');
+
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        const subCategoryData = {
+            top: ["반팔 티셔츠", "긴팔 티셔츠", "셔츠/블라우스", "맨투맨/후드", "니트/스웨터"],
+            bottom: ["청바지", "슬랙스", "면바지", "트레이닝/조거", "반바지", "치마"],
+            outer: ["가디건", "자켓", "바람막이", "코트", "패딩"],
+            shoes: ["스니커즈", "구두", "부츠", "샌들/슬리퍼"]
+        };
+
+        function updateSubCategory() {
+            const mainCat = document.getElementById('main-category').value;
+            const subCatSelect = document.getElementById('sub-category');
+
+            subCatSelect.innerHTML = "";
+
+            if (mainCat && subCategoryData[mainCat]) {
+                subCategoryData[mainCat].forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.text = item;
+                    subCatSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.text = "먼저 대분류를 선택해 줘!";
+                subCatSelect.appendChild(option);
+            }
+        }
+
+        function updateColorText() {
+            const colorValue = document.getElementById('cloth-color').value;
+            document.getElementById('cloth-color-text').value = colorValue;
+        }
+
+        function toggleTag(element) {
+            element.classList.toggle('selected');
+        }
+
+
+        function openSaveModal() {
+            const name = document.getElementById('cloth-name').value;
+            const mainCat = document.getElementById('main-category').value;
+
+            if (!name || !mainCat) {
+                alert("이름과 옷 종류는 꼭 선택해 줘!");
+                return;
+            }
+
+            document.getElementById('saveConfirmModal').style.display = 'flex';
+        }
+
+
+        function closeSaveModal() {
+            document.getElementById('saveConfirmModal').style.display = 'none';
+        }
+
+        // [연동 4] 핵심 비동기 저장 로직: 단순 주소이동이었던 곳을 백엔드 API 전송 로직으로 구현
+        async function executeSave() {
+            const fileInput = document.getElementById('file-input');
+            const name = document.getElementById('cloth-name').value;
+            const mainCategory = document.getElementById('main-category').value;
+            const subCategory = document.getElementById('sub-category').value;
+            const color = document.getElementById('cloth-color').value;
+
+            // 선택된 TPO 태그 수집
+            const selectedTags = [];
+            document.querySelectorAll('.tpo-tag.selected').forEach(tag => {
+                selectedTags.push(tag.innerText.replace('#', ''));
+            });
+
+            // 파일 유무 체크
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("옷 사진을 선택해 주세요!");
+                closeSaveModal();
+                return;
+            }
+
+            // Multipart Form 데이터 생성 (app.py의 /api/upload 규격에 맞춤)
+            const formData = new FormData();
+            formData.append('cloth_image', fileInput.files[0]);
+            formData.append('name', name);
+            formData.append('main_category', mainCategory);
+            formData.append('sub_category', subCategory);
+            formData.append('color', color);
+            formData.append('tpo', selectedTags.join(','));
+
+            try {
+                // app.py에 선언되어 있는 옷 업로드 주소로 전송
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('성공적으로 저장되었어!');
+                    // [연동 5] 저장이 끝나면 일반 파일명이 아니라 Flask 라우팅(my_closet) 주소로 이동
+                    location.href = "{{ url_for('my_closet') }}";
+                } else {
+                    alert('저장 실패: ' + (result.error || '알 수 없는 오류'));
+                    closeSaveModal();
+                }
+            } catch (error) {
+                console.error("Error saving cloth:", error);
+                alert("서버 연결에 실패했습니다.");
+                closeSaveModal();
+            }
+        }
+    </script>
+</body>
+
+</html>
