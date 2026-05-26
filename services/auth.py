@@ -42,3 +42,16 @@ def _validate_nickname(nickname):
         return False
         
     return True
+
+def _extract_and_validate_signup_data(input_data):
+    # 프론트엔드 전달 데이터 개별 추출 코드 작성
+    email = input_data.get("email")
+    password = input_data.get("password")
+    password_confirm = input_data.get("password_confirm")
+    nickname = input_data.get("nickname")
+
+    # 전체 유효성 검사 통과 시 딕셔너리 포장 코드 작성
+    if _validate_email_format(email) and _validate_password_match(password, password_confirm) and _validate_nickname(nickname):
+        return {"email": email, "password": password, "nickname": nickname.strip()}
+        
+    return None
