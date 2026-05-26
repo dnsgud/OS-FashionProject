@@ -19,3 +19,14 @@ def _validate_email_format(email):
     # 정규식을 이용한 아이디 규격 판별 코드 작성
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return bool(re.match(pattern, email))
+
+def _validate_password_match(password, password_confirm):
+    # 비밀번호 최소 길이 충족 여부 확인 코드 작성
+    if not password or len(password) < 6:
+        return False
+        
+    # 비밀번호와 비밀번호 확인 값 일치 검증 코드 작성
+    if password != password_confirm:
+        return False
+        
+    return True
