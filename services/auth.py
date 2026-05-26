@@ -30,3 +30,15 @@ def _validate_password_match(password, password_confirm):
         return False
         
     return True
+
+def _validate_nickname(nickname):
+    # 닉네임 문자열 여부 판별 코드 작성
+    if not nickname or not isinstance(nickname, str):
+        return False
+        
+    # 공백 제거 및 글자 수 제한 검사 코드 작성
+    stripped_nick = nickname.strip()
+    if len(stripped_nick) < 2 or len(stripped_nick) > 10:
+        return False
+        
+    return True
