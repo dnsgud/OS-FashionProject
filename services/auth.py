@@ -71,25 +71,22 @@ def _execute_signup_pipeline(clean_data):
     return None
 
 def register_new_user(input_data):
-    # 회원가입 파이프라인 전체 흐름 제어 코드 작성
+    # 회원가입 파이프라인 전체 흐름 제어
     try:
-        # 데이터 추출 및 통합 검증 실행 코드 작성
         clean_data = _extract_and_validate_signup_data(input_data)
         if not clean_data:
-            # 유효성 검증 실패 시 중단 코드 작성
             print("[알고리즘 경고] 회원가입 데이터 유효성 검증 실패")
             return False
 
-        # DB 적재 모듈 호출 및 결과 반환 코드 작성
-        result = _execute_signup_query(clean_data)
+        # 인증 및 DB 적재 파이프라인 실행
+        result = _execute_signup_pipeline(clean_data)
         if result:
-            print(f"[DB 로그] 회원가입 성공: {clean_data['email']}")
+            print(f"[DB 로그] 회원가입 및 닉네임 적재 성공: {clean_data['email']}")
             return True
             
         return False
 
     except Exception as e:
-        # 파이프라인 런타임 에러 예외 처리 코드 작성
-        print(f"[DB 에러] 회원가입 파이프라인 붕괴: {e}")
+        print(f"[DB 에러] 통합 회원가입 파이프라인 붕괴: {e}")
         traceback.print_exc()
         return False
