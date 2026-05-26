@@ -73,7 +73,7 @@ def calculate_color_score(top_combo, bottom, target_lv):
     return round(score, 2)
 
 def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
-    """웹 서버용 추천 메인 로직 (JSON 반환용)"""
+    """웹 서버용 추천 메인 로직 (하이브리드 구간제 정렬 반영)"""
     target_lv = get_target_level(current_temp)
 
     # 1. 하의 필터링
@@ -97,13 +97,19 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
     for top_combo in valid_top_combos:
         for bottom in valid_bottoms:
             full_outfit = top_combo + [bottom]
+            
             style_score = calculate_style_score(full_outfit, target_tpo)
             color_score = calculate_color_score(top_combo, bottom, target_lv)
+            
+            # 패션 점수(스타일 + 색상) 및 총 착용 횟수 계산
+            fashion_score = round(style_score + color_score, 2)
+            total_wear_count = sum([c.get('monthly_wear_count', 0) for c in full_outfit])
             
             outfits.append({
                 "top_combo": top_combo,
                 "bottom": bottom,
-                "total_score": round(style_score + color_score, 2),
+                "fashion_score": fashion_score,
+                "total_wear_count": total_wear_count,
                 "style_score": style_score,
                 "color_score": color_score,
                 "total_lv": sum([c['temp_level'] for c in top_combo])
