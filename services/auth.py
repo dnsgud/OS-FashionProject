@@ -55,3 +55,10 @@ def _extract_and_validate_signup_data(input_data):
         return {"email": email, "password": password, "nickname": nickname.strip()}
         
     return None
+
+def _execute_signup_query(clean_data):
+    # 정제된 회원가입 데이터 DB 삽입 쿼리 실행 코드 작성
+    query = supabase.table('users').insert(clean_data)
+    response = query.execute()
+    
+    return response.data
