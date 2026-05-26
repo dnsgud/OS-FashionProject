@@ -33,7 +33,6 @@ def calculate_style_score(full_outfit, target_tpo):
     """TPO 일치도 점수 계산"""
     score = 0
     for cloth in full_outfit:
-        # DB의 'style' 컬럼(배열)에 사용자가 선택한 TPO가 있는지 확인
         if target_tpo in cloth.get('style', []):
             score += 1
     return score
@@ -132,5 +131,12 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
         if (highest_score - outfit['fashion_score']) <= SCORE_TOLERANCE
     ]
 
-    # 4. 정렬 후 상위 5개 반환
-    return sorted(outfits, key=lambda x: x['total_score'], reverse=True)[:5]
+    # 우수 코디 중 착용 횟수가 적은 순으로 정렬하여 상위 5개 추출
+    final_recommendations = sorted(top_tier_bucket, key=lambda x: x['total_wear_count'])[:5]
+
+    # 추천 코디가 5개 미만일 경우 차순위 코디로 보충
+    if len(final_recommendations) < 5:
+        remaining = [o for o in outfits_sorted_by_fashion if o not in top_tier_bucket]
+        final_recommendations.extend(remaining[:5 - len(final_recommendations)])
+
+    return final_recommendations
