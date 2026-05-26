@@ -4,6 +4,7 @@ import re
 import traceback
 from dotenv import load_dotenv
 from supabase import create_client
+from auth_service import sign_up_user
 
 # 환경변수 로드 및 Supabase 클라이언트 세팅 코드 작성
 load_dotenv()
@@ -56,12 +57,18 @@ def _extract_and_validate_signup_data(input_data):
         
     return None
 
-def _execute_signup_query(clean_data):
-    # 정제된 회원가입 데이터 DB 삽입 쿼리 실행 코드 작성
-    query = supabase.table('users').insert(clean_data)
-    response = query.execute()
+def _execute_signup_pipeline(clean_data):
+    # 기존 auth_service의 가입 로직 호출 (이메일, 비밀번호)
+    auth_success = sign_up_user(clean_data["email"], clean_data["password"])
     
-    return response.data
+    if auth_success:
+        # 인증 계정 생성 성공 시, public.users 테이블에 닉네임 저장
+        profile_data = {"email": clean_data["email"], "nickname": clean_data["nickname"]}
+        query = supabase.table('users').insert(profile_data)
+        response = query.execute()
+        return response.data
+    
+    return None
 
 def register_new_user(input_data):
     # 회원가입 파이프라인 전체 흐름 제어 코드 작성
