@@ -115,5 +115,22 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
                 "total_lv": sum([c['temp_level'] for c in top_combo])
             })
 
+    # 조합된 코디가 하나도 없으면 빈 배열 반환
+    if not outfits:
+        return []
+
+    # 4. 구간제 필터링 및 최종 정렬
+    outfits_sorted_by_fashion = sorted(outfits, key=lambda x: x['fashion_score'], reverse=True)
+    highest_score = outfits_sorted_by_fashion[0]['fashion_score']
+
+    # 최고점 기준 오차 범위 설정 (0.5점 이내)
+    SCORE_TOLERANCE = 0.5
+    
+    # 오차 범위 내의 우수 코디 필터링
+    top_tier_bucket = [
+        outfit for outfit in outfits_sorted_by_fashion 
+        if (highest_score - outfit['fashion_score']) <= SCORE_TOLERANCE
+    ]
+
     # 4. 정렬 후 상위 5개 반환
     return sorted(outfits, key=lambda x: x['total_score'], reverse=True)[:5]
