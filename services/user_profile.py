@@ -181,3 +181,23 @@ def update_user_body_profile(current_login_id, input_data):
     except Exception as e:
         print(f"[DB 에러] 체형 정보 갱신 파이프라인 붕괴: {e}")
         return False
+    
+def _verify_current_password(login_id, current_pw):
+    # 입력받은 현재 비밀번호와 DB에 저장된 비밀번호의 일치 여부를 대조하는 유틸리티이다
+    if not login_id or not current_pw:
+        return False
+        
+    try:
+        # DB에서 사용자의 기존 암호(pw)만 단일 조회한다
+        query = supabase.table('users').select('pw').eq('login_id', login_id).execute()
+        
+        # 조회된 데이터가 존재하고 입력값과 완전히 일치할 경우 승인(True)을 반환한다
+        if query.data and query.data[0].get('pw') == current_pw:
+            return True
+            
+        print("[알고리즘 경고] 현재 비밀번호 불일치 감지")
+        return False
+        
+    except Exception as e:
+        print(f"[DB 에러] 비밀번호 대조 쿼리 실행 실패: {e}")
+        return False
