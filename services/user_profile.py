@@ -62,3 +62,30 @@ def _filter_modified_profile_data(input_data, current_profile):
                 raise ValueError("이메일 이중 검증 실패")
                 
     return clean_data
+
+def update_member_profile(current_login_id, input_data):
+    # 최종 확인 버튼 클릭 시 변경된 유효 데이터를 일괄적으로 갱신하는 제어 로직
+    try:
+        # 기존 프로필 상태를 로드하여 변경 기준점으로 삼는다
+        current_profile = fetch_user_profile(current_login_id)
+        if not current_profile:
+            return False
+            
+        # 헬퍼 함수를 통해 변경이 승인된 안전한 데이터만 추출
+        final_clean_data = _filter_modified_profile_data(input_data, current_profile)
+        
+        # 갱신할 데이터가 존재할 경우 DB 일괄 업데이트 쿼리를 수행
+        if final_clean_data:
+            response = supabase.table('users').update(final_clean_data).eq('login_id', current_login_id).execute()
+            print(f"[DB 로그] 회원 정보 일괄 갱신 성공: {final_clean_data}")
+            return bool(response.data)
+            
+        print("[알고리즘 로그] 변경 사항이 존재하지 않아 업데이트가 생략")
+        return True # 정상적인 변경 없음 상태이므로 승인 처리
+        
+    except ValueError as ve:
+        print(f"[알고리즘 에러] 데이터 무결성 검증 차단: {ve}")
+        return False
+    except Exception as e:
+        print(f"[DB 에러] 회원 정보 갱신 파이프라인 붕괴: {e}")
+        return False
