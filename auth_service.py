@@ -9,9 +9,6 @@ class Config:
     SUPABASE_KEY = os.getenv("SUPABASE_KEY") 
 
 def sign_up_user(email, password):
-    """
-    개별 사용자의 고유 계정을 생성하는 기능 (회원가입)
-    """
     url = f"{Config.SUPABASE_URL}/auth/v1/signup"
     headers = {
         "apikey": Config.SUPABASE_KEY,
@@ -22,12 +19,18 @@ def sign_up_user(email, password):
         "password": password
     }
     
-    response = requests.post(url, headers=headers, json=data)
-    
-    if response.status_code == 200:
-        return True
-    else:
-        print(f"회원가입 실패: {response.json()}")
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        
+        # 200(성공) 또는 201(생성됨) 모두 성공으로 처리
+        if response.status_code in [200, 201]:
+            return True
+        else:
+            # 터미널에 찍히는 메시지를 확인해서 구체적인 에러를 파악하세요
+            print(f"Supabase 에러: {response.status_code}, {response.json()}")
+            return False
+    except Exception as e:
+        print(f"네트워크 에러: {e}")
         return False
 
 def login_user(email, password):
