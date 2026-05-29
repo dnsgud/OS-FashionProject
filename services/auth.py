@@ -52,6 +52,17 @@ def _validate_login_id(login_id):
     pattern = r'^[a-z0-9]{4,15}$'
     return bool(re.match(pattern, login_id))
 
+def _validate_name(name):
+    # 이름 문자열 존재 및 길이 유효성 검증 코드 작성
+    if not name or not isinstance(name, str):
+        return False
+        
+    stripped_name = name.strip()
+    if len(stripped_name) < 2 or len(stripped_name) > 10:
+        return False
+        
+    return True
+
 def _extract_and_validate_signup_data(input_data):
     # 프론트엔드 전달 데이터 개별 추출 코드 작성
     email = input_data.get("email")
