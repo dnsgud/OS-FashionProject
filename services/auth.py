@@ -130,3 +130,13 @@ def register_new_user(input_data):
         print(f"[DB 에러] 통합 회원가입 파이프라인 붕괴: {e}")
         traceback.print_exc()
         return False
+    
+def _execute_duplicate_query(column_name, value):
+    # DB 테이블 특정 컬럼의 중복 데이터 존재 여부 파악 로직
+    try:
+        query = supabase.table('users').select(column_name).eq(column_name, value).execute()
+        return query.data
+    except Exception as e:
+        # 쿼리 실패 시 에러 로그 출력 및 None 반환 처리
+        print(f"[DB 에러] 중복 조회 쿼리 실행 실패: {e}")
+        return None
