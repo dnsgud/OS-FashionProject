@@ -159,4 +159,12 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
     else:
         max_style_score = 0
 
-    return final_recommendations
+    # TPO는 선택했지만 일치하는 옷이 없는 경우를 판별
+    tpo_fallback_triggered = bool(target_tpo and max_style_score == 0)
+
+    # 단순 리스트 반환이 아닌 딕셔너리로 상태값 함께 반환
+    return {
+        "recommendations": final_recommendations,
+        "is_tpo_fallback": tpo_fallback_triggered,
+        "message": "요청하신 TPO에 맞는 옷이 부족해, 날씨와 색상 조화가 가장 좋은 코디를 추천해드립니다." if tpo_fallback_triggered else "추천이 완료되었습니다."
+    }
