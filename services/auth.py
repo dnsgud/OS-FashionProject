@@ -95,8 +95,13 @@ def _execute_signup_pipeline(clean_data):
     auth_success = sign_up_user(clean_data["email"], clean_data["password"])
     
     if auth_success:
-        # 인증 계정 생성 성공 시, public.users 테이블에 닉네임 저장
-        profile_data = {"email": clean_data["email"], "nickname": clean_data["nickname"]}
+        # 인증 계정 생성 성공 시, public.users 테이블에 확장 데이터 저장
+        profile_data = {
+            "login_id": clean_data["login_id"],
+            "email": clean_data["email"],
+            "nickname": clean_data["nickname"],
+            "name": clean_data["name"]
+        }
         query = supabase.table('users').insert(profile_data)
         response = query.execute()
         return response.data
@@ -104,17 +109,19 @@ def _execute_signup_pipeline(clean_data):
     return None
 
 def register_new_user(input_data):
-    # 회원가입 파이프라인 전체 흐름 제어
+    # 확장된 회원가입 파이프라인 전체 흐름 제어 로직
     try:
         clean_data = _extract_and_validate_signup_data(input_data)
+        
         if not clean_data:
-            print("[알고리즘 경고] 회원가입 데이터 유효성 검증 실패")
+            print("[알고리즘 경고] 회원가입 데이터 유효성 검증 실패 (항목 누락/오류)")
             return False
 
         # 인증 및 DB 적재 파이프라인 실행
         result = _execute_signup_pipeline(clean_data)
+        
         if result:
-            print(f"[DB 로그] 회원가입 및 닉네임 적재 성공: {clean_data['email']}")
+            print(f"[DB 로그] 회원가입 및 확장 프로필 적재 성공: {clean_data['login_id']}")
             return True
             
         return False
