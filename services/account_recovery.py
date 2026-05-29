@@ -44,3 +44,16 @@ def request_find_id(name, email):
     except Exception as e:
         print(f"[DB 에러] 아이디 찾기 대상자 조회 실패: {e}")
         return False
+    
+def verify_and_get_login_id(name, email, input_code):
+    # 인증번호 4자리 성공 검증 시 DB 아이디 최종 추출 처리이다
+    if _verify_email_code(email, input_code):
+        query = supabase.table('users').select('login_id').eq('name', name).eq('email', email).execute()
+        
+        # 보안 검증이 끝난 후 사용자 고유 식별자(아이디)를 반환한다
+        if query.data:
+            print(f"[DB 로그] 아이디 찾기 인증 성공: {query.data[0]['login_id']}")
+            return query.data[0]['login_id']
+            
+    print("[알고리즘 에러] 인증번호 불일치로 아이디 반환이 거부되었다")
+    return None
