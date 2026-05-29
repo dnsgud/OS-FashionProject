@@ -201,3 +201,17 @@ def _verify_current_password(login_id, current_pw):
     except Exception as e:
         print(f"[DB 에러] 비밀번호 대조 쿼리 실행 실패: {e}")
         return False
+    
+def authorize_profile_edit(login_id, current_pw):
+    # 회원정보 수정 화면 진입 전 비밀번호를 검증하여 접근 권한 및 데이터를 부여하는 컨트롤러이다
+    
+    # 1단계에서 만든 검증 모듈을 호출하여 일치 여부를 판별한다
+    is_authorized = _verify_current_password(login_id, current_pw)
+    
+    if is_authorized:
+        print(f"[DB 로그] 회원정보 수정 화면 진입 보안 승인 완료: {login_id}")
+        # 보안 통과 시, 프론트엔드 입력칸에 뿌려줄 기존 데이터를 fetch_user_profile을 재사용해 반환한다
+        return fetch_user_profile(login_id)
+        
+    print("[알고리즘 에러] 비밀번호 불일치로 회원정보 수정 접근이 거부되었다")
+    return None
