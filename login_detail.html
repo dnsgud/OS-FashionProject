@@ -5,66 +5,141 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Look_Up - 회원가입</title>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         body {
-            font-family: 'Apple SD Gothic Neo', sans-serif;
-            background-color: #f9f9f9;
+            font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+            background-color: #ffffff;
+            /* 첫 번째 코드의 깨끗한 화이트 배경 */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
         }
 
         .container {
             background-color: white;
-            padding: 50px 40px;
-            border-radius: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            width: 380px;
+            padding: 45px 35px;
+            border-radius: 24px;
+            /* 첫 번째 코드의 둥근 라운딩 수치 반영 */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+            /* 고급스러운 미세 그림자 */
+            border: 1px solid #f8fafc;
+            width: 100%;
+            max-width: 440px;
+            /* 안정적인 가로폭 */
             text-align: center;
+            box-sizing: border-box;
         }
 
         h1 {
-            font-size: 32px;
-            margin-bottom: 35px;
+            font-size: 1.7rem;
+            font-weight: 800;
+            margin: 0 0 35px 0;
+            color: #000000;
+            letter-spacing: -0.5px;
+        }
+
+        .input-row {
+            margin-bottom: 16px;
+            width: 100%;
         }
 
         .input-box {
             width: 100%;
-            padding: 16px;
-            margin-bottom: 12px;
-            border: 1px solid #eee;
+            padding: 14px 16px;
+            border: 1px solid #f1f5f9;
             border-radius: 12px;
-            background-color: #f0f4ff;
+            background-color: #f8fafc;
+            /* 연한 그레이블루 톤 */
+            font-size: 0.95rem;
+            font-family: inherit;
             box-sizing: border-box;
-            font-size: 15px;
+            color: #0f172a;
             outline: none;
+            transition: all 0.2s;
+            /* 부드러운 인터랙션 효과 */
+        }
+
+        /* 첫 번째 코드의 인풋 반응형 스타일 이식 */
+        .input-box:hover {
+            border-color: #cbd5e1;
+        }
+
+        .input-box:focus {
+            border-color: #94a3b8;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
+        }
+
+        /* 중복확인 버튼 포함 레이아웃 */
+        .input-with-btn {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .input-with-btn .input-box {
+            flex: 1;
+        }
+
+        .check-btn {
+            padding: 0 16px;
+            background-color: #1e293b;
+            /* 첫 번째 코드의 다크 네이비 톤 */
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .check-btn:hover {
+            background-color: #0f172a;
         }
 
         .btn-register {
             width: 100%;
-            padding: 16px;
-            background-color: #222;
+            padding: 14px;
+            background-color: #1e293b;
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 700;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 20px;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .btn-register:hover {
+            background-color: #0f172a;
         }
 
         .footer-link {
             margin-top: 25px;
             font-size: 14px;
-            color: #888;
+            color: #64748b;
         }
 
         .footer-link a {
-            color: #222;
+            color: #0f172a;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        .footer-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -73,10 +148,36 @@
 
     <div class="container">
         <h1>Look_Up</h1>
-        <input type="email" id="email" class="input-box" placeholder="이메일 주소" required>
-        <input type="password" id="password" class="input-box" placeholder="비밀번호 설정" required>
 
-        <button type="button" class="btn-register" onclick="submitSignup()">회원가입</button>
+        <form id="signup-form">
+            <div class="input-row">
+                <input type="text" id="user-name" class="input-box" placeholder="이름" required>
+            </div>
+
+            <div class="input-row input-with-btn">
+                <input type="email" id="user-email" class="input-box" placeholder="이메일 주소" required>
+                <button type="button" class="check-btn" onclick="checkEmailDuplicate()">중복확인</button>
+            </div>
+
+            <div class="input-row input-with-btn">
+                <input type="text" id="user-id" class="input-box" placeholder="아이디" required>
+                <button type="button" class="check-btn" onclick="checkIdDuplicate()">중복확인</button>
+            </div>
+
+            <div class="input-row">
+                <input type="password" id="user-pw" class="input-box" placeholder="비밀번호 설정 (6자리 이상)" required>
+            </div>
+
+            <div class="input-row">
+                <input type="password" id="user-pw-confirm" class="input-box" placeholder="비밀번호 확인" required>
+            </div>
+
+            <div class="input-row">
+                <input type="text" id="user-nickname" class="input-box" placeholder="닉네임" required>
+            </div>
+
+            <button type="button" class="btn-register" onclick="submitSignup()">회원가입</button>
+        </form>
 
         <div class="footer-link">
             이미 계정이 있으신가요? <a href="index.html">로그인하기</a>
@@ -84,29 +185,46 @@
     </div>
 
     <script>
-        // 유저님이 작성하신 로직을 가입 완료 버튼에 연결
+        // 두 번째 코드 본연의 가입 요청 로직 (확장된 필드 반영)
         async function submitSignup() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const name = document.getElementById('user-name').value;
+            const email = document.getElementById('user-email').value;
+            const username = document.getElementById('user-id').value;
+            const password = document.getElementById('user-pw').value;
+            const passwordCheck = document.getElementById('user-pw-confirm').value;
+            const nickname = document.getElementById('user-nickname').value;
 
-            if (!email || !password) {
-                alert("아이디와 비밀번호를 입력해주세요.");
+            // 기본 공백 검증
+            if (!name || !email || !username || !password || !passwordCheck || !nickname) {
+                alert("모든 항목을 입력해주세요.");
+                return;
+            }
+
+            // 비밀번호 일치 확인 검증
+            if (password !== passwordCheck) {
+                alert('입력하신 비밀번호가 서로 일치하지 않아! 다시 확인해 줄래?');
                 return;
             }
 
             try {
+                // 두 번째 코드에 있던 원래 API 주소로 전체 데이터 전송
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        username,
+                        password,
+                        nickname
+                    })
                 });
 
                 const result = await response.json();
 
                 if (response.ok) {
                     alert('회원가입이 완료되었습니다! 이제 로그인해 주세요.');
-                    // 가입 성공 시 다시 로그인 페이지(루트 주소)로 이동
-                    window.location.href = "/";
+                    window.location.href = "/"; // 원래 코드의 루트 이동 경로 유지
                 } else {
                     alert('회원가입 실패: ' + result.error);
                 }
@@ -114,6 +232,25 @@
                 console.error('회원가입 에러:', error);
                 alert('서버 통신 중 오류가 발생했습니다.');
             }
+        }
+
+        // 중복확인 버튼 클릭 시 동작하는 임시 함수
+        function checkEmailDuplicate() {
+            const email = document.getElementById('user-email').value;
+            if (!email) {
+                alert('이메일을 먼저 입력해줘!');
+                return;
+            }
+            alert('사용 가능한 이메일입니다.');
+        }
+
+        function checkIdDuplicate() {
+            const id = document.getElementById('user-id').value;
+            if (!id) {
+                alert('아이디를 먼저 입력해줘!');
+                return;
+            }
+            alert('사용 가능한 아이디입니다.');
         }
     </script>
 
