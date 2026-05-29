@@ -140,3 +140,20 @@ def _execute_duplicate_query(column_name, value):
         # 쿼리 실패 시 에러 로그 출력 및 None 반환 처리
         print(f"[DB 에러] 중복 조회 쿼리 실행 실패: {e}")
         return None
+    
+def check_login_id_duplicate(login_id):
+    # 빈 값 입력 방지 및 예외 처리
+    if not login_id:
+        return False
+
+    # 공통 쿼리 모듈을 활용한 아이디 데이터 조회
+    result = _execute_duplicate_query('login_id', login_id)
+
+    # 조회 결과가 존재하거나 에러(None)일 경우 중복/사용 불가 판별
+    if result is None or len(result) > 0:
+        print(f"[알고리즘 경고] 중복 아이디 감지: {login_id}")
+        return False
+
+    # 빈 배열 반환 시 사용 가능 아이디 승인
+    print(f"[DB 로그] 사용 가능 아이디: {login_id}")
+    return True
