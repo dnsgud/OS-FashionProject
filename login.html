@@ -50,6 +50,7 @@
             font-weight: 700;
             cursor: pointer;
             margin-top: 10px;
+            margin-bottom: 10px;
         }
         /* 소셜 로그인용 스타일 추가 */
         .login-footer { margin-top: 25px; font-size: 14px; color: #868e96; }
@@ -64,6 +65,7 @@
 </head>
 <body>
     <script>
+    // 페이지가 열리자마자 저장된 테마가 다크모드인지 확인하고 적용하기
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
     }
@@ -71,30 +73,60 @@
     <div class="login-container">
         <div class="login-logo">Look_Up</div>
         
-        <!-- 폼 태그 하나로 통합! -->
         <form class="login-form" onsubmit="handleLogin(event)">
             <input type="text" placeholder="아이디" required>
             <input type="password" placeholder="비밀번호" required>
             <button type="submit" class="submit-btn">로그인</button>
         </form>
 
-        <div class="login-footer">
-            아직 회원이 아니신가요? <a href="#">회원가입</a>
-        </div>
-
+       <div style="margin-top: 15px;">아직 회원이 아니신가요? <a href="sign_up.html" style="color: #0f172a; font-weight: bold; text-decoration: none; cursor: pointer;">회원가입</a></div>
+       <div class="autologin-box" style="display: flex; align-items: center; justify-content: flex-start; margin: 10px 0; font-size: 14px; color: #666;">
+  <input type="checkbox" id="keep-login" style="margin-right: 5px; cursor: pointer;">
+  <label for="keep-login" style="cursor: pointer;">로그인 상태 유지</label>
+</div>
         <div class="social-login">
             <p style="font-size: 12px; color: #adb5bd; margin-bottom: 15px;">간편 로그인</p>
-            <button type="button" class="social-btn">
+            <button type="button" class="social-btn" onclick="signInWithGoogle()">
                 <i class="fab fa-google"></i> Google로 시작하기
             </button>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
+        // 여기에 네 Supabase 주소랑 키 값을 꼭 적어줘야 작동해!
+        const supabaseUrl = 'YOUR_SUPABASE_URL';
+        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        
+        // 초기화가 올바르게 설정되었는지 확인 후 객체 생성
+        const supabase = supabaseUrl !== 'YOUR_SUPABASE_URL' ? supabase.createClient(supabaseUrl, supabaseKey) : null;
+
         function handleLogin(event) {
             event.preventDefault();
             alert("로그인 기능은 백엔드 연결 후 작동해! 일단 메인으로 보낼게.");
             location.href = "index.html";
+        }
+
+        // 구글 로그인 인증을 처리하는 함수야
+        async function signInWithGoogle() {
+            if (!supabase) {
+                alert('Supabase URL과 ANON_KEY 설정을 먼저 완료해줘!');
+                return;
+            }
+            
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    // 로그인이 완료되면 다시 메인 화면(index.html)으로 돌아오게 주소를 잡았어
+                    redirectTo: window.location.origin + '/index.html'
+                }
+            });
+            
+            if (error) {
+                console.error('구글 로그인 중에 문제가 생겼어:', error.message);
+                alert('로그인 실패: ' + error.message);
+            }
         }
     </script>
 </body>
