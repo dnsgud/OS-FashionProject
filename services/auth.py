@@ -44,6 +44,14 @@ def _validate_nickname(nickname):
         
     return True
 
+def _validate_login_id(login_id):
+    # 아이디 길이 및 영문/숫자 조합 검증 코드 작성
+    if not login_id or not isinstance(login_id, str):
+        return False
+        
+    pattern = r'^[a-z0-9]{4,15}$'
+    return bool(re.match(pattern, login_id))
+
 def _extract_and_validate_signup_data(input_data):
     # 프론트엔드 전달 데이터 개별 추출 코드 작성
     email = input_data.get("email")
