@@ -162,3 +162,22 @@ def _filter_body_profile_data(input_data):
         clean_data["body_shape"] = input_data["body_shape"]
         
     return clean_data
+
+def update_user_body_profile(current_login_id, input_data):
+    # 하단 확인 버튼 클릭 시 정제된 체형 데이터를 DB에 일괄 반영하는 제어 로직이다
+    try:
+        # 필터링 헬퍼 함수를 호출하여 유효한 숫자 및 카테고리 데이터만 추출한다
+        clean_data = _filter_body_profile_data(input_data)
+        
+        # 검증을 통과한 데이터가 존재할 경우 DB 일괄 업데이트 쿼리를 수행한다
+        if clean_data:
+            response = supabase.table('users').update(clean_data).eq('login_id', current_login_id).execute()
+            print(f"[DB 로그] 체형 정보 갱신 처리 완료: {clean_data}")
+            return bool(response.data)
+            
+        print("[알고리즘 로그] 유효한 체형 변경 데이터가 없어 업데이트가 생략되었다")
+        return True
+        
+    except Exception as e:
+        print(f"[DB 에러] 체형 정보 갱신 파이프라인 붕괴: {e}")
+        return False
