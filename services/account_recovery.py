@@ -82,3 +82,25 @@ def verify_password_reset_code(email, input_code):
         
     print("[알고리즘 에러] 비밀번호 초기화용 인증번호 불일치")
     return False
+
+def reset_password_and_auto_login(login_id, new_pw, new_pw_confirm):
+    # 비밀번호 갱신과 세션 발급을 한 번의 클릭으로 동시 처리하는 통합 파이프라인이다
+    
+    # 1. user_profile.py의 갱신 로직을 호출하여 DB의 비밀번호를 안전하게 덮어쓴다
+    is_updated = update_account_password(login_id, new_pw, new_pw_confirm)
+    
+    if not is_updated:
+        print("[알고리즘 에러] 무결성 검증 실패로 초기화 및 로그인이 취소되었다")
+        return None
+        
+    print("[DB 로그] 비밀번호 초기화 완료, 즉각적인 자동 로그인 세션으로 전환한다")
+    
+    # 2. 갱신 성공 시 auth.py의 커스텀 로그인 모듈을 호출하여 인증을 수행한다
+    login_result = login_with_custom_id(login_id, new_pw)
+    
+    if login_result:
+        print(f"[DB 로그] 자동 로그인 처리 및 세션 발급 완료: {login_id}")
+        return login_result
+        
+    print("[알고리즘 에러] 비밀번호 변경은 성공했으나 세션 발급에 실패했다")
+    return None
