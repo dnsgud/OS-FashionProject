@@ -157,3 +157,20 @@ def check_login_id_duplicate(login_id):
     # 빈 배열 반환 시 사용 가능 아이디 승인
     print(f"[DB 로그] 사용 가능 아이디: {login_id}")
     return True
+
+def check_email_duplicate(email):
+    # 빈 값 입력 방지 및 예외 처리
+    if not email:
+        return False
+
+    # 공통 쿼리 모듈을 활용한 이메일 데이터 조회
+    result = _execute_duplicate_query('email', email)
+
+    # 조회 결과 존재 시 기가입 이메일로 분류하여 사용 불가 판별
+    if result is None or len(result) > 0:
+        print(f"[알고리즘 경고] 중복 이메일 감지: {email}")
+        return False
+
+    # 미존재 데이터 확인 시 신규 사용 가능 이메일 승인
+    print(f"[DB 로그] 사용 가능 이메일: {email}")
+    return True
