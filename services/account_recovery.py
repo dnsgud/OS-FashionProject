@@ -57,3 +57,19 @@ def verify_and_get_login_id(name, email, input_code):
             
     print("[알고리즘 에러] 인증번호 불일치로 아이디 반환이 거부되었다")
     return None
+
+def request_find_password(name, login_id, email):
+    # 이름, 아이디, 이메일 3중 조건 완벽 일치 여부 대조 및 발송 제어이다
+    try:
+        # DB의 3개 컬럼이 모두 일치하는 레코드만 선택적으로 타겟팅한다
+        query = supabase.table('users').select('login_id').eq('name', name).eq('login_id', login_id).eq('email', email).execute()
+        
+        if query.data:
+            return _generate_and_send_code(email)
+            
+        print("[알고리즘 경고] 등록 정보와 불일치하는 비밀번호 찾기 시도 감지")
+        return False
+        
+    except Exception as e:
+        print(f"[DB 에러] 비밀번호 찾기 대상자 3중 조회 실패: {e}")
+        return False
