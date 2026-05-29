@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원가입 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         .signup-container {
             display: flex;
@@ -25,158 +27,149 @@
             max-width: 440px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
             border: 1px solid #f8fafc;
-            box-sizing: border-box;
         }
 
-        .signup-box h2 {
-            font-size: 1.7rem;
+        .signup-logo {
+            font-size: 2rem;
             font-weight: 800;
-            margin: 0 0 30px 0;
-            color: #000000;
             text-align: center;
+            margin-bottom: 35px;
             letter-spacing: -0.5px;
         }
 
-        .input-row {
-            margin-bottom: 20px;
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
         }
 
-        .input-row label {
+        .form-group label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            color: #475569;
-            margin-bottom: 6px;
-            padding-left: 2px;
+            color: #334155;
+            margin-bottom: 8px;
+            padding-left: 4px;
         }
 
-        .input-row input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #f1f5f9;
-            border-radius: 12px;
-            background-color: #f8fafc;
-            font-size: 0.95rem;
-            font-family: 'Pretendard', sans-serif;
-            box-sizing: border-box;
-            transition: all 0.2s;
-            color: #0f172a;
-        }
-
-        .input-row input:hover {
-            border-color: #cbd5e1;
-        }
-
-        .input-row input:focus {
-            outline: none;
-            border-color: #94a3b8;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
-        }
-
-        /* 중복확인 버튼을 인풋 창 오른쪽에 정렬하기 위한 스타일 */
-        .input-with-btn {
+        .input-wrapper {
+            position: relative;
             display: flex;
             gap: 10px;
-            width: 100%;
         }
 
-        .input-with-btn input {
+        .form-control {
             flex: 1;
+            padding: 16px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
         }
 
         .check-btn {
-            padding: 0 16px;
-            background-color: #1e293b;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
+            padding: 0 18px;
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
             font-size: 0.85rem;
-            font-family: 'Pretendard', sans-serif;
-            transition: background 0.2s;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .check-btn:hover {
-            background-color: #0f172a;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 35px;
-        }
-
-        .btn-group button {
-            flex: 1;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Pretendard', sans-serif;
-            transition: all 0.2s;
-            border: none;
+            background-color: #e2e8f0;
+            color: #0f172a;
         }
 
         .submit-btn {
-            background: #1e293b;
-            color: white;
+            width: 100%;
+            padding: 18px;
+            background: #4f46e5;
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
         }
 
         .submit-btn:hover {
-            background: #0f172a;
+            background: #4338ca;
         }
 
-        .cancel-btn {
-            background: #f1f5f9;
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.88rem;
             color: #64748b;
         }
 
-        .cancel-btn:hover {
-            background: #e2e8f0;
-            color: #475569;
+        .login-link a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .flash-messages {
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #ef4444;
+            padding: 14px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            list-style: none;
+            padding-left: 0;
+            text-align: left;
+            display: none;
         }
     </style>
 </head>
+
 <body>
-    <script>
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
-</script>
     <header>
         <nav>
             <div class="logo">
-                <a href="index.html" style="color: inherit; text-decoration: none;">Look_Up</a>
+                <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
-                <li>
-                    <a href="guide.html" class="nav-link" style="color: inherit; text-decoration: none;">
-                        <i class="fas fa-book"></i> Guide
-                    </a>
-                </li>
-                <li>
-                    <a href="codi.html" class="nav-link" style="color: inherit; text-decoration: none;">
-                        <i class="fas fa-tshirt"></i> Codi
-                    </a>
-                </li>
+                <li><a href="{{ url_for('guide_page') }}" class="nav-link"
+                        style="color: inherit; text-decoration: none;"><i class="fas fa-book"></i> Guide</a></li>
+                <li><a href="{{ url_for('codi_page') }}" class="nav-link"
+                        style="color: inherit; text-decoration: none;"><i class="fas fa-tshirt"></i> Codi</a></li>
                 <li class="dropdown-wrapper">
-                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;" onclick="toggleDropdown(event)">
-                        <i class="fas fa-user"></i> My
-                    </a>
+                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;"
+                        onclick="toggleDropdown(event)"><i class="fas fa-user"></i> My</a>
                     <div class="dropdown-menu" id="my-dropdown">
-                        <a href="my_closet.html">👗 내 옷장</a>
-                        <a href="my_scrap.html">🔖 스크랩북</a>
-                        <a href="my_profile.html">⚙️ 스타일 설정</a>
+                        <a href="{{ url_for('my_closet') }}">👗 내 옷장</a>
+                        <a href="{{ url_for('my_scrap') }}">🔖 스크랩북</a>
+                        <a href="{{ url_for('my_profile') }}">⚙️ 스타일 설정</a>
                     </div>
                 </li>
                 <li>
-                    <button class="login-btn" onclick="location.href='login.html'">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
+                    {% if logged_in %}
+                    <a href="{{ url_for('logout') }}" class="login-btn"
+                        style="background-color: #ef4444; text-decoration: none; display: inline-block;">Logout</a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="login-btn"
+                        style="text-decoration: none; display: inline-block;">Login</a>
+                    {% endif %}
                 </li>
             </ul>
         </nav>
@@ -184,198 +177,92 @@
 
     <main class="signup-container">
         <div class="signup-box">
-            <h2>회원가입</h2>
-            
-            <form id="signup-form">
-                <div class="input-row">
-                    <label for="user-name">이름</label>
-                    <input type="text" id="user-name" placeholder="이름을 입력하세요" required>
-                </div>
+            <div class="signup-logo">
+                <a href="{{ url_for('home') }}" style="color: #0f172a; text-decoration: none;">Look_Up</a>
+            </div>
 
-                <div class="input-row">
+            <ul class="flash-messages" id="error-box">
+                <li id="error-msg"></li>
+            </ul>
+
+            <form class="signup-form" onsubmit="submitRegister(event)">
+                <div class="form-group">
                     <label for="user-email">이메일 주소</label>
-                    <div class="input-with-btn">
-                        <input type="email" id="user-email" placeholder="example@email.com" required>
+                    <div class="input-wrapper">
+                        <input type="email" id="user-email" class="form-control" placeholder="example@email.com"
+                            required>
                         <button type="button" class="check-btn" onclick="checkEmailDuplicate()">중복확인</button>
                     </div>
                 </div>
 
-                <div class="input-row">
-                    <label for="user-id">아이디</label>
-                    <div class="input-with-btn">
-                        <input type="text" id="user-id" placeholder="아이디를 입력하세요" required>
-                        <button type="button" class="check-btn" onclick="checkIdDuplicate()">중복확인</button>
-                    </div>
-                </div>
-
-                <div class="input-row">
-                    <label for="user-pw">비밀번호</label>
-                    <input type="password" id="user-pw" placeholder="6자리 이상 입력하세요" required>
-                </div>
-
-                <div class="input-row">
-                    <label for="user-pw-confirm">비밀번호 확인</label>
-                    <input type="password" id="user-pw-confirm" placeholder="비밀번호를 한번 더 입력하세요" required>
-                </div>
-
-                <div class="input-row">
+                <div class="form-group">
                     <label for="user-nickname">닉네임</label>
-                    <input type="text" id="user-nickname" placeholder="사용할 닉네임을 입력하세요" required>
+                    <input type="text" id="user-nickname" class="form-control" placeholder="멋쟁이 소년" required>
                 </div>
 
-                <div class="btn-group">
-                    <button type="button" class="cancel-btn" onclick="location.href='login.html'">취소</button>
-                    <button type="submit" class="submit-btn">확인</button>
+                <div class="form-group">
+                    <label for="user-password">비밀번호</label>
+                    <input type="password" id="user-password" class="form-control" placeholder="8자리 이상 입력해 주세요"
+                        required>
                 </div>
+
+                <div class="form-group">
+                    <label for="user-password-confirm">비밀번호 확인</label>
+                    <input type="password" id="user-password-confirm" class="form-control"
+                        placeholder="비밀번호를 한번 더 입력해 주세요" required>
+                </div>
+
+                <button type="submit" class="submit-btn">회원가입 완료</button>
             </form>
+
+            <div class="login-link">
+                이미 회원이신가요?
+                <a href="{{ url_for('login') }}">로그인하기</a>
+            </div>
         </div>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">Look_Up</div>
-            <div class="footer-links">
-                <a href="#" onclick="event.preventDefault(); openPolicyModal('terms')">이용약관</a>
-                <a href="#" onclick="event.preventDefault(); openPolicyModal('privacy')">개인정보 처리방침</a>
-            </div>
-            <p class="footer-info">
-                주식회사 코디픽 | 대표: 김코디 | 사업자등록번호: 123-45-67890<br>
-                충청북도 청주시 서원구 충대로 1 (충북대학교)<br>
-                이메일: contact@codipick.com | 통신판매업신고: 2026-청주-1234
-            </p>
-            <p class="footer-copyright">
-                &copy; 2026 CODI PICK. All rights reserved.
-            </p>
-        </div>
-    </footer>
-
-    <div id="policy-modal" class="modal-overlay" onclick="if(event.target == this) closePolicyModal()">
-        <div class="modal-content" style="width: 90%; max-width: 450px; max-height: 70vh; overflow-y: auto; text-align: left; padding: 40px 30px;">
-            <button class="close-btn" onclick="closePolicyModal()">&times;</button>
-            <div class="modal-body">
-                <h3 id="policy-title" style="font-size: 22px; font-weight: 800; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #212529;">제목</h3>
-                <div id="policy-desc" style="color: #495057; line-height: 1.7; font-size: 14px; white-space: pre-wrap;">여기에 약관 내용이 들어갑니다.</div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <button onclick="closePolicyModal()" style="padding: 12px 40px; background: #212529; color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">확인</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    const supabaseUrl = '여기에_URL_입력'
-    const supabaseKey = '여기에_KEY_입력'
-    
-    let supabase = null
-    if (supabaseUrl !== '여기에_URL_입력' && supabaseKey !== '여기에_KEY_입력') {
-        supabase = createClient(supabaseUrl, supabaseKey)
-    }
-
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-        e.preventDefault()
-        
-        if (!supabase) {
-            alert('Supabase 설정이 아직 완료되지 않았어! 코드 하단의 URL과 KEY를 먼저 입력해 줘.')
-            return
-        }
-        
-        // 새로 매핑된 ID 구조에 맞게 자바스크립트 데이터 연결 완료!
-        const name = document.getElementById('user-name').value
-        const email = document.getElementById('user-email').value
-        const username = document.getElementById('user-id').value
-        const password = document.getElementById('user-pw').value
-        const passwordCheck = document.getElementById('user-pw-confirm').value
-        const nickname = document.getElementById('user-nickname').value
-
-        if (password !== passwordCheck) {
-            alert('입력하신 비밀번호가 서로 일치하지 않아! 다시 확인해 줄래?')
-            return
+    <script>
+        function toggleDropdown(event) {
+            event.preventDefault();
+            document.getElementById("my-dropdown").classList.toggle("show");
         }
 
-        try {
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        name: name,
-                        nickname: nickname,
-                        user_id: username
-                    }
-                }
+        // [교정] 기존 동기식 전송 탈피 ➡️ app.py의 /api/register JSON 통신 명세 충족
+        function submitRegister(event) {
+            event.preventDefault();
+            const email = document.getElementById('user-email').value;
+            const nickname = document.getElementById('user-nickname').value;
+            const password = document.getElementById('user-password').value;
+            const confirm = document.getElementById('user-password-confirm').value;
+            const errorBox = document.getElementById('error-box');
+            const errorMsg = document.getElementById('error-msg');
+
+            if (password.length < 8) { alert('비밀번호는 8자리 이상으로 세팅해 줘!'); return; }
+            if (password !== confirm) { alert('비밀번호 확인이 불일치해!'); return; }
+
+            fetch("/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, password: password, nickname: nickname })
             })
-
-            if (error) {
-                alert('회원가입에 실패했어요: ' + error.message)
-            } else {
-                alert('회원가입 요청 성공! 메일함을 확인해서 인증을 완료해 주세요.')
-                location.href = 'login.html'
-            }
-        } catch (err) {
-            alert('네트워크 연결이나 Supabase 설정 정보를 다시 확인해 줘!')
+                .then(async res => {
+                    if (res.ok) {
+                        alert('회원가입 성공! 로그인 화면으로 갈게.');
+                        location.href = "{{ url_for('login') }}";
+                    } else {
+                        const data = await res.json();
+                        errorMsg.innerText = "❌ " + (data.error || "가입 처리 중 오류 발생");
+                        errorBox.style.display = "block";
+                    }
+                });
         }
-    })
-</script>
 
-<script>
-    function toggleDropdown(event) {
-        event.preventDefault();
-        document.getElementById("my-dropdown").classList.toggle("show");
-    }
-
-    window.onclick = function(event) {
-        if (!event.target.matches('.nav-link') && !event.target.closest('#my-menu-btn')) {
-            const dropdowns = document.getElementsByClassName("dropdown-menu");
-            for (let i = 0; i < dropdowns.length; i++) {
-                let openDropdown = dropdowns[i];
-                if (openDropdown.classList.contains('show')) {
-                    openDropdown.classList.remove('show');
-                }
-            }
+        function checkEmailDuplicate() {
+            if (!document.getElementById('user-email').value) { alert('이메일을 먼저 적어줘!'); return; }
+            alert('사용 가능한 이메일입니다.');
         }
-    }
-    
-    const policyData = {
-        terms: {
-            title: "이용약관",
-            content: "제1조 (목적)\n본 약관은 'Look_Up'(이하 '회사')이 제공하는 날씨 기반 코디 추천 서비스의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다."
-        },
-        privacy: {
-            title: "개인정보 처리방침",
-            content: "제1조 (수집하는 개인정보의 항목)\n회사는 원활한 서비스 제공을 위해 회원가입 시 아이디, 비밀번호, 닉네임을 수집합니다."
-        }
-    };
-
-    function openPolicyModal(type) {
-        document.getElementById('policy-title').innerText = policyData[type].title;
-        document.getElementById('policy-desc').innerText = policyData[type].content;
-        document.getElementById('policy-modal').style.display = 'block';
-    }
-
-    function closePolicyModal() {
-        document.getElementById('policy-modal').style.display = 'none';
-    }
-
-    // 버튼 동작 임시 가상 함수 정의
-    function checkEmailDuplicate() {
-        const email = document.getElementById('user-email').value;
-        if (!email) {
-            alert('이메일을 먼저 입력해줘!');
-            return;
-        }
-        alert('사용 가능한 이메일입니다.');
-    }
-
-    function checkIdDuplicate() {
-        const id = document.getElementById('user-id').value;
-        if (!id) {
-            alert('아이디를 먼저 입력해줘!');
-            return;
-        }
-        alert('사용 가능한 아이디입니다.');
-    }
-</script>
+    </script>
 </body>
+
 </html>
