@@ -31,6 +31,9 @@ def hex_to_hsl(hex_str):
 
 def calculate_style_score(full_outfit, target_tpo):
     """스타일(TPO) 일치도 점수 계산 (최대 45점)"""
+    if not target_tpo:
+        return 45   # TPO 정보가 없으면 만점 부여
+    
     score = 0
     for cloth in full_outfit:
         if target_tpo in cloth.get('style', []):
@@ -150,5 +153,10 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
     if len(final_recommendations) < 5:
         remaining = [o for o in outfits_sorted_by_fashion if o not in top_tier_bucket]
         final_recommendations.extend(remaining[:5 - len(final_recommendations)])
+
+    if final_recommendations:
+        max_style_score = max([o['style_score'] for o in final_recommendations])
+    else:
+        max_style_score = 0
 
     return final_recommendations
