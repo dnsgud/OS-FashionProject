@@ -28,3 +28,19 @@ def _verify_email_code(email, input_code):
         return True
         
     return False
+
+def request_find_id(name, email):
+    # 이름 및 이메일 기반 DB 회원 정보 탐색 및 인증번호 발송 제어 로직이다
+    try:
+        query = supabase.table('users').select('login_id').eq('name', name).eq('email', email).execute()
+        
+        # 회원이 존재할 경우에만 인증번호 발송 모듈을 호출한다
+        if query.data:
+            return _generate_and_send_code(email)
+            
+        print("[알고리즘 경고] 가입되지 않은 이름 또는 이메일 조합 감지")
+        return False
+        
+    except Exception as e:
+        print(f"[DB 에러] 아이디 찾기 대상자 조회 실패: {e}")
+        return False
