@@ -2,7 +2,7 @@ from transformers import pipeline
 from PIL import Image
 import collections
 
-# 1. AI 모델 초기화: 서버가 켜질 때 딱 한 번만 로드되도록 맨 위로 뺐습니다! (서버 속도 최적화)
+# 1. AI 모델 초기화: 서버가 켜질 때 딱 한 번만 로드되도록 함 (서버 속도 최적화)
 print("🚀 패션 분석 AI 엔진 시동 중 (정확도 강화 버전 3-네 모서리 픽셀 분석)")
 detector = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
 
