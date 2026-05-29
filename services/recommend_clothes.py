@@ -71,6 +71,20 @@ def calculate_color_score(top_combo, bottom, target_lv):
 
     return score
 
+def calculate_temperature_score(top_combo, bottom, target_lv):
+    """온도 적합도 점수 계산 (최대 20점)"""
+    top_lv_sum = sum([c['temp_level'] for c in top_combo])
+    
+    # 목표 레벨과의 오차 계산
+    top_diff = abs(top_lv_sum - target_lv)
+    bottom_diff = abs(bottom['temp_level'] - target_lv)
+    
+    # 총 오차 범위 1당 10점씩 감점
+    total_diff = top_diff + bottom_diff
+    score = max(0, 20 - (total_diff * 10))
+    
+    return score
+
 def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
     """웹 서버용 추천 메인 로직 (하이브리드 구간제 정렬 반영)"""
     target_lv = get_target_level(current_temp)
