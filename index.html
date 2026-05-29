@@ -181,7 +181,22 @@
             </div>
         </div>
     </div>
-    
+    <input type="text" placeholder="아이디" ...>
+
+<input type="password" placeholder="비밀번호" ...>
+
+
+<div class="autologin-box" style="display: flex; align-items: center; justify-content: flex-start; margin: 12px 4px; font-size: 14px; color: #666;">
+  <input type="checkbox" id="keep-login" style="margin-right: 6px; cursor: pointer;">
+  <label for="keep-login" style="cursor: pointer; user-select: none;">로그인 상태 유지</label>
+</div>
+
+
+<button class="login-btn">로그인</button>
+
+<div class="signup-text" style="text-align: center; margin-top: 14px; font-size: 14px;">
+  아직 회원이 아니신가요? <a href="sign_up.html" style="font-weight: bold; text-decoration: none; color: #000;">회원가입</a>
+</div>
     <div id="keyword-modal" class="modal-overlay" onclick="if(event.target == this) closeModal()">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal()">&times;</button>
