@@ -86,12 +86,12 @@ def calculate_temperature_score(top_combo, bottom, target_lv):
     return score
 
 def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
-    """웹 서버용 추천 메인 로직 (하이브리드 구간제 정렬 반영)"""
+    """웹 서버용 추천 메인 로직"""
     target_lv = get_target_level(current_temp)
 
     # 1. 하의 필터링
     valid_bottoms = [c for c in clothes_db if c.get('main_category') == '하의' 
-                    and abs(c['temp_level'] - target_lv) <= BOTTOM_TOLERANCE]
+                     and abs(c['temp_level'] - target_lv) <= BOTTOM_TOLERANCE]
     
     # 2. 상의(이너/아우터) 필터링
     inners = [c for c in clothes_db if c.get('main_category') == '상의' and c.get('sub_category') == '이너']
@@ -105,7 +105,7 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
             if inner['temp_level'] + outer['temp_level'] == target_lv:
                 valid_top_combos.append([inner, outer])
 
-    # 3. 조합 및 점수 계산
+    # 3. 조합 및 3가지 점수 계산
     outfits = []
     for top_combo in valid_top_combos:
         for bottom in valid_bottoms:
@@ -113,9 +113,10 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
             
             style_score = calculate_style_score(full_outfit, target_tpo)
             color_score = calculate_color_score(top_combo, bottom, target_lv)
+            temp_score = calculate_temperature_score(top_combo, bottom, target_lv)
             
-            # 패션 점수(스타일 + 색상) 및 총 착용 횟수 계산
-            fashion_score = round(style_score + color_score, 2)
+            # 최종 패션 점수 (최대 100점: 스타일 45 + 색상 35 + 온도 20)
+            fashion_score = style_score + color_score + temp_score
             total_wear_count = sum([c.get('monthly_wear_count', 0) for c in full_outfit])
             
             outfits.append({
@@ -125,10 +126,10 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
                 "total_wear_count": total_wear_count,
                 "style_score": style_score,
                 "color_score": color_score,
+                "temp_score": temp_score,
                 "total_lv": sum([c['temp_level'] for c in top_combo])
             })
 
-    # 조합된 코디가 하나도 없으면 빈 배열 반환
     if not outfits:
         return []
 
@@ -136,19 +137,16 @@ def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
     outfits_sorted_by_fashion = sorted(outfits, key=lambda x: x['fashion_score'], reverse=True)
     highest_score = outfits_sorted_by_fashion[0]['fashion_score']
 
-    # 최고점 기준 오차 범위 설정 (0.5점 이내)
-    SCORE_TOLERANCE = 0.5
+    # 오차 범위 (10점 이내)
+    SCORE_TOLERANCE = 10
     
-    # 오차 범위 내의 우수 코디 필터링
     top_tier_bucket = [
         outfit for outfit in outfits_sorted_by_fashion 
         if (highest_score - outfit['fashion_score']) <= SCORE_TOLERANCE
     ]
 
-    # 우수 코디 중 착용 횟수가 적은 순으로 정렬하여 상위 5개 추출
     final_recommendations = sorted(top_tier_bucket, key=lambda x: x['total_wear_count'])[:5]
 
-    # 추천 코디가 5개 미만일 경우 차순위 코디로 보충
     if len(final_recommendations) < 5:
         remaining = [o for o in outfits_sorted_by_fashion if o not in top_tier_bucket]
         final_recommendations.extend(remaining[:5 - len(final_recommendations)])
