@@ -8,24 +8,22 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        /* 로그인 창과 똑같은 화사하고 깔끔한 배경으로 수정했어 */
         .signup-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: calc(100vh - 200px);
-            background-color: #ffffff; /* 완전히 하얀 바탕 */
-            padding: 60px 20px;
+            min-height: calc(100vh - 140px);
+            background-color: #ffffff;
+            padding: 40px 20px;
         }
 
-        /* 로그인 창의 부드러운 그림자와 둥근 테두리 감성을 그대로 이어받았어 */
         .signup-box {
             background: #ffffff;
             border-radius: 24px;
             padding: 45px 35px;
             width: 100%;
             max-width: 440px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04); /* 아주 은은하고 투명한 그림자 */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
             border: 1px solid #f8fafc;
             box-sizing: border-box;
         }
@@ -34,7 +32,7 @@
             font-size: 1.7rem;
             font-weight: 800;
             margin: 0 0 30px 0;
-            color: #000000; /* 로그인 창의 Look_Up 타이틀처럼 깊은 블랙 */
+            color: #000000;
             text-align: center;
             letter-spacing: -0.5px;
         }
@@ -52,13 +50,12 @@
             padding-left: 2px;
         }
 
-        /* 로그인 창의 인풋 박스 스타일처럼 연하고 깔끔하게 변경 */
         .input-row input {
             width: 100%;
             padding: 14px 16px;
             border: 1px solid #f1f5f9;
             border-radius: 12px;
-            background-color: #f8fafc; /* 로그인 창 내부의 연한 그레이 톤 배경 */
+            background-color: #f8fafc;
             font-size: 0.95rem;
             font-family: 'Pretendard', sans-serif;
             box-sizing: border-box;
@@ -66,7 +63,6 @@
             color: #0f172a;
         }
 
-        /* 마우스를 올리거나 클릭했을 때 스타일 */
         .input-row input:hover {
             border-color: #cbd5e1;
         }
@@ -76,6 +72,35 @@
             border-color: #94a3b8;
             background-color: #ffffff;
             box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
+        }
+
+        /* 중복확인 버튼을 인풋 창 오른쪽에 정렬하기 위한 스타일 */
+        .input-with-btn {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .input-with-btn input {
+            flex: 1;
+        }
+
+        .check-btn {
+            padding: 0 16px;
+            background-color: #1e293b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            font-family: 'Pretendard', sans-serif;
+            transition: background 0.2s;
+        }
+
+        .check-btn:hover {
+            background-color: #0f172a;
         }
 
         .btn-group {
@@ -96,7 +121,6 @@
             border: none;
         }
 
-        /* 로그인 버튼처럼 어둡고 묵직한 메인 확인 버튼 */
         .submit-btn {
             background: #1e293b;
             color: white;
@@ -106,7 +130,6 @@
             background: #0f172a;
         }
 
-        /* 취소 버튼은 배경과 부드럽게 어우러지는 톤으로 설정 */
         .cancel-btn {
             background: #f1f5f9;
             color: #64748b;
@@ -160,28 +183,39 @@
             
             <form id="signup-form">
                 <div class="input-row">
-                    <label for="nickname">닉네임</label>
-                    <input type="text" id="nickname" placeholder="사용할 닉네임을 입력하세요" required>
+                    <label for="user-name">이름</label>
+                    <input type="text" id="user-name" placeholder="이름을 입력하세요" required>
                 </div>
 
                 <div class="input-row">
-                    <label for="username">아이디</label>
-                    <input type="text" id="username" placeholder="아이디를 입력하세요" required>
+                    <label for="user-email">이메일 주소</label>
+                    <div class="input-with-btn">
+                        <input type="email" id="user-email" placeholder="example@email.com" required>
+                        <button type="button" class="check-btn" onclick="checkEmailDuplicate()">중복확인</button>
+                    </div>
                 </div>
 
                 <div class="input-row">
-                    <label for="password">비밀번호</label>
-                    <input type="password" id="password" placeholder="6자리 이상 입력하세요" required>
+                    <label for="user-id">아이디</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="user-id" placeholder="아이디를 입력하세요" required>
+                        <button type="button" class="check-btn" onclick="checkIdDuplicate()">중복확인</button>
+                    </div>
                 </div>
 
                 <div class="input-row">
-                    <label for="password-check">비밀번호 확인</label>
-                    <input type="password" id="password-check" placeholder="비밀번호를 한번 더 입력하세요" required>
+                    <label for="user-pw">비밀번호</label>
+                    <input type="password" id="user-pw" placeholder="6자리 이상 입력하세요" required>
                 </div>
 
                 <div class="input-row">
-                    <label for="email">이메일 주소</label>
-                    <input type="email" id="email" placeholder="example@email.com" required>
+                    <label for="user-pw-confirm">비밀번호 확인</label>
+                    <input type="password" id="user-pw-confirm" placeholder="비밀번호를 한번 더 입력하세요" required>
+                </div>
+
+                <div class="input-row">
+                    <label for="user-nickname">닉네임</label>
+                    <input type="text" id="user-nickname" placeholder="사용할 닉네임을 입력하세요" required>
                 </div>
 
                 <div class="btn-group">
@@ -242,11 +276,13 @@
             return
         }
         
-        const nickname = document.getElementById('nickname').value
-        const username = document.getElementById('username').value
-        const password = document.getElementById('password').value
-        const passwordCheck = document.getElementById('password-check').value
-        const email = document.getElementById('email').value
+        // 새로 매핑된 ID 구조에 맞게 자바스크립트 데이터 연결 완료!
+        const name = document.getElementById('user-name').value
+        const email = document.getElementById('user-email').value
+        const username = document.getElementById('user-id').value
+        const password = document.getElementById('user-pw').value
+        const passwordCheck = document.getElementById('user-pw-confirm').value
+        const nickname = document.getElementById('user-nickname').value
 
         if (password !== passwordCheck) {
             alert('입력하신 비밀번호가 서로 일치하지 않아! 다시 확인해 줄래?')
@@ -259,6 +295,7 @@
                 password: password,
                 options: {
                     data: {
+                        name: name,
                         nickname: nickname,
                         user_id: username
                     }
@@ -314,6 +351,25 @@
 
     function closePolicyModal() {
         document.getElementById('policy-modal').style.display = 'none';
+    }
+
+    // 버튼 동작 임시 가상 함수 정의
+    function checkEmailDuplicate() {
+        const email = document.getElementById('user-email').value;
+        if (!email) {
+            alert('이메일을 먼저 입력해줘!');
+            return;
+        }
+        alert('사용 가능한 이메일입니다.');
+    }
+
+    function checkIdDuplicate() {
+        const id = document.getElementById('user-id').value;
+        if (!id) {
+            alert('아이디를 먼저 입력해줘!');
+            return;
+        }
+        alert('사용 가능한 아이디입니다.');
     }
 </script>
 </body>
