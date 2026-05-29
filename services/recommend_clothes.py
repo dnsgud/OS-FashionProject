@@ -30,15 +30,15 @@ def hex_to_hsl(hex_str):
         return 0, 0, 0
 
 def calculate_style_score(full_outfit, target_tpo):
-    """TPO 일치도 점수 계산"""
+    """스타일(TPO) 일치도 점수 계산 (최대 45점)"""
     score = 0
     for cloth in full_outfit:
         if target_tpo in cloth.get('style', []):
-            score += 1
+            score += 15  # 아이템당 15점 (3피스 = 45점)
     return score
 
 def calculate_color_score(top_combo, bottom, target_lv):
-    """색상 조화 점수 계산 (톤온톤, 톤앤톤)"""
+    """색상 조화 점수 계산 (최대 35점)"""
     top_hex = top_combo[-1]['color'] 
     bottom_hex = bottom['color']
     h1, s1, l1 = hex_to_hsl(top_hex)
@@ -54,22 +54,22 @@ def calculate_color_score(top_combo, bottom, target_lv):
     light_diff = abs(l1 - l2)
 
     if is_top_neutral or is_bottom_neutral:
-        score += 1.5
+        score += 23  # 기본 무채색 조화
 
     if not is_top_neutral and not is_bottom_neutral:
         if hue_diff < 30:
-            score += 1.5 if light_diff > 20 else 0.5
+            score += 23 if light_diff > 20 else 8
         elif hue_diff >= 30:
             if chroma_diff < 15 and light_diff < 15:
-                score += 1.2
+                score += 18
             elif hue_diff > 150:
-                score -= 1.0
+                score -= 15  # 보색 충돌 감점
 
-    # 계절별 가산점
-    if target_lv <= 3 and (l1 >= 70 or l2 >= 60): score += 0.8
-    elif target_lv >= 7 and (l1 <= 30 or l2 <= 40): score += 0.8
+    # 계절별 가산점 (최대 12점)
+    if target_lv <= 3 and (l1 >= 70 or l2 >= 60): score += 12
+    elif target_lv >= 7 and (l1 <= 30 or l2 <= 40): score += 12
 
-    return round(score, 2)
+    return score
 
 def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
     """웹 서버용 추천 메인 로직 (하이브리드 구간제 정렬 반영)"""
