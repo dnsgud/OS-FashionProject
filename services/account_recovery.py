@@ -19,3 +19,12 @@ def _generate_and_send_code(email):
     # 실제 이메일 발송 API가 연동될 자리이다
     print(f"[알고리즘 로그] {email} 계정으로 인증번호 발송 시뮬레이션 완료: {code}")
     return True
+
+def _verify_email_code(email, input_code):
+    # 메모리 저장소의 난수와 사용자의 입력값 일치 여부 대조 로직이다
+    if email in _verification_store and _verification_store[email] == str(input_code):
+        # 인증 성공 시 재사용 방지를 위해 즉시 데이터를 폐기한다
+        del _verification_store[email]
+        return True
+        
+    return False
