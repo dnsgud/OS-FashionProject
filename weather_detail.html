@@ -29,6 +29,11 @@
     </style>
 </head>
 <body>
+    <script>
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+</script>
     <div class="detail-container">
         <a href="index.html" class="back-btn"><i class="fas fa-chevron-left"></i> 메인으로 돌아가기</a>
         
