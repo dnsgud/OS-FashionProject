@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         .login-container {
             max-width: 400px;
@@ -14,120 +16,174 @@
             padding: 40px;
             background: #fff;
             border-radius: 32px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
             text-align: center;
+            box-sizing: border-box;
         }
+
         .login-logo {
             font-size: 2rem;
             font-weight: 800;
             margin-bottom: 30px;
             letter-spacing: 1px;
         }
+
         .login-form input {
             width: 100%;
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            border: 1px solid #f1f3f5;
-            border-radius: 12px;
-            background: #f8f9fa;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.2s;
-            box-sizing: border-box; /* 패딩 때문에 박스가 안 튀어나가게 설정 */
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            background: #f8fafc;
+            transition: all 0.3s ease;
         }
+
         .login-form input:focus {
-            border-color: #212529;
+            outline: none;
+            border-color: #4f46e5;
             background: #fff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
+
         .submit-btn {
             width: 100%;
-            padding: 15px;
-            background: #212529;
+            padding: 16px;
+            background: #4f46e5;
             color: #fff;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 16px;
+            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            transition: background 0.3s ease;
         }
-        /* 소셜 로그인용 스타일 추가 */
-        .login-footer { margin-top: 25px; font-size: 14px; color: #868e96; }
-        .login-footer a { color: #212529; font-weight: 600; text-decoration: none; }
-        .social-login { margin-top: 30px; border-top: 1px solid #f1f3f5; padding-top: 25px; }
+
+        .submit-btn:hover {
+            background: #4338ca;
+        }
+
+        .social-login {
+            margin-top: 30px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 25px;
+        }
+
         .social-btn {
-            width: 100%; padding: 12px; border: 1px solid #dee2e6; border-radius: 12px;
-            background: #fff; display: flex; align-items: center; justify-content: center;
-            gap: 10px; font-weight: 600; cursor: pointer; margin-top: 10px;
+            width: 100%;
+            padding: 14px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .social-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .login-links {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .login-links a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .flash-messages {
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #ef4444;
+            padding: 14px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            list-style: none;
+            padding-left: 0;
+            text-align: left;
+            display: none;
+            /* 에러 발생 시 JS로 노출 제어 */
         }
     </style>
 </head>
-<body>
-    <script>
-    // 페이지가 열리자마자 저장된 테마가 다크모드인지 확인하고 적용하기
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
-</script>
+
+<body style="background: #f1f5f9; margin: 0; padding: 0 20px;">
     <div class="login-container">
-        <div class="login-logo">Look_Up</div>
-        
-        <form class="login-form" onsubmit="handleLogin(event)">
-            <input type="text" placeholder="아이디" required>
-            <input type="password" placeholder="비밀번호" required>
+        <div class="login-logo">
+            <a href="{{ url_for('home') }}" style="color: #0f172a; text-decoration: none;">Look_Up</a>
+        </div>
+
+        <ul class="flash-messages" id="error-box">
+            <li id="error-msg"></li>
+        </ul>
+
+        <form class="login-form" onsubmit="submitLogin(event)">
+            <input type="email" id="login-email" placeholder="이메일 주소" required>
+            <input type="password" id="login-password" placeholder="비밀번호" required>
             <button type="submit" class="submit-btn">로그인</button>
         </form>
 
-       <div style="margin-top: 15px;">아직 회원이 아니신가요? <a href="sign_up.html" style="color: #0f172a; font-weight: bold; text-decoration: none; cursor: pointer;">회원가입</a></div>
-       <div class="autologin-box" style="display: flex; align-items: center; justify-content: flex-start; margin: 10px 0; font-size: 14px; color: #666;">
-  <input type="checkbox" id="keep-login" style="margin-right: 5px; cursor: pointer;">
-  <label for="keep-login" style="cursor: pointer;">로그인 상태 유지</label>
-</div>
+        <div class="login-links">
+            아직 회원이 아니신가요?
+            <a href="{{ url_for('register_page') }}">회원가입</a>
+        </div>
+
         <div class="social-login">
-            <p style="font-size: 12px; color: #adb5bd; margin-bottom: 15px;">간편 로그인</p>
-            <button type="button" class="social-btn" onclick="signInWithGoogle()">
-                <i class="fab fa-google"></i> Google로 시작하기
+            <button class="social-btn" onclick="signInWithGoogle()">
+                <i class="fab fa-google" style="color: #ea4335;"></i> Google로 시작하기
             </button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // 여기에 네 Supabase 주소랑 키 값을 꼭 적어줘야 작동해!
-        const supabaseUrl = 'YOUR_SUPABASE_URL';
-        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-        
-        // 초기화가 올바르게 설정되었는지 확인 후 객체 생성
-        const supabase = supabaseUrl !== 'YOUR_SUPABASE_URL' ? supabase.createClient(supabaseUrl, supabaseKey) : null;
-
-        function handleLogin(event) {
+        // [교정] 기존 Form 전송을 걷어내고 app.py가 수신할 수 있게 JSON 데이터 빌드 송신
+        function submitLogin(event) {
             event.preventDefault();
-            alert("로그인 기능은 백엔드 연결 후 작동해! 일단 메인으로 보낼게.");
-            location.href = "index.html";
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorBox = document.getElementById('error-box');
+            const errorMsg = document.getElementById('error-msg');
+
+            fetch("{{ url_for('login') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, password: password })
+            })
+                .then(async res => {
+                    if (res.ok) {
+                        // 로그인 성공 시 app.py의 대피 화면 라우터 정보로 이동
+                        location.href = "{{ url_for('home_page') }}";
+                    } else {
+                        const errData = await res.json();
+                        errorMsg.innerText = "❌ " + (errData.error || "로그인 정보가 틀렸습니다.");
+                        errorBox.style.display = "block";
+                    }
+                })
+                .catch(() => {
+                    errorMsg.innerText = "❌ 서버와 연결할 수 없습니다.";
+                    errorBox.style.display = "block";
+                });
         }
 
-        // 구글 로그인 인증을 처리하는 함수야
-        async function signInWithGoogle() {
-            if (!supabase) {
-                alert('Supabase URL과 ANON_KEY 설정을 먼저 완료해줘!');
-                return;
-            }
-            
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    // 로그인이 완료되면 다시 메인 화면(index.html)으로 돌아오게 주소를 잡았어
-                    redirectTo: window.location.origin + '/index.html'
-                }
-            });
-            
-            if (error) {
-                console.error('구글 로그인 중에 문제가 생겼어:', error.message);
-                alert('로그인 실패: ' + error.message);
-            }
+        function signInWithGoogle() {
+            alert("구글 소셜 로그인은 준비 중입니다. 이메일 로그인을 이용해 주세요!");
         }
     </script>
 </body>
+
 </html>
