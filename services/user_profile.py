@@ -133,3 +133,32 @@ def fetch_user_body_profile(login_id):
     except Exception as e:
         print(f"[DB 에러] 체형 데이터 조회 쿼리 실행 실패: {e}")
         return None
+    
+def _filter_body_profile_data(input_data):
+    # 입력받은 키, 몸무게, 체형 데이터의 무결성과 정상 범위를 판별하는 필터링 로직이다
+    clean_data = {}
+    
+    # 1. 키 데이터 검증 (문자열 방어 및 100.0cm ~ 250.0cm 허용)
+    if "height" in input_data and input_data["height"]:
+        try:
+            height = float(input_data["height"])
+            if 100.0 <= height <= 250.0:
+                clean_data["height"] = round(height, 1)
+        except ValueError:
+            pass # 숫자가 아닌 값이 들어오면 무시하고 필터링한다
+            
+    # 2. 몸무게 데이터 검증 (문자열 방어 및 30.0kg ~ 200.0kg 허용)
+    if "weight" in input_data and input_data["weight"]:
+        try:
+            weight = float(input_data["weight"])
+            if 30.0 <= weight <= 200.0:
+                clean_data["weight"] = round(weight, 1)
+        except ValueError:
+            pass
+            
+    # 3. 체형 선택 데이터 카테고리 검증 (지정된 3개 외의 임의 조작 값 차단)
+    valid_shapes = ["삼각형", "역삼각형", "일자형"]
+    if "body_shape" in input_data and input_data["body_shape"] in valid_shapes:
+        clean_data["body_shape"] = input_data["body_shape"]
+        
+    return clean_data
