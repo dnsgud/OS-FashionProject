@@ -142,6 +142,11 @@
     </style>
 </head>
 <body>
+    <script>
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+</script>
     <header>
         <nav>
             <div class="logo">
