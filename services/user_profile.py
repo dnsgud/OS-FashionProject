@@ -112,3 +112,24 @@ def update_account_password(login_id, new_pw, new_pw_confirm):
     except Exception as e:
         print(f"[DB 에러] 비밀번호 다이렉트 업데이트 쿼리 실행 실패: {e}")
         return False
+    
+def fetch_user_body_profile(login_id):
+    # 화면 진입 시 빈칸 또는 기존 데이터를 채워주기 위한 체형 정보 단일 조회 로직
+    if not login_id:
+        return None
+        
+    try:
+        # users 테이블에서 키, 몸무게, 체형 데이터만 정확히 타겟팅하여 가져옴
+        query = supabase.table('users').select('height, weight, body_shape').eq('login_id', login_id).execute()
+        
+        # 데이터가 존재하면 반환하고, 최초 가입자라 데이터가 없으면 None을 반환하여 프론트엔드가 빈칸을 띄우게 유도
+        if query.data:
+            print(f"[DB 로그] 기존 체형 데이터 로드 완료: {login_id}")
+            return query.data[0]
+            
+        print("[알고리즘 로그] 등록된 체형 데이터가 존재 X")
+        return None
+        
+    except Exception as e:
+        print(f"[DB 에러] 체형 데이터 조회 쿼리 실행 실패: {e}")
+        return None
