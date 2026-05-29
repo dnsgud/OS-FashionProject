@@ -60,6 +60,35 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* 🌙 다크모드 적용 시 스타일 변경 레이어 */
+        body.dark-mode {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        body.dark-mode header, body.dark-mode footer {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+        body.dark-mode .grid-box {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #334155;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        body.dark-mode #temp-desc, body.dark-mode .pick-desc {
+            color: #94a3b8;
+        }
+        body.dark-mode .modal-content {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+        body.dark-mode #policy-desc, body.dark-mode #modal-desc {
+            color: #cbd5e1;
+        }
+        body.dark-mode #dark-mode-toggle {
+            color: #f59e0b;
+        }
     </style>
 </head>
 <body>
@@ -94,13 +123,17 @@
                         <i class="fas fa-sign-in-alt"></i> Login
                     </button>
                 </li>
+                <li>
+                    <button id="dark-mode-toggle" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: inherit; padding: 8px 12px; display: flex; align-items: center;">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
             </ul>
         </nav>
     </header>
 
     <main>
         <div class="main-grid-container">
-            
             <a href="weather_detail.html" class="grid-box">
                 <i class="fa-solid fa-sun status-icon" id="main-weather-icon" style="font-size: 3rem; color:#f59e0b; margin-bottom: 15px;"></i>
                 <h2 class="temp" id="temp-value" style="font-size: 2.2rem; margin: 0; font-weight: 800;">--°C</h2>
@@ -148,7 +181,6 @@
             <h3 class="section-title">패션 키워드 추천</h3>
             <div class="hashtag-box" style="justify-content: center;"></div>
         </section>
-
     </main>
 
     <footer>
@@ -181,110 +213,42 @@
             </div>
         </div>
     </div>
-    <input type="text" placeholder="아이디" ...>
 
-<input type="password" placeholder="비밀번호" ...>
-
-
-<div class="autologin-box" style="display: flex; align-items: center; justify-content: flex-start; margin: 12px 4px; font-size: 14px; color: #666;">
-  <input type="checkbox" id="keep-login" style="margin-right: 6px; cursor: pointer;">
-  <label for="keep-login" style="cursor: pointer; user-select: none;">로그인 상태 유지</label>
-</div>
-
-
-<button class="login-btn">로그인</button>
-
-<div class="signup-text" style="text-align: center; margin-top: 14px; font-size: 14px;">
-  아직 회원이 아니신가요? <a href="sign_up.html" style="font-weight: bold; text-decoration: none; color: #000;">회원가입</a>
-</div>
     <div id="keyword-modal" class="modal-overlay" onclick="if(event.target == this) closeModal()">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal()">&times;</button>
             <div class="modal-body" style="padding: 20px; text-align: center;">
                 <h3 id="modal-title" style="font-size: 24px; margin-bottom: 15px;">#키워드</h3>
-                <img id="modal-img" src="" alt="키워드 이미지" style="width: 100%; max-width: 250px; height: auto; border-radius: 12px; margin: 0 auto 15px auto; display: block;">
+                <img id="modal-img" src="" alt="키워드 이미지" style="width: 100%; max-width: 250px; height: auto; border-radius: 12px; margin-bottom: 15px; display: none;">
                 <p id="modal-desc" style="color: #666; line-height: 1.6;">상세 설명이 여기에 나옵니다.</p>
                 <button onclick="closeModal()" style="margin-top: 20px; padding: 10px 20px; background: #000; color: #fff; border: none; border-radius: 10px; cursor: pointer;">닫기</button>
             </div>
         </div>
     </div>
 
-   <script>
- const keywordDetails = {
-  "#고프코어": { 
-    img: "images/gorpcore.jpg", 
-    desc: "아웃도어 의류를 일상복과 매치하여 스타일리시하게 입는 패션이에요. 바람막이나 기능성 카고팬츠 등을 활용해 편안하면서도 힙한 무드를 낼 수 있어요." 
-  },
-  "#블록코어룩": { 
-    img: "images/blockcore.jpg", 
-    desc: "스포츠 유니폼 상의를 일상적인 청바지나 스니커즈와 조합해서 입는 스타일이에요. 스포티하면서도 레트로한 길거리 감성을 연출하기에 아주 좋아요." 
-  },
-  "#워크웨어": { 
-    img: "images/workwear.jpg", 
-    desc: "과거 작업복에서 유래한 스타일로, 두꺼운 캔버스 재킷이나 데님을 활용해요. 투박하지만 깊이감 있는 아메카지 특유의 멋스러운 분위기를 줍니다." 
-  },
-  "#미니멀룩": { 
-    img: "images/minimal.jpg", 
-    desc: "화려한 로고나 패턴을 걷어내고 극도의 깔끔함을 추구하는 패션이에요. 모노톤 위주의 색감과 정돈된 실루엣으로 세련된 인상을 남길 수 있어요." 
-  },
-  "#시티보이룩": { 
-    img: "images/cityboy.jpg", 
-    desc: "도시 속 소년들의 자유로운 감성을 넉넉한 오버핏으로 표현한 스타일이에요. 단정하면서도 캐주얼한 셔츠와 레이어드를 활용하는 게 특징이에요." 
-  },
-  "#Y2K패션": { 
-    img: "images/y2k.jpg", 
-    desc: "1990년대 말부터 2000년대 초반의 세기말 감성을 그대로 가져온 패션이에요. 크롭티나 로우라이즈 팬츠처럼 과감하고 개성 넘치는 연출이 가능해요." 
-  },
-  "#올드머니룩": { 
-    img: "images/oldmoney.jpg", 
-    desc: "대대손손 내려오는 상류층의 고급스러움을 담아낸 패션이에요. 브랜드 로고를 드러내지 않는 대신 캐시미어나 실크 같은 고급 소재로 은은한 우아함을 드러내요." 
-  },
-  "#그랜파코어": { 
-    img: "images/grandpa.jpg", 
-    desc: "할아버지의 옷장에서 꺼낸 듯한 아늑하고 빈티지한 스타일이에요. 오버사이즈 니트 가디건이나 코듀로이 팬츠, 따뜻한 체크 패턴을 활용해 포근한 매력을 줘요." 
-  },
-  "#페스티벌룩": { 
-    img: "images/festival.jpg", 
-    desc: "콘서트나 축제에서 주인공이 될 수 있는 화려하고 자유로운 패션이에요. 평소에 시도하기 어려웠던 과감한 컬러나 액세서리로 나만의 개성을 마음껏 뽐낼 수 있어요." 
-  },
-  "#긱시크룩": { 
-    img: "images/geekchic.jpg", 
-    desc: "괴짜를 뜻하는 'Geek'과 세련됨을 뜻하는 'Chic'이 합쳐진 스타일이에요. 단정한 셔츠나 정장에 독특한 안경을 매치하여 지적이면서도 반전 있는 무드를 완성해요." 
-  },
- "#발레코어": { 
-    img: "images/balletcore.jpg", 
-    desc: "발레무용수의 연습복이나 무대의상에서 영감을 받은 스타일이에요. 시폰 스커트, 리본 장식, 워머 등을 활용해 우아하고 사랑스러운 분위기를 연출할 수 있어요." 
-  },
-  "#아메카지": { 
-    img: "images/amekaji.jpg", 
-    desc: "미국식 캐주얼 의류를 일본 특유의 감성으로 재해석한 패션이에요. 통이 넓은 바지나 셔츠, 베스트 등을 활용해 편안하면서도 빈티지한 아웃도어 무드를 보여줘요." 
-  },
-  "#페어리코어": { 
-    img: "images/fairycore.jpg", 
-    desc: "숲속 요정을 연상시키는 몽환적이고 자연 친화적인 룩이에요. 레이스나 자수 장식, 빛바랜 파스텔톤 컬러의 셔링 의상들을 겹쳐 입어 부드러운 느낌을 줘요." 
-  },
-  "#웨스턴룩": { 
-    img: "images/western.jpg", 
-    desc: "미국 서부 개척 시대의 카우보이 스타일을 현대적으로 풀어낸 패션이에요. 가죽 재킷, 웨스턴 부츠, 수저 장식 벨트 등을 포인트로 사용해 거칠고 멋스러운 느낌을 내요." 
-  },
-  "#프레피룩": { 
-    img: "images/preppy.jpg", 
-    desc: "미국 명문 사립고등학교 학생들의 교복 스타일에서 유래한 단정한 룩이에요. 셔츠와 니트 베스트, 넥타이, 체크무늬 스커트 등을 활용해 클래식하고 지적인 인상을 줘요." 
-  },
-  "#테크웨어": { 
-    img: "images/techwear.jpg", 
-    desc: "첨단 기능성 소재와 밀리터리 디자인이 결합한 미래지향적인 패션이에요. 주머니가 많이 달린 카고팬츠나 스트랩, 버클 등을 활용해 어둡고 강렬한 도시적인 무드를 냅니다." 
-  }
-};
-    
+    <script>
+    const keywordDetails = {
+        "#고프코어": { img: "images/gorpcore.jpg", desc: "아웃도어 의류를 일상복과 매치하여 스타일리시하게 입는 패션이에요. 바람막이나 기능성 카고팬츠 등을 활용해 편안하면서도 힙한 무드를 낼 수 있어요." },
+        "#블록코어룩": { img: "images/blockcore.jpg", desc: "스포츠 유니폼 상의를 일상적인 청바지나 스니커즈와 조합해서 입는 스타일이에요. 스포티하면서도 레트로한 길거리 감성을 연출하기에 아주 좋아요." },
+        "#워크웨어": { img: "images/workwear.jpg", desc: "과거 작업복에서 유래한 스타일로, 두꺼운 캔버스 재킷이나 데님을 활용해요. 투박하지만 깊이감 있는 아메카지 특유의 멋스러운 분위기를 줍니다." },
+        "#미니멀룩": { img: "images/minimal.jpg", desc: "화려한 로고나 패턴을 걷어내고 극도의 깔끔함을 추구하는 패션이에요. 모노톤 위주의 색감과 정돈된 실루엣으로 세련된 인상을 남길 수 있어요." },
+        "#시티보이룩": { img: "images/cityboy.jpg", desc: "도시 속 소년들의 자유로운 감성을 넉넉한 오버핏으로 표현한 스타일이에요. 단정하면서도 캐주얼한 셔츠와 레이어드를 활용하는 게 특징이에요." },
+        "#Y2K패션": { img: "images/y2k.jpg", desc: "1990년대 말부터 2000년대 초반의 세기말 감성을 그대로 가져온 패션이에요. 크롭티나 로우라이즈 팬츠처럼 과감하고 개성 넘치는 연출이 가능해요." },
+        "#올드머니룩": { img: "images/oldmoney.jpg", desc: "대대손손 내려오는 상류층의 고급스러움을 담아낸 패션이에요. 브랜드 로고를 드러내지 않는 대신 캐시미어나 실크 같은 고급 소재로 은은한 우아함을 드러내요." },
+        "#그랜파코어": { img: "images/grandpa.jpg", desc: "할아버지의 옷장에서 꺼낸 듯한 아늑하고 빈티지한 스타일이에요. 오버사이즈 니트 가디건이나 코듀로이 팬츠, 따뜻한 체크 패턴을 활용해 포근한 매력을 줘요." },
+        "#페스티벌룩": { img: "images/festival.jpg", desc: "콘서트나 축제에서 주인공이 될 수 있는 화려하고 자유로운 패션이에요. 평소에 시도하기 어려웠던 과감한 컬러나 액세서리로 나만의 개성을 마음껏 뽐낼 수 있어요." },
+        "#긱시크룩": { img: "images/geekchic.jpg", desc: "괴짜를 뜻하는 'Geek'과 세련됨을 뜻하는 'Chic'이 합쳐진 스타일이에요. 단정한 셔츠나 정장에 독특한 안경을 매치하여 지적이면서도 반전 있는 무드를 완성해요." },
+        "#발레코어": { img: "images/balletcore.jpg", desc: "발레무용수의 연습복이나 무대의상에서 영감을 받은 스타일이에요. 시폰 스커트, 리본 장식, 워머 등을 활용해 우아하고 사랑스러운 분위기를 연출할 수 있어요." },
+        "#아메카지": { img: "images/amekaji.jpg", desc: "미국식 캐주얼 의류를 일본 특유의 감성으로 재해석한 패션이에요. 통이 넓은 바지나 셔츠, 베스트 등을 활용해 편안하면서도 빈티지한 아웃도어 무드를 보여줘요." },
+        "#페어리코어": { img: "images/fairycore.jpg", desc: "숲속 요정을 연상시키는 몽환적이고 자연 친화적인 룩이에요. 레이스나 자수 장식, 빛바랜 파스텔톤 컬러의 셔링 의상들을 겹쳐 입어 부드러운 느낌을 줘요." },
+        "#웨스턴룩": { img: "images/western.jpg", desc: "미국 서부 개척 시대의 카우보이 스타일을 현대적으로 풀어낸 패션이에요. 가죽 재킷, 웨스턴 부츠, 수저 장식 벨트 등을 포인트로 사용해 거칠고 멋스러운 느낌을 내요." },
+        "#프레피룩": { img: "images/preppy.jpg", desc: "미국 명문 사립고등학교 학생들의 교복 스타일에서 유래한 단정한 룩이에요. 셔츠와 니트 베스트, 넥타이, 체크무늬 스커트 등을 활용해 클래식하고 지적인 인상을 줘요." },
+        "#테크웨어": { img: "images/techwear.jpg", desc: "첨단 기능성 소재와 밀리터리 디자인이 결합한 미래지향적인 패션이에요. 주머니가 많이 달린 카고팬츠나 스트랩, 버클 등을 활용해 어둡고 강렬한 도시적인 무드를 냅니다." }
+    };
+        
     function openModal(tagName) {
         document.getElementById('modal-title').innerText = tagName;
-        
-        const data = keywordDetails[tagName] || {
-            img: "",
-            desc: "이 키워드에 대한 코디 추천을 준비하고 있어요!"
-        };
-        
+        const data = keywordDetails[tagName] || { img: "", desc: "이 키워드에 대한 코디 추천을 준비하고 있어요!" };
         document.getElementById('modal-desc').innerText = data.desc;
         
         const imgElement = document.getElementById('modal-img');
@@ -296,15 +260,12 @@
                 imgElement.style.display = 'none';    
             }
         }
-        
         document.getElementById('keyword-modal').style.display = 'block';
     }
 
     function closeModal() {
         const modal = document.getElementById('keyword-modal');
-        if (modal) {
-            modal.style.display = 'none'; 
-        }
+        if (modal) { modal.style.display = 'none'; }
     }
 
     const weatherKeywords = {
@@ -317,36 +278,12 @@
     };
 
     const weatherTips = {
-        sunny: {
-            title: "햇살이 눈부신 오늘,<br>자외선 차단은 필수!",
-            desc: "가벼운 반팔이나 린넨 셔츠로 시원하게!<br>선글라스나 모자로 포인트를 줘도 좋아.",
-            icon: "fas fa-sun"
-        },
-        rainy: {
-            title: "비가 오는 오늘,<br>쾌적함이 중요해!",
-            desc: "습도가 높으니 통기성 좋은 옷을 추천해.<br>비에 젖어도 금방 마르는 소재를 입어봐.",
-            icon: "fas fa-umbrella"
-        },
-        cloudy: {
-            title: "구름 낀 흐린 날,<br>바람막이 챙겼어?",
-            desc: "바람이 불거나 쌀쌀해질 수 있으니<br>가볍게 걸칠 수 있는 얇은 아우터가 필요해.",
-            icon: "fas fa-cloud"
-        },
-        snowy: {
-            title: "눈 내리는 오늘,<br>따뜻함이 최고!",
-            desc: "보온성 좋은 아우터와 목도리는 필수야.<br>미끄러지지 않는 안전한 신발도 잊지마.",
-            icon: "fas fa-snowflake"
-        },
-        hot: {
-            title: "무더운 오늘,<br>시원함이 제일 중요해!",
-            desc: "땀이 잘 마르는 소재의 반팔과 반바지!<br>더위를 피할 수 있는 밝은 색상을 추천해.",
-            icon: "fas fa-temperature-high"
-        },
-        cold: {
-            title: "체감온도 뚝!<br>단단히 껴입어!",
-            desc: "얇은 옷을 여러 겹 겹쳐 입는 게 중요해.<br>두꺼운 코트나 패딩으로 체온을 유지해줘.",
-            icon: "fas fa-temperature-low"
-        }
+        sunny: { title: "햇살이 눈부신 오늘,<br>자외선 차단은 필수!", desc: "가벼운 반팔이나 린넨 셔츠로 시원하게!<br>선글라스나 모자로 포인트를 줘도 좋아.", icon: "fas fa-sun" },
+        rainy: { title: "비가 오는 오늘,<br>쾌적함이 중요해!", desc: "습도가 높으니 통기성 좋은 옷을 추천해.<br>비에 젖어도 금방 마르는 소재를 입어봐.", icon: "fas fa-umbrella" },
+        cloudy: { title: "구름 낀 흐린 날,<br>바람막이 챙겼어?", desc: "바람이 불거나 쌀쌀해질 수 있으니<br>가볍게 걸칠 수 있는 얇은 아우터가 필요해.", icon: "fas fa-cloud" },
+        snowy: { title: "눈 내리는 오늘,<br>따뜻함이 최고!", desc: "보온성 좋은 아우터와 목도리는 필수야.<br>미끄러지지 않는 안전한 신발도 잊지마.", icon: "fas fa-snowflake" },
+        hot: { title: "무더운 오늘,<br>시원함이 제일 중요해!", desc: "땀이 잘 마르는 소재의 반팔과 반바지!<br>더위를 피할 수 있는 밝은 색상을 추천해.", icon: "fas fa-temperature-high" },
+        cold: { title: "체감온도 뚝!<br>단단히 껴입어!", desc: "얇은 옷을 여러 겹 겹쳐 입는 게 중요해.<br>두꺼운 코트나 패딩으로 체온을 유지해줘.", icon: "fas fa-temperature-low" }
     };
 
     function updateKeywords(temp, status) {
@@ -367,7 +304,6 @@
         }
 
         const selectedTags = allKeys.slice(0, 6);
-
         const hashtagBox = document.querySelector('.hashtag-box');
         if (hashtagBox) {
             hashtagBox.innerHTML = selectedTags.map(tag => 
@@ -409,7 +345,6 @@
                     else if (status.includes('비') || status.includes('Rain')) iconEl.classList.add('fa-cloud-showers-heavy');
                     else iconEl.classList.add('fa-smog');
                 }
-
                 updateKeywords(temp, status);
             }
         } catch (error) {
@@ -442,12 +377,9 @@
             const dropdowns = document.getElementsByClassName("dropdown-menu");
             for (let i = 0; i < dropdowns.length; i++) {
                 let openDropdown = dropdowns[i];
-                if (openDropdown.classList.contains('show')) {
-                    openDropdown.classList.remove('show');
-                }
+                if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); }
             }
         }
-        
         if (!event.target.closest('.fab-container')) {
             const fabMenu = document.getElementById('fab-menu');
             const fabBtn = document.querySelector('.fab-button');
@@ -458,21 +390,38 @@
         }
     }
 
+    // 🌙 다크모드 초기화 및 토글 제어 이벤트 추가
+    function initDarkMode() {
+        const toggleBtn = document.getElementById('dark-mode-toggle');
+        if (!toggleBtn) return;
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                localStorage.setItem('theme', 'light');
+                toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+    }
+
     window.onload = () => {
         updateKeywords(18, "맑음");
         getWeatherData();
         setRandomPick();
+        initDarkMode(); // 로드될 때 다크모드 함수 실행
     };
     
     const policyData = {
-        terms: {
-            title: "이용약관",
-            content: "제1조 (목적)\n본 약관은 'Look_Up'(이하 '회사')이 제공하는 날씨 기반 코디 추천 서비스의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다."
-        },
-        privacy: {
-            title: "개인정보 처리방침",
-            content: "제1조 (수집하는 개인정보의 항목)\n회사는 원활한 서비스 제공을 위해 회원가입 시 아이디, 비밀번호, 닉네임을 수집합니다."
-        }
+        terms: { title: "이용약관", content: "제1조 (목적)\n본 약관은 'Look_Up'(이하 '회사')이 제공하는 날씨 기반 코디 추천 서비스의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다." },
+        privacy: { title: "개인정보 처리방침", content: "제1조 (수집하는 개인정보의 항목)\n회사는 원활한 서비스 제공을 위해 회원가입 시 아이디, 비밀번호, 닉네임을 수집합니다." }
     };
 
     function openPolicyModal(type) {
@@ -481,10 +430,7 @@
         document.getElementById('policy-modal').style.display = 'block';
     }
 
-    function closePolicyModal() {
-        document.getElementById('policy-modal').style.display = 'none';
-    }
-
+    function closePolicyModal() { document.getElementById('policy-modal').style.display = 'none'; }
     function toggleFab(event) {
         event.preventDefault();
         const menu = document.getElementById('fab-menu');
@@ -496,14 +442,9 @@
     async function signInWithGoogle() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: 'http://localhost:3000/welcome'
-        }
+        options: { redirectTo: 'http://localhost:3000/welcome' }
       })
-      
-      if (error) {
-        console.error('구글 로그인 중에 문제가 생겼어:', error.message)
-      }
+      if (error) { console.error('구글 로그인 중에 문제가 생겼어:', error.message) }
     }
 </script>
 
