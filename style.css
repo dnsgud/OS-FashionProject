@@ -70,7 +70,7 @@ ul {
 nav ul {
     display: flex;
     align-items: center;
-    gap: 25px; 
+    gap: 25px;
 }
 
 nav ul li i {
@@ -113,7 +113,7 @@ body.dark-mode nav a {
     display: flex;
     align-items: center;
     gap: 30px;
-    width: 100%; 
+    width: 100%;
     border: 1px solid var(--border-color);
 }
 
@@ -210,9 +210,17 @@ body.dark-mode nav a {
     color: #4A90E2;
 }
 
-.status-icon.sunny { color: #ff922b !important; }
-.status-icon.cloudy { color: #adb5bd !important; }
-.status-icon.rainy { color: #228be6 !important; }
+.status-icon.sunny {
+    color: #ff922b !important;
+}
+
+.status-icon.cloudy {
+    color: #adb5bd !important;
+}
+
+.status-icon.rainy {
+    color: #228be6 !important;
+}
 
 .info span {
     display: block;
@@ -456,8 +464,10 @@ body.dark-mode nav a {
 .modal-overlay {
     display: none;
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     backdrop-filter: blur(5px);
@@ -465,36 +475,43 @@ body.dark-mode nav a {
 
 .modal-content {
     position: absolute;
-    top: 50%; left: 50%;
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
     background: var(--bg-color) !important;
     color: var(--text-color) !important;
     width: 90%;
     max-width: 500px;
     border-radius: 32px;
-    padding: 40px 30px; /* 위아래 패딩을 조금 더 주어 안정감 확보 */
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    padding: 40px 30px;
+    /* 위아래 패딩을 조금 더 주어 안정감 확보 */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
 }
 
 .close-btn {
     position: absolute;
-    top: 20px; right: 20px;
-    background: none; border: none;
-    font-size: 28px; cursor: pointer; color: var(--text-muted);
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-muted);
 }
 
 /* 내부의 모든 요소를 세로로 나열하고 정중앙 정렬 */
-.modal-body { 
+.modal-body {
     display: flex;
     flex-direction: column;
-    align-items: center; 
+    align-items: center;
     justify-content: center;
-    text-align: center; 
+    text-align: center;
     width: 100%;
 }
 
-.modal-body h2, .modal-body #modalTitle {
+.modal-body h2,
+.modal-body #modalTitle {
     margin-bottom: 20px;
     font-size: 1.8rem;
     font-weight: 800;
@@ -502,11 +519,14 @@ body.dark-mode nav a {
 
 .modal-img-box {
     width: 100%;
-    max-width: 380px; /* 이미지가 너무 거대해지지 않게 최대폭 제한 */
-    height: 380px; /* 정사각형 비율 혹은 부드러운 직사각형 유지 */
+    max-width: 380px;
+    /* 이미지가 너무 거대해지지 않게 최대폭 제한 */
+    height: 380px;
+    /* 정사각형 비율 혹은 부드러운 직사각형 유지 */
     border-radius: 20px;
     overflow: hidden;
-    margin: 0 auto 20px auto; /* 마진 자동으로 가운데 배치 구체화 */
+    margin: 0 auto 20px auto;
+    /* 마진 자동으로 가운데 배치 구체화 */
     background: var(--box-bg);
     display: flex;
     justify-content: center;
@@ -514,26 +534,28 @@ body.dark-mode nav a {
 }
 
 .modal-img-box img {
-    width: 100%; 
+    width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.modal-body p, .modal-body #modalDesc {
+.modal-body p,
+.modal-body #modalDesc {
     font-size: 1rem;
     line-height: 1.6;
     margin-bottom: 25px;
-    word-break: keep-all; /* 한글 단어가 어색하게 깨지지 않도록 설정 */
+    word-break: keep-all;
+    /* 한글 단어가 어색하게 깨지지 않도록 설정 */
     max-width: 400px;
 }
 
 .modal-action-btn {
-    background: var(--text-color); 
-    color: var(--bg-color); 
+    background: var(--text-color);
+    color: var(--bg-color);
     border: none;
-    padding: 14px 40px; 
+    padding: 14px 40px;
     border-radius: 50px;
-    font-weight: 700; 
+    font-weight: 700;
     cursor: pointer;
     transition: opacity 0.2s;
 }
@@ -541,6 +563,7 @@ body.dark-mode nav a {
 .modal-action-btn:hover {
     opacity: 0.9;
 }
+
 /* ==========================================
    9. 푸터 (Footer)
    ========================================== */
@@ -610,14 +633,14 @@ footer {
     background: var(--bg-color);
     padding: 40px;
     border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
     border: 1px solid var(--border-color);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .guide-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
 .guide-card h2 {
@@ -688,7 +711,7 @@ footer {
     transform: translateX(-50%);
     background-color: var(--bg-color);
     min-width: 150px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     padding: 10px 0;
     z-index: 1000;
@@ -717,8 +740,15 @@ footer {
 }
 
 @keyframes fadeInDown {
-    from { opacity: 0; transform: translate(-50%, -10px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
 /* ==========================================
@@ -766,7 +796,8 @@ footer {
     position: relative;
 }
 
-.tab-link:hover, .tab-link.active {
+.tab-link:hover,
+.tab-link.active {
     color: var(--text-color);
 }
 
@@ -800,7 +831,7 @@ footer {
     background: var(--bg-color);
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border-color);
     transition: transform 0.3s ease;
 }
@@ -861,7 +892,8 @@ footer {
     font-weight: 600;
 }
 
-.lv-btn.active, .lv-btn:hover {
+.lv-btn.active,
+.lv-btn:hover {
     background: var(--text-color);
     color: var(--bg-color);
     border-color: var(--text-color);
@@ -897,7 +929,7 @@ footer {
     padding: 16px 32px;
     border-radius: 35px;
     text-decoration: none;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
     font-weight: 700;
     font-size: 1.1rem;
     border: 1px solid var(--border-color);
@@ -936,8 +968,15 @@ footer {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ==========================================
