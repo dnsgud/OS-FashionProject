@@ -64,15 +64,29 @@ def _validate_name(name):
     return True
 
 def _extract_and_validate_signup_data(input_data):
-    # 프론트엔드 전달 데이터 개별 추출 코드 작성
+    # 프론트엔드 전달 데이터 개별 추출 및 확장 코드 작성
+    login_id = input_data.get("login_id")
     email = input_data.get("email")
     password = input_data.get("password")
     password_confirm = input_data.get("password_confirm")
     nickname = input_data.get("nickname")
+    name = input_data.get("name")
 
-    # 전체 유효성 검사 통과 시 딕셔너리 포장 코드 작성
-    if _validate_email_format(email) and _validate_password_match(password, password_confirm) and _validate_nickname(nickname):
-        return {"email": email, "password": password, "nickname": nickname.strip()}
+    # 전체 유효성 검사 통합 판별 로직
+    if (_validate_login_id(login_id) and 
+        _validate_email_format(email) and 
+        _validate_password_match(password, password_confirm) and 
+        _validate_nickname(nickname) and 
+        _validate_name(name)):
+        
+        
+        return {
+            "login_id": login_id.strip(),
+            "email": email.strip(),
+            "password": password,
+            "nickname": nickname.strip(),
+            "name": name.strip()
+        }
         
     return None
 
