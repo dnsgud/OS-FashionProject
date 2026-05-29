@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: #fff;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .login-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border: 1px solid #f1f3f5;
+            border-radius: 12px;
+            background: #f8f9fa;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .login-form input:focus {
+            border-color: #212529;
+            background: #fff;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #212529;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .login-footer {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #868e96;
+        }
+
+        .login-footer a {
+            color: #212529;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .social-login {
+            margin-top: 30px;
+            border-top: 1px solid #f1f3f5;
+            padding-top: 25px;
+        }
+
+        .social-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-logo">Look_Up</div>
+
+        <form class="login-form" id="authForm">
+            <input type="text" id="email" placeholder="아이디(이메일)" required>
+            <input type="password" id="password" placeholder="비밀번호" required>
+            <button type="button" class="submit-btn" onclick="handleLogin()">로그인</button>
+        </form>
+
+        <p style="color: #888; font-size: 14px;">
+            아직 회원이 아니신가요?
+            <a href="javascript:void(0);" onclick="handleRegister()"
+                style="text-decoration: none; color: #000; font-weight: bold;">회원가입</a>
+        </p>
+
+        <div class="social-login">
+            <p style="font-size: 12px; color: #adb5bd; margin-bottom: 15px;">간편 로그인</p>
+            <button type="button" class="social-btn">
+                <i class="fab fa-google"></i> Google로 시작하기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 회원가입 함수
+        function handleRegister() {
+            // app.py에서 @app.route('/register')로 설정한 경로로 이동
+            window.location.href = "/register";
+        }
+
+        // 로그인 함수 (필요시 추가 구현)
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // [중요] 주소를 /api/login에서 /login으로 변경
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    window.location.href = "/home";
+                } else {
+                    alert("로그인 실패: " + result.error);
+                }
+            } catch (error) {
+                console.error('에러 발생:', error);
+                alert("서버 통신 오류가 발생했습니다.");
+            }
+        }
+    </script>
+</body>
+
+</html>

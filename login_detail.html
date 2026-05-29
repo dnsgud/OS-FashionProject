@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - 회원가입</title>
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 50px 40px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            width: 380px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 35px;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            background-color: #f0f4ff;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 16px;
+            background-color: #222;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .footer-link {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .footer-link a {
+            color: #222;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Look_Up</h1>
+        <input type="email" id="email" class="input-box" placeholder="이메일 주소" required>
+        <input type="password" id="password" class="input-box" placeholder="비밀번호 설정" required>
+
+        <button type="button" class="btn-register" onclick="submitSignup()">회원가입</button>
+
+        <div class="footer-link">
+            이미 계정이 있으신가요? <a href="index.html">로그인하기</a>
+        </div>
+    </div>
+
+    <script>
+        // 유저님이 작성하신 로직을 가입 완료 버튼에 연결
+        async function submitSignup() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert("아이디와 비밀번호를 입력해주세요.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('회원가입이 완료되었습니다! 이제 로그인해 주세요.');
+                    // 가입 성공 시 다시 로그인 페이지(루트 주소)로 이동
+                    window.location.href = "/";
+                } else {
+                    alert('회원가입 실패: ' + result.error);
+                }
+            } catch (error) {
+                console.error('회원가입 에러:', error);
+                alert('서버 통신 중 오류가 발생했습니다.');
+            }
+        }
+    </script>
+
+</body>
+
+</html>
