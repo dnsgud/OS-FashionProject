@@ -73,3 +73,12 @@ def request_find_password(name, login_id, email):
     except Exception as e:
         print(f"[DB 에러] 비밀번호 찾기 대상자 3중 조회 실패: {e}")
         return False
+    
+def verify_password_reset_code(email, input_code):
+    # 비밀번호 신규 변경창 진입을 위한 최종 인증번호 검증 권한 부여 로직이다
+    if _verify_email_code(email, input_code):
+        print("[알고리즘 로그] 비밀번호 초기화용 이메일 인증 통과 (변경 창 진입 허가)")
+        return True
+        
+    print("[알고리즘 에러] 비밀번호 초기화용 인증번호 불일치")
+    return False
