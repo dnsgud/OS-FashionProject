@@ -433,6 +433,18 @@ function toggleFab(event) {
     menu.classList.toggle('show');
     btn.classList.toggle('active');
 }
+        async function signInWithGoogle() {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'http://localhost:3000/welcome'
+        }
+      })
+      
+      if (error) {
+        console.error('구글 로그인 중에 문제가 생겼어:', error.message)
+      }
+    }
 
 // 화면 빈 곳 클릭하면 메뉴 닫히게 처리하기 (기존 코드 덮어쓰기)
 window.onclick = function(event) {
