@@ -118,6 +118,26 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
             score += 4  
         else:
             score += 7
+
+    # [마른 / 왜소한 체형]
+    elif '마름' in body_shape or '슬림' in body_shape or '왜소' in body_shape:
+        if top_fit == '머슬핏' or bottom_fit == '와이드':
+            score += 4  
+        else:
+            score += 10
+            
+    # [통통한 / 체격이 큰 체형]
+    elif '통통' in body_shape or '큰' in body_shape or '비만' in body_shape:
+        if top_fit in ['슬림', '머슬핏'] or bottom_fit == '슬림':
+            score += 3  
+        else:
+            score += 10
+            
+    # [일반 / 보통 체형]
+    else:
+        score += 10
+        
+    return score
     
 def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clothes_db):
     """웹 서버용 추천 메인 로직"""
