@@ -92,8 +92,8 @@ def calculate_temperature_score(top_combo, bottom, target_lv):
 def calculate_fit_score(top_combo, bottom, user_body_shape):
     """사용자 체형과 상/하의 핏 조화도 점수 계산 (최대 20점)"""
     # 기본 핏 텍스트 추출
-    top_fit = top_combo[-1].get('fit', '스탠다드')
-    bottom_fit = bottom.get('fit', '스탠다드')
+    top_fit = top_combo[-1].get('fit', '스탠다드').strip()
+    bottom_fit = bottom.get('fit', '스탠다드').strip()
     
     # 용어 기반 선형 레벨 매핑
     fit_map = {
@@ -101,21 +101,33 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
         '스탠다드': 2, '스탠다드핏': 2,
         '세미와이드': 3, '세미와이드핏': 3,
         '와이드': 4, '와이드핏': 4,
-        '오버': 5, '오버핏': 5,
+        '오버': 5, '오버핏': 5
     }
     
     top_lv = fit_map.get(top_fit, 2)     # 맵에 없으면 기본값 스탠다드(2)로 방어
     bottom_lv = fit_map.get(bottom_fit, 2)
     
     # 1. 상/하의 핏 실루엣 조화도 (10점 만점)
-    fit_diff = abs(top_lv - bottom_lv)
+    silhouette_score = 10
     
+    # 상의가 레이어드(이너+아우터) 상태일 때 둘 간의 핏 충돌 검사 추가
+    if len(top_combo) == 2:
+        inner_fit_str = top_combo[0].get('fit', '스탠다드').strip()
+        inner_lv = fit_map.get(inner_fit_str, 2)
+        
+        # 이너가 아우터보다 2단계 이상 품이 클 경우 물리적 충돌 감점
+        if (inner_lv - top_lv) >= 2:
+            silhouette_score -= 4
+
+    # 상/하의 실루엣 오차 계산
+    fit_diff = abs(top_lv - bottom_lv)
     if fit_diff >= 3:
-        silhouette_score = 3   # 극단적 미스매치 감점
+        silhouette_score -= 7   # 극단적 미스매치 감점
     elif fit_diff == 2:
-        silhouette_score = 7   # 언밸런스 실루엣
-    else:
-        silhouette_score = 10  # 조화로운 실루엣
+        silhouette_score -= 3   # 약간의 언밸런스 감점
+        
+    # 하한선 방어 (마이너스 점수 방지)
+    silhouette_score = max(0, silhouette_score)
 
     # 2. 사용자 체형별 핏 적합도 (10점 만점)
     if not user_body_shape:
