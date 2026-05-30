@@ -1,4 +1,5 @@
 import colorsys
+from utils.weather_utils import calculate_sensory_temp
 
 # 설정값
 BOTTOM_TOLERANCE = 1
@@ -88,9 +89,10 @@ def calculate_temperature_score(top_combo, bottom, target_lv):
     
     return score
 
-def recommend_clothes_logic(current_temp, target_tpo, clothes_db):
+def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clothes_db):
     """웹 서버용 추천 메인 로직"""
-    target_lv = get_target_level(current_temp)
+    sensory_temp = calculate_sensory_temp(current_temp, humidity, wind_speed)
+    target_lv = get_target_level(sensory_temp)
 
     # 1. 하의 필터링
     valid_bottoms = [c for c in clothes_db if c.get('main_category') == '하의' 
