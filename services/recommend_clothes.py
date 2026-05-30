@@ -104,6 +104,21 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
     else:
         score += 10 
 
+    # 2. 사용자 체형별 핏 적합도 (10점 만점)
+    if not user_body_shape:
+        return score + 10  
+        
+    body_shape = user_body_shape.strip()
+    
+    # [근육질 / 역삼각형 체형]
+    if '근육' in body_shape or '역삼각형' in body_shape:
+        if top_fit in ['머슬핏', '레귤러핏', '세미와이드']:
+            score += 10
+        elif top_fit == '슬림':
+            score += 4  
+        else:
+            score += 7
+    
 def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clothes_db):
     """웹 서버용 추천 메인 로직"""
     sensory_temp = calculate_sensory_temp(current_temp, humidity, wind_speed)
