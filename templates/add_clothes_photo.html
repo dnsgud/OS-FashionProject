@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 사진 등록 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
@@ -44,7 +43,6 @@
 
         main {
             max-width: 600px;
-            /* 1단 구성에 맞게 슬림하게 조정 */
             margin: 40px auto;
             padding: 0 20px;
         }
@@ -112,6 +110,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
+            width: 100%;
         }
 
         .save-btn:hover {
@@ -121,116 +120,64 @@
         #file-input {
             display: none;
         }
-
-        /* 기존 코드에서 쓰이던 로딩 스피너 애니메이션 호환 추가 */
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
     </style>
 </head>
 
 <body>
     <header>
-        <a href="{{ url_for('my_closet') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <a href="my_closet" class="back-btn"><i class="fas fa-arrow-left"></i></a>
     </header>
 
     <main>
         <h1 class="page-title">AI로 옷 분석하기</h1>
 
-        <form id="photo-upload-form" class="registration-card">
-            <div class="upload-box" onclick="document.getElementById('file-input').click()">
-                <i class="fas fa-arrow-up" id="upload-icon"></i>
-                <p id="upload-text">클릭해서 사진 선택하기</p>
-                <img id="preview-img" src="" alt="미리보기">
+        <form id="upload-form" action="{{ url_for('ai_analysis') }}" method="POST" enctype="multipart/form-data">
+            <div class="registration-card">
+                <div class="upload-box" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-arrow-up" id="upload-icon"></i>
+                    <p id="upload-text">클릭해서 사진 선택하기</p>
+                    <img id="preview-img" src="" alt="미리보기">
+                </div>
+
+                <button type="button" class="save-btn" onclick="goToAnalysis()">분석 요청하기</button>
             </div>
 
-            <button type="submit" class="save-btn" id="submit-btn">
-                <span id="btn-text">등록하기</span>
-            </button>
+            <input type="file" id="file-input" name="ai_clothes_img" accept="image/*"
+                onchange="handleFileSelect(event)">
         </form>
-
-        <input type="file" id="file-input" name="cloth_image" accept="image/*" onchange="handleFileSelect(event)">
     </main>
 
     <script>
-        // 1. 파일 선택 시 이미지 미리보기 함수
+        let selectedImageData = "";
+
         function handleFileSelect(event) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = document.getElementById('preview-img');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                    document.getElementById('upload-icon').style.display = 'none';
-                    document.getElementById('upload-text').style.display = 'none';
-                }
-                reader.readAsDataURL(file);
-            }
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                selectedImageData = e.target.result;
+
+                const previewImg = document.getElementById('preview-img');
+                previewImg.src = selectedImageData;
+                previewImg.style.display = 'block';
+                document.getElementById('upload-icon').style.display = 'none';
+                document.getElementById('upload-text').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
         }
 
-        // 2. 폼 제출 로직 (이름을 photo-upload-form으로 정확히 타겟팅)
-        document.getElementById('photo-upload-form').addEventListener('submit', async function (e) {
-            e.preventDefault(); // 페이지 새로고침 방지
-
-            const fileInput = document.getElementById('file-input');
-            if (!fileInput.files || fileInput.files.length === 0) {
-                alert('사진 파일을 먼저 선택해 주세요.');
+        function goToAnalysis() {
+            if (!selectedImageData) {
+                alert('분석할 옷 사진을 먼저 선택해줘!');
                 return;
             }
 
-            const submitBtn = document.getElementById('submit-btn');
-            const btnText = document.getElementById('btn-text');
+            // 1. 결과 화면(result.html)에서 애니메이션과 함께 사진을 띄울 수 있도록 로컬 스토리지에 저장
+            localStorage.setItem('analyzingImg', selectedImageData);
 
-            submitBtn.disabled = true;
-            submitBtn.style.background = '#818cf8';
-            btnText.innerHTML = '<span class="spinner"></span>AI가 옷 분석 중... 잠시만 기다려주세요';
-
-            const formData = new FormData();
-            formData.append('cloth_image', fileInput.files[0]);
-
-            try {
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-
-                if (response.ok) {
-                    // 서버가 돌려준 result.data에는 이제 'id'가 포함되어 있습니다.
-                    localStorage.setItem('ai_data', JSON.stringify(result.data));
-                    window.location.href = "{{ url_for('add_clothes_photo_detail') }}";
-                }
-                else {
-                    alert('❌ 분석 실패: ' + (result.error || '오류 발생'));
-                    resetSubmitButton();
-                }
-            } catch (error) {
-                alert('❌ 서버와 통신 중 오류가 발생했습니다.');
-                resetSubmitButton();
-            }
-        });
-
-        function resetSubmitButton() {
-            const submitBtn = document.getElementById('submit-btn');
-            const btnText = document.getElementById('btn-text');
-            submitBtn.disabled = false;
-            submitBtn.style.background = '#4f46e5';
-            btnText.innerText = '등록하기';
+            // 2. Flask 서버(app.py)로 실제 이미지 파일을 전송하여 AI 분석 요청
+            document.getElementById('upload-form').submit();
         }
     </script>
 </body>

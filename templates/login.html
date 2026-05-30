@@ -15,6 +15,10 @@
             --text: #0f172a;
             --border: #e2e8f0;
             --brand-color: #4f46e5;
+            --brand-color-secondary: #6d28d9;
+            --input-bg: #f8fafc;
+            --modal-bg: rgba(15, 23, 42, 0.3);
+            --modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
         body {
@@ -57,13 +61,13 @@
             border-radius: 16px;
             font-size: 0.95rem;
             box-sizing: border-box;
-            background: #f8fafc;
+            background: var(--input-bg);
         }
 
         .login-btn {
             width: 100%;
             padding: 16px;
-            background: var(--brand-color);
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 16px;
@@ -74,7 +78,7 @@
         }
 
         .login-btn:hover {
-            background: #4338ca;
+            background: #111827;
         }
 
         /* 체크박스 및 링크 정렬 */
@@ -116,7 +120,7 @@
             margin-left: 5px;
         }
 
-        /* 모달 스타일 */
+        /* 모달 공통 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -124,43 +128,127 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.3);
+            background: var(--modal-bg);
             backdrop-filter: blur(4px);
             z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
         }
 
         .modal-card {
             background: white;
-            padding: 35px 30px;
-            border-radius: 28px;
+            padding: 40px;
+            border-radius: 32px;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.9);
             text-align: left;
+            box-sizing: border-box;
+            box-shadow: var(--modal-shadow);
+            opacity: 0;
+            transition: all 0.3s;
         }
 
+        .modal-overlay.active .modal-card {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 1.5rem;
+            color: #64748b;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal-header h3 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .modal-header p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        /* 모달 전용 입력 폼 */
         .modal-control {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px;
             border: 1px solid var(--border);
             border-radius: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             box-sizing: border-box;
+            background: var(--input-bg);
+            font-size: 0.9rem;
         }
 
-        .modal-submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: #0f172a;
+        /* 이메일 입력 + 버튼 줄 */
+        .modal-email-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .modal-email-row .modal-control {
+            margin-bottom: 0;
+            flex-grow: 1;
+        }
+
+        .modal-sub-btn {
+            background: var(--brand-color);
             color: white;
             border: none;
             border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .modal-sub-btn:hover {
+            background: var(--brand-color-secondary);
+        }
+
+        /* 하단 메인 제출 버튼 */
+        .modal-submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 16px;
             cursor: pointer;
             font-weight: 700;
-            margin-top: 10px;
+            font-size: 1rem;
+            margin-top: 30px;
+        }
+
+        .modal-submit-btn:hover {
+            background: var(--brand-color-secondary);
+        }
+
+        .error-message {
+            display: none;
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-align: left;
         }
     </style>
 </head>
@@ -180,8 +268,10 @@
 
             <div class="options-container">
                 <label class="keep-login"><input type="checkbox"> 로그인 상태 유지</label>
-                <div>
-                    <a href="#" onclick="event.preventDefault(); openModal('pw-modal')">아이디/비밀번호 찾기</a>
+                <div class="find-links">
+                    <a href="#" onclick="event.preventDefault(); openModal('id-modal')">아이디 찾기</a>
+                    <span> | </span>
+                    <a href="#" onclick="event.preventDefault(); openModal('pw-modal')">비밀번호 찾기</a>
                 </div>
             </div>
             <button type="submit" class="login-btn">로그인</button>
@@ -192,29 +282,67 @@
         </div>
     </div>
 
-    <div id="pw-modal" class="modal-overlay">
+    <div id="id-modal" class="modal-overlay">
         <div class="modal-card">
-            <h3>비밀번호 찾기</h3>
-
-            <div id="pw-step-verify" class="modal-step" style="display:block;">
-                <input type="text" id="find-pw-name" class="modal-control" placeholder="이름">
-                <input type="text" id="find-pw-id" class="modal-control" placeholder="아이디">
-                <input type="email" id="find-pw-email" class="modal-control" placeholder="이메일">
-                <button class="modal-submit-btn" onclick="sendPwVerifyCode()">인증번호 발송</button>
-                <input type="text" id="find-pw-code" class="modal-control" placeholder="인증번호">
-                <button class="modal-submit-btn" onclick="verifyPwCode()">본인 확인 완료</button>
+            <button class="modal-close" onclick="closeModal('id-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3>아이디 찾기</h3>
+                <p>가입할 때 등록한 이름과 이메일로 인증을 진행해 줘!</p>
             </div>
 
-            <div id="pw-step-reset" class="modal-step">
-                <input type="password" id="new-pw" class="modal-control" placeholder="새 비밀번호">
-                <input type="password" id="new-pw-confirm" class="modal-control" placeholder="비밀번호 확인">
-                <button class="modal-submit-btn" onclick="submitResetPw()">비밀번호 변경</button>
+            <div class="modal-step">
+                <input type="text" id="find-id-name" class="modal-control" placeholder="이름 입력">
+
+                <div class="modal-email-row">
+                    <input type="email" id="find-id-email" class="modal-control" placeholder="이메일 주소 입력">
+                    <button class="modal-sub-btn" onclick="sendIdVerificationCode()">이메일 인증</button>
+                </div>
+
+                <input type="text" id="find-id-code" class="modal-control" placeholder="인증번호 입력">
+                <button class="modal-submit-btn" onclick="submitFindId()">아이디 찾기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pw-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('pw-modal')"><i class="fas fa-times"></i></button>
+
+            <div id="pw-step-verify" style="display: block;">
+                <div class="modal-header">
+                    <h3>비밀번호 찾기</h3>
+                    <p>본인 확인을 위해 이름, 아이디, 이메일 인증을 진행해 줘!</p>
+                </div>
+                <div class="modal-step">
+                    <input type="text" id="find-pw-name" class="modal-control" placeholder="이름 입력">
+                    <input type="text" id="find-pw-id" class="modal-control" placeholder="아이디 입력">
+
+                    <div class="modal-email-row">
+                        <input type="email" id="find-pw-email" class="modal-control" placeholder="이메일 주소 입력">
+                        <button class="modal-sub-btn" onclick="sendPwVerificationCode()">이메일 인증</button>
+                    </div>
+
+                    <input type="text" id="find-pw-code" class="modal-control" placeholder="인증번호 입력">
+                    <button class="modal-submit-btn" onclick="submitVerifyPwCode()">인증 확인</button>
+                </div>
+            </div>
+
+            <div id="pw-step-reset" style="display: none;">
+                <div class="modal-header">
+                    <h3>비밀번호 재설정</h3>
+                    <p>새로 사용할 비밀번호를 안전하게 입력해 주세요.</p>
+                </div>
+                <div class="modal-step">
+                    <input type="password" id="new-pw" class="modal-control" placeholder="새 비밀번호 입력">
+                    <input type="password" id="new-pw-confirm" class="modal-control" placeholder="비밀번호 확인 입력">
+                    <button class="modal-submit-btn" onclick="submitPasswordReset()">비밀번호 변경 및 로그인</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. 로그인 요청
+        // 로그인 처리 함수
         async function submitLogin(event) {
             event.preventDefault();
             const login_id = document.getElementById('login-id').value;
@@ -226,7 +354,7 @@
                 const res = await fetch("{{ url_for('login') }}", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ login_id: login_id, password: password })
+                    body: JSON.stringify({ login_id, password })
                 });
 
                 if (res.ok) {
@@ -242,23 +370,138 @@
             }
         }
 
-        // 2. 모달 제어
-        function openModal(id) { document.getElementById(id).style.display = 'block'; }
-
-        function verifyPwCode() {
-            alert('인증되었습니다.');
-            document.getElementById('pw-step-verify').style.display = 'none';
-            document.getElementById('pw-step-reset').style.display = 'block';
+        // 모달 열기/닫기 제어
+        function openModal(id) {
+            const overlay = document.getElementById(id);
+            overlay.style.display = 'block';
+            setTimeout(() => overlay.classList.add('active'), 10);
         }
 
-        function submitResetPw() {
-            const newPw = document.getElementById('new-pw').value;
-            if (newPw !== document.getElementById('new-pw-confirm').value) {
-                alert('비밀번호가 일치하지 않습니다.');
-                return;
+        function closeModal(id) {
+            const overlay = document.getElementById(id);
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.style.display = 'none', 300);
+        }
+
+        // =============================================================
+        // 1. [아이디 찾기] API 라우터 연동 구조식 
+        // =============================================================
+        async function sendIdVerificationCode() {
+            const name = document.getElementById('find-id-name').value;
+            const email = document.getElementById('find-id-email').value;
+
+            if (!name || !email) return alert("이름과 이메일을 입력해 주세요.");
+
+            // app.py의 @app.route('/api/find-id/request') 로 전송
+            const res = await fetch('/api/find-id/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert(data.message);
+            } else {
+                alert(data.error || "인증번호 발송에 실패했습니다.");
             }
-            alert('비밀번호가 변경되었습니다.');
-            location.reload();
+        }
+
+        async function submitFindId() {
+            const name = document.getElementById('find-id-name').value;
+            const email = document.getElementById('find-id-email').value;
+            const code = document.getElementById('find-id-code').value;
+
+            if (!code) return alert("인증번호를 입력해 주세요.");
+
+            // app.py의 @app.route('/api/find-id/verify') 로 전송
+            const res = await fetch('/api/find-id/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, code })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert(`🎉 찾으시는 아이디는 [ ${data.login_id} ] 입니다.`);
+                closeModal('id-modal');
+            } else {
+                alert(data.error || "인증번호가 올바르지 않습니다.");
+            }
+        }
+
+        // =============================================================
+        // 2. [비밀번호 찾기] API 라우터 연동 구조식
+        // =============================================================
+        async function sendPwVerificationCode() {
+            const name = document.getElementById('find-pw-name').value;
+            const login_id = document.getElementById('find-pw-id').value;
+            const email = document.getElementById('find-pw-email').value;
+
+            if (!name || !login_id || !email) return alert("이름, 아이디, 이메일을 모두 입력해 주세요.");
+
+            // app.py의 @app.route('/api/find-pw/request') 로 전송
+            const res = await fetch('/api/find-pw/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, login_id, email })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert(data.message);
+            } else {
+                alert(data.error || "가입 정보 조회에 실패했습니다.");
+            }
+        }
+
+        async function submitVerifyPwCode() {
+            const email = document.getElementById('find-pw-email').value;
+            const code = document.getElementById('find-pw-code').value;
+
+            if (!code) return alert("인증번호를 입력해 주세요.");
+
+            // app.py의 @app.route('/api/find-pw/verify') 로 전송
+            const res = await fetch('/api/find-pw/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert(data.message);
+                // 1단계 창 숨기고 2단계(새 비밀번호 재설정 창) 띄우기
+                document.getElementById('pw-step-verify').style.display = 'none';
+                document.getElementById('pw-step-reset').style.display = 'block';
+            } else {
+                alert(data.error || "인증번호가 일치하지 않습니다.");
+            }
+        }
+
+        async function submitPasswordReset() {
+            const login_id = document.getElementById('find-pw-id').value;
+            const new_pw = document.getElementById('new-pw').value;
+            const new_pw_confirm = document.getElementById('new-pw-confirm').value;
+
+            if (!new_pw || !new_pw_confirm) return alert("비밀번호를 입력해 주세요.");
+            if (new_pw !== new_pw_confirm) return alert("비밀번호가 서로 일치하지 않습니다.");
+
+            // app.py의 @app.route('/api/find-pw/reset') 로 전송
+            const res = await fetch('/api/find-pw/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login_id, new_pw, new_pw_confirm })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert(data.message);
+                // 자동 로그인이 완료되었으므로 바로 대시보드 메인으로 리다이렉트
+                location.href = "{{ url_for('home_page') }}";
+            } else {
+                alert(data.error || "비밀번호 초기화 도중 에러가 발생했습니다.");
+            }
         }
     </script>
 </body>

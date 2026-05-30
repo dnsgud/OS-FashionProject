@@ -21,28 +21,53 @@ supabase = create_client(url, key)
 # ==========================================
 def process_user_upload(file_path, user_email): 
     storage_path = f"cloth_{int(time.time())}.jpg" 
+
     try:
+        # AI 분석을 가장 먼저 실행
+        print(f"\n[서버 로그] 1단계: AI 의류 분석 시작 (파일: {file_path})")
         ai_result = analyze_cloth(file_path)
         
-        # 스토리지 업로드
-        with open(file_path, 'rb') as f:  
-            supabase.storage.from_('test-clothes-imgaes').upload(path=storage_path, file=f)
-        image_url = supabase.storage.from_('test-clothes-imgaes').get_public_url(storage_path) 
+        if "error" in ai_result:
+            raise Exception(f"AI 분석 실패: {ai_result['error']}")
+            
+        print(f"[서버 로그] AI 분석 완료: {ai_result['name']} ({ai_result['color']})")
 
-        # DB에 저장하지 않고 데이터만 구성해서 리턴합니다 (app.py에서 처리함)
-        return {
-            "user_email": user_email,
-            "main_category": ai_result["main_category"],
-            "sub_category": ai_result["sub_category"],
-            "name": ai_result["name"],
-            "color": ai_result["color"],
-            "style": ai_result["style"],
-            "fit": "레귤러핏", # 이제 fit 컬럼이 존재하므로 에러 안 남
-            "image_url": image_url,
-            "is_verified": False # 임시 상태
+        print("[서버 로그] 2단계: Storage 업로드 시도 중...")
+        with open(file_path, 'rb') as f:  
+            supabase.storage.from_('test-clothes-imgaes').upload(  
+                path=storage_path,  
+                file=f  
+            )
+
+        print("[서버 로그] 3단계: 이미지 URL 확보 시도 중...")
+        image_url = supabase.storage.from_('test-clothes-imgaes').get_public_url(storage_path)  
+        print(f"🔗 이미지 URL 확보: {image_url}")  
+
+        # 가짜 데이터 대신 AI가 분석한 진짜 데이터(ai_result)를 삽입
+        data = {
+            "user_email": user_email,                        # app.py와 컬럼명 완벽 매칭
+            "main_category": ai_result["main_category"],     
+            "sub_category": ai_result["sub_category"],       
+            "name": ai_result["name"],                       
+            "temp_level": 5,                                 # [유지] AI 분석 불가 항목: 임의의 기본값 5 부여
+            "color": ai_result["color"],                     
+            "style": ai_result["style"],                     
+            "fit": "레귤러핏",                                 # [추가] AI 분석 불가 항목: 임시 기본 핏 부여
+            "image_url": image_url,                          
+            "ai_tags": ai_result.get("ai_tags", []),         # 삭제되었던 AI 원본 태그 DB 저장 복구!
+            "is_verified": False
         }
+
+        print("[서버 로그] 4단계: DB 저장 시도 중...")
+        response = supabase.table('clothes').insert(data).execute()
+        
+        print("[서버 로그] ✅ 모든 단계 성공: DB 저장 완료")   
+        return response.data[0] 
+
     except Exception as e:
-        print(f"❌ 분석 오류: {e}")
+        print(f"\n[서버 로그] ❌ 업로드 프로세스 에러")
+        print(f"에러 메시지: {e}")
+        traceback.print_exc()
         return None
 
 
@@ -171,8 +196,8 @@ def handle_cloth_registration(register_type, user_email, payload, file_path=None
 # ==========================================
 def _filter_closet_keys(edit_data):
     """[알고리즘] 허용된 컬럼만 통과시키는 내부 필터링 함수이다."""
-    # [추가] 수정 허용 목록에 'fit' 추가
-    allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style', 'fit'] 
+    # 'is_verified'를 허용 목록에 반드시 추가해야 합니다!
+    allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style', 'fit', 'is_verified'] 
     filtered = {k: v for k, v in edit_data.items() if k in allowed}
     return filtered
 
@@ -183,7 +208,6 @@ def _validate_closet_types(filtered_data):
         
     if 'temp_level' in filtered_data:
         filtered_data['temp_level'] = int(filtered_data['temp_level'])
-        
     if 'color' in filtered_data:
         original_color = filtered_data['color']
         safe_color = _sanitize_color_input(original_color)
@@ -192,9 +216,18 @@ def _validate_closet_types(filtered_data):
     return filtered_data
 
 def _execute_closet_update_query(cloth_id, user_email, clean_data):
-    """[DB] Supabase에 접근하여 실제 업데이트 쿼리를 수행"""
-    query = supabase.table('clothes').update(clean_data)
-    response = query.eq('id', cloth_id).eq('user_email', user_email).execute()
+    print(f"DEBUG: 조회 시도 -> ID: {cloth_id} ({type(cloth_id)}), Email: '{user_email}'")
+    
+    # 1. 실제 DB에 데이터가 있는지 확인하는 쿼리
+    check = supabase.table('clothes').select('id').eq('id', cloth_id).eq('user_email', user_email).execute()
+    print(f"DEBUG: DB에서 찾은 데이터 개수: {len(check.data)}")
+    
+    if len(check.data) == 0:
+        print("DEBUG: 실패! DB에 해당 조건의 데이터가 없습니다.")
+        return None
+
+    # 2. 업데이트 수행
+    response = supabase.table('clothes').update(clean_data).eq('id', cloth_id).eq('user_email', user_email).execute()
     return response.data
 
 def update_closet_cloth(cloth_id, user_email, edit_data):

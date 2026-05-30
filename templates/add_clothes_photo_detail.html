@@ -162,6 +162,7 @@
             background-size: 16px;
         }
 
+        /* 요구한 화면의 색상 선택기 래퍼 */
         .color-picker-wrapper {
             display: flex;
             align-items: center;
@@ -189,6 +190,7 @@
             outline: none;
         }
 
+        /* 스타일 태그 디자인 원복 및 최적화 */
         .hashtag-container {
             display: flex;
             flex-wrap: wrap;
@@ -213,6 +215,7 @@
             color: #4f46e5;
         }
 
+        /* 체감 온도 레벨 설정 슬라이더 파트 */
         .temp-card {
             background: #f8fafc;
             border-radius: 16px;
@@ -250,9 +253,6 @@
 
         .temp-slider {
             -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-
             width: 100%;
             height: 8px;
             border-radius: 4px;
@@ -297,6 +297,7 @@
             background: #0f172a;
         }
 
+        /* 커스텀 모달 스타일 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -389,7 +390,7 @@
 
 <body>
     <header>
-        <a href="{{ url_for('add_clothes_photo_detail') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <a href="upload.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
     </header>
 
     <main>
@@ -448,10 +449,10 @@
                 <div class="input-group">
                     <label>스타일</label>
                     <div class="hashtag-container">
-                        <span class="tag" onclick="toggleTag(this)">#캐주얼</span>
-                        <span class="tag" onclick="toggleTag(this)">#데이트</span>
-                        <span class="tag" onclick="toggleTag(this)">#비즈니스</span>
-                        <span class="tag" onclick="toggleTag(this)">#스트릿</span>
+                        <span class="tag" onclick="toggleTag(this)">캐주얼</span>
+                        <span class="tag" onclick="toggleTag(this)">데이트</span>
+                        <span class="tag" onclick="toggleTag(this)">비즈니스</span>
+                        <span class="tag" onclick="toggleTag(this)">스트릿</span>
                     </div>
                 </div>
 
@@ -460,14 +461,14 @@
                     <div class="temp-card">
                         <div class="temp-header">
                             <span class="temp-title">내가 느끼는 옷의 두께감</span>
-                            <span class="temp-badge" id="temp-badge">Lv.5</span>
+                            <span class="temp-badge" id="temp-badge"></span>
                         </div>
                         <div class="slider-container">
                             <input type="range" min="1" max="10" value="5" class="temp-slider" id="temp-slider"
                                 oninput="updateTempLevel(this.value)">
                         </div>
                         <p class="temp-description" id="temp-desc">
-                            🌡️ <strong>[Lv.5 완연한 봄·가을 / 17°C ~ 19°C]</strong> 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은
+                            icon <strong>[Lv.5 완연한 봄·가을 / 17°C ~ 19°C]</strong> 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은
                             옷이야.
                         </p>
                     </div>
@@ -482,26 +483,28 @@
         <div class="modal-content">
             <div class="modal-title">저장하시겠습니까?</div>
             <div class="modal-buttons">
-                <button class="modal-btn cancel" onclick="closeModal()">취소</button>
-                <button class="modal-btn confirm" onclick="confirmSave()">확인</button>
+                <button class="modal-btn cancel" onclick="cancelRegistration()">취소</button>
+
+                <button class="modal-btn confirm" id="confirm-btn" onclick="confirmSave()">확인</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. 데이터 정의 (기존 구조 유지)
+        const clothId = "{{ results.id | default('') }}";
+        const userEmail = "{{ user_email | default('') }}"
+
+        console.log("확인용 clothId:", clothId);
+        console.log("확인용 userEmail:", userEmail);
+
         const subData = {
-            "상의": ["반팔 티셔츠", "긴팔 티셔츠", "셔츠/블라우스", "맨투맨/후드", "니트/스웨터"],
-            "하의": ["데님", "슬랙스", "트레이닝/조거", "치마", "반바지"],
-            "아우터": ["코트", "자켓", "패딩", "가디건", "바람막이"],
-            "원피스": ["미니 원피스", "롱 원피스"]
+            "상의": ["이너", "아우터"],
+            "하의": ["바지"]
         };
 
         const fitData = {
-            "상의": ["오버핏", "스탠다드핏", "세미오버핏"],
-            "하의": ["와이드핏", "테이퍼드핏", "슬림핏", "레귤러핏"],
-            "아우터": ["루즈핏", "레귤러핏"],
-            "원피스": ["기본핏"]
+            "상의": ["오버핏", "레귤러핏", "세미오버핏"],
+            "하의": ["와이드핏", "테이퍼드핏", "슬림핏", "레귤러핏"]
         };
 
         const tempDescriptions = {
@@ -517,10 +520,6 @@
             10: "한겨울 최강 한파 속에 입는 극강의 보온성을 가진 헤비 다운 패딩 종류야."
         };
 
-        // 전역 변수로 저장할 이미지 URL 바구니
-        let globalStorageImageUrl = "";
-
-        // 메인 카테고리 변경 시 소분류/핏 동적 변경 함수
         document.getElementById('category-main').onchange = handleMainCategoryChange;
 
         function handleMainCategoryChange() {
@@ -531,7 +530,7 @@
             subSelect.innerHTML = "";
             fitSelect.innerHTML = "";
 
-            if (main && subData[main] && fitData[main]) {
+            if (main) {
                 subSelect.disabled = false;
                 fitSelect.disabled = false;
 
@@ -559,74 +558,49 @@
         }
 
         function updateTempLevel(value) {
-            const badge = document.getElementById('temp-badge');
-            const desc = document.getElementById('temp-desc');
-            if (badge) badge.innerText = `Lv.${value}`;
-
-            let descHtml = `🌡️ <strong>[Lv.${value} 두께감 적용]</strong> ${tempDescriptions[value] || ''}`;
+            document.getElementById('temp-badge').innerText = `Lv.${value}`;
+            let descHtml = `icon <strong>[Lv.${value} 두께감 적용]</strong> ${tempDescriptions[value]}`;
             if (value == 5) {
-                descHtml = `🌡️ <strong>[Lv.5 완연한 봄·가을 / 17°C ~ 19°C]</strong> 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은 옷이야.`;
+                descHtml = `💰 <strong>[Lv.5 완연한 봄·가을 / 17°C ~ 19°C]</strong> 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은 옷이야.`;
             }
-            if (desc) desc.innerHTML = descHtml;
+            document.getElementById('temp-desc').innerHTML = descHtml;
         }
 
-        // 💡 [핵심 수정]: 페이지가 열릴 때 앞 화면(add_clothes_photo)에서 저장한 AI 진짜 데이터를 가져와서 채워넣음
-        window.addEventListener('DOMContentLoaded', () => {
-            const aiDataRaw = localStorage.getItem('ai_data');
-
-            if (!aiDataRaw) {
-                alert('비정상적인 접근이거나 분석된 데이터가 없습니다! 업로드 화면으로 돌아갑니다.');
-                location.href = "{{ url_for('add_clothes_photo') }}";
+        window.onload = function () {
+            const imgData = localStorage.getItem('analyzingImg');
+            if (!imgData) {
+                alert('비정상적인 접근이야! 업로드 화면으로 돌려보낼게.');
+                location.href = 'upload.html';
                 return;
             }
 
-            const aiData = JSON.parse(aiDataRaw);
+            document.getElementById('analyzed-img').src = imgData;
 
-            // 1. AI가 분석해서 올려준 이미지 띄우기
-            const analyzedImg = document.getElementById('analyzed-img');
-            if (analyzedImg) {
-                analyzedImg.src = aiData.image_url || "/static/uploads/mock_image.png";
-            }
-            globalStorageImageUrl = aiData.image_url || "";
+            // 2초 간의 AI 가상 로딩 후 2번째 이미지 로직 양식 데이터 세팅 시뮬레이션
+            setTimeout(() => {
+                document.getElementById('ai-loading').style.display = 'none';
 
-            // 로딩 인디케이터 제거
-            const loadingIndicator = document.getElementById('ai-loading');
-            if (loadingIndicator) loadingIndicator.style.display = 'none';
+                document.getElementById('name').value = "{{ results.detected_name }}";
+                document.getElementById('category-main').value = "{{ results.detected_main }}";
+                handleMainCategoryChange();
 
-            // 2. AI가 가공해준 텍스트 데이터를 입력창에 자동 매핑
-            document.getElementById('name').value = aiData.name || 'AI 추천 옷 스타일';
+                document.getElementById('category-sub').value = "{{ results.detected_sub }}";
+                document.getElementById('category-fit').value = "{{ results.detected_fit }}";
 
-            const mainCat = aiData.main_category || '상의';
-            document.getElementById('category-main').value = mainCat;
+                // 색상 칩 원형 배경 및 텍스트 폼 동시 입력
+                document.getElementById('color-preview').style.backgroundColor = "{{ results.detected_color }}";
+                document.getElementById('color-code').value = "{{ results.detected_color }}";
 
-            // 메인 카테고리에 맞춰 소분류 리스트 동적 갱신 실행
-            handleMainCategoryChange();
+                // 스타일 해시태그 바인딩 (#캐주얼 활성화)
+                const tags = document.querySelectorAll('.tag');
+                tags[0].classList.add('active');
 
-            // 3. AI가 뽑아준 세부 옷 종류 및 핏 자동 선택
-            if (aiData.sub_category) {
-                document.getElementById('category-sub').value = aiData.sub_category;
-            }
-            if (aiData.fit) {
-                document.getElementById('category-fit').value = aiData.fit;
-            }
+                // 슬라이더 바 세팅 및 트리거
+                document.getElementById('temp-slider').value = 5;
+                updateTempLevel(5);
+            }, 2000);
+        };
 
-            // 4. 색상 매핑
-            const hexColor = aiData.color || '#4f46e5';
-            const colorPreview = document.getElementById('color-preview');
-            const colorCode = document.getElementById('color-code');
-            if (colorPreview) colorPreview.style.backgroundColor = hexColor;
-            if (colorCode) colorCode.value = hexColor;
-
-            // 5. 추천 두께감(기온 레벨) 슬라이더 초기화
-            const tempLevel = aiData.temp_level || 5;
-            const tempSlider = document.getElementById('temp-slider');
-            if (tempSlider) {
-                tempSlider.value = tempLevel;
-                updateTempLevel(tempLevel);
-            }
-        });
-
-        // 저장 버튼 클릭 시 모달 열기
         function saveItem() {
             if (!document.getElementById('name').value) {
                 alert('옷의 이름을 입력해줘!');
@@ -639,29 +613,79 @@
             document.getElementById('save-modal').style.display = 'none';
         }
 
+        // [확인 버튼] 최종 코드
         async function confirmSave() {
-            const aiData = JSON.parse(localStorage.getItem('ai_data'));
-            const clothId = aiData.id; // app.py에서 받아온 바로 그 ID
+            const confirmBtn = document.getElementById('confirm-btn');
+            confirmBtn.innerText = '저장 중...';
+            confirmBtn.disabled = true;
 
-            const finalData = {
-                id: clothId, // 백엔드에서 찾을 ID
-                name: document.getElementById('name').value,
-                main_category: document.getElementById('category-main').value,
-                sub_category: document.getElementById('category-sub').value,
-                color: document.getElementById('color-code').value,
-                temp_level: document.getElementById('temp-slider').value,
-                tags: [] // 태그 수집 로직 추가
+            // 선택된 태그들 수집
+            const activeTags = Array.from(document.querySelectorAll('.tag.active')).map(tag => tag.innerText);
+
+            // 전송할 데이터 구조 (JSON)
+            const payload = {
+                cloth_id: clothId, // <script> 상단에서 렌더링된 값
+                user_email: userEmail, // <script> 상단에서 렌더링된 값
+                modified_data: {
+                    name: document.getElementById('name').value,
+                    main_category: document.getElementById('category-main').value,
+                    sub_category: document.getElementById('category-sub').value,
+                    fit: document.getElementById('category-fit').value,
+                    color: document.getElementById('color-code').value,
+                    style: activeTags.join(','),
+                    is_verified: true
+                }
             };
 
-            const response = await fetch('/api/upload', { // 동일한 라우터지만 is_json이 True이므로 A분기 실행
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(finalData)
-            });
+            try {
+                const response = await fetch('/api/clothes/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload) // JSON 문자열로 변환하여 전송
+                });
 
-            if (response.ok) {
-                alert("🎉 옷장 등록 완료!");
-                location.href = "{{ url_for('my_closet') }}";
+                const result = await response.json();
+                if (response.ok) {
+                    alert('성공!');
+                    location.href = '/my_closet';
+                } else {
+                    alert('실패: ' + result.error);
+                }
+            } catch (error) {
+                alert('서버 통신 오류');
+            } finally {
+                confirmBtn.innerText = '확인';
+                confirmBtn.disabled = false;
+            }
+        }
+
+        // [취소] 버튼 클릭 시 실행될 함수
+        async function cancelRegistration() {
+            if (!confirm("정말 등록을 취소하고 분석된 데이터를 삭제할까?")) {
+                document.getElementById('save-modal').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/clothes/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cloth_id: clothId,
+                        user_email: userEmail
+                    })
+                });
+
+                if (response.ok) {
+                    alert('등록이 취소되고 임시 데이터가 삭제되었어.');
+                    localStorage.removeItem('analyzingImg');
+                    document.getElementById('save-modal').style.display = 'none';
+                    location.href = '/my_closet';
+                } else {
+                    alert('데이터 삭제 중 문제가 발생했어.');
+                }
+            } catch (error) {
+                console.error('API 연동 실패:', error);
             }
         }
 
