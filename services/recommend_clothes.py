@@ -107,49 +107,39 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
     top_lv = fit_map.get(top_fit, 2)     # 맵에 없으면 기본값 스탠다드(2)로 방어
     bottom_lv = fit_map.get(bottom_fit, 2)
     
-    
     # 1. 상/하의 핏 실루엣 조화도 (10점 만점)
-    # 상하의 극단적 미스매치(머슬/슬림+와이드 등) 페널티 부여
-    if (top_fit in ['머슬핏', '슬림'] and bottom_fit == '와이드') or \
-       (top_fit == '와이드' and bottom_fit == '슬림'):
-        score += 3  
+    fit_diff = abs(top_lv - bottom_lv)
+    
+    if fit_diff >= 3:
+        silhouette_score = 3   # 극단적 미스매치 감점
+    elif fit_diff == 2:
+        silhouette_score = 7   # 언밸런스 실루엣
     else:
-        score += 10 
+        silhouette_score = 10  # 조화로운 실루엣
 
     # 2. 사용자 체형별 핏 적합도 (10점 만점)
     if not user_body_shape:
-        return score + 10  
+        return silhouette_score + 10  # 체형 정보가 선택 안 된 유저는 계산하지 않음
         
     body_shape = user_body_shape.strip()
+    body_score = 10  # 기본 만점 부여 후 기피 조건 체크
     
     # [근육질 / 역삼각형 체형]
     if '근육' in body_shape or '역삼각형' in body_shape:
-        if top_fit in ['머슬핏', '레귤러핏', '세미와이드']:
-            score += 10
-        elif top_fit == '슬림':
-            score += 4  
-        else:
-            score += 7
-
+        if top_lv == 5:
+            body_score = 7  # 너무 벙벙한 오버핏 상의는 다부진 체형 장점을 과도하게 가림
+            
     # [마른 / 왜소한 체형]
     elif '마름' in body_shape or '슬림' in body_shape or '왜소' in body_shape:
-        if top_fit == '머슬핏' or bottom_fit == '와이드':
-            score += 4  
-        else:
-            score += 10
+        if top_fit in ['슬림', '슬림핏'] or bottom_lv in [4, 5]:
+            body_score = 4  # 마른 뼈대를 부각하는 슬림핏 상의나, 몸이 왜소해 보일 수 있는 와이드/오버 하의 기피
             
     # [통통한 / 체격이 큰 체형]
-    elif '통통' in body_shape or '큰' in body_shape or '비만' in body_shape:
-        if top_fit in ['슬림', '머슬핏'] or bottom_fit == '슬림':
-            score += 3  
-        else:
-            score += 10
+    elif '통통' in body_shape or '큰' in body_shape:
+        if top_lv == 1 or bottom_lv == 1:
+            body_score = 3  # 신체 라인이 너무 직관적으로 드러나 부적합한 슬림 핏 라인 감점
             
-    # [일반 / 보통 체형]
-    else:
-        score += 10
-        
-    return score
+    return silhouette_score + body_score
     
 def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user_body_shape, clothes_db):
     """웹 서버용 추천 메인 로직 (체형 및 핏 반영 100점 만점 버전)"""
