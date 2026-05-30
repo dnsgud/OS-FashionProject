@@ -139,8 +139,8 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
         
     return score
     
-def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clothes_db):
-    """웹 서버용 추천 메인 로직"""
+def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user_body_shape, clothes_db):
+    """웹 서버용 추천 메인 로직 (체형 및 핏 반영 100점 만점 버전)"""
     sensory_temp = calculate_sensory_temp(current_temp, humidity, wind_speed)
     target_lv = get_target_level(sensory_temp)
 
@@ -160,7 +160,7 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clot
             if inner['temp_level'] + outer['temp_level'] == target_lv:
                 valid_top_combos.append([inner, outer])
 
-    # 3. 조합 및 3가지 점수 계산
+    # 3. 조합 및 4가지 점수 계산
     outfits = []
     for top_combo in valid_top_combos:
         for bottom in valid_bottoms:
@@ -169,9 +169,10 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clot
             style_score = calculate_style_score(full_outfit, target_tpo)
             color_score = calculate_color_score(top_combo, bottom, target_lv)
             temp_score = calculate_temperature_score(top_combo, bottom, target_lv)
+            fit_score = calculate_fit_score(top_combo, bottom, user_body_shape)
             
-            # 최종 패션 점수 (최대 100점: 스타일 45 + 색상 35 + 온도 20)
-            fashion_score = style_score + color_score + temp_score
+            # 최종 패션 점수 (최대 100점 만점: 스타일 30 + 색상 30 + 온도 20 + 핏 20)
+            fashion_score = style_score + color_score + temp_score + fit_score
             total_wear_count = sum([c.get('monthly_wear_count', 0) for c in full_outfit])
             
             outfits.append({
@@ -182,6 +183,7 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clot
                 "style_score": style_score,
                 "color_score": color_score,
                 "temp_score": temp_score,
+                "fit_score": fit_score,
                 "total_lv": sum([c['temp_level'] for c in top_combo])
             })
 
