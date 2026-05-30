@@ -91,20 +91,18 @@ def _extract_and_validate_signup_data(input_data):
     return None
 
 def _execute_signup_pipeline(clean_data):
-    # 기존 auth_service의 가입 로직 호출 (이메일, 비밀번호)
-    auth_success = sign_up_user(clean_data["email"], clean_data["password"])
+    # 기존 auth_service의 가입 로직 호출 (이중 저장 방지를 위해 모든 확장 데이터를 한 번에 전달)
+    auth_success = sign_up_user(
+        email=clean_data["email"],
+        password=clean_data["password"],
+        nickname=clean_data["nickname"],
+        login_id=clean_data["login_id"],  # [추가]
+        name=clean_data["name"]           # [추가]
+    )
     
+    # DB 저장은 sign_up_user 내부에서 통합 처리되므로 성공 여부만 반환한다
     if auth_success:
-        # 인증 계정 생성 성공 시, public.users 테이블에 확장 데이터 저장
-        profile_data = {
-            "login_id": clean_data["login_id"],
-            "email": clean_data["email"],
-            "nickname": clean_data["nickname"],
-            "name": clean_data["name"]
-        }
-        query = supabase.table('users').insert(profile_data)
-        response = query.execute()
-        return response.data
+        return True
     
     return None
 

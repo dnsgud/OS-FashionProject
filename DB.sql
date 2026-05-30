@@ -3,9 +3,11 @@
 -- ==========================================
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+    login_id TEXT UNIQUE NOT NULL, 
     email TEXT UNIQUE NOT NULL,
-    pw TEXT NOT NULL,                              
-    nickname TEXT NOT NULL,                        
+    pw TEXT NOT NULL,                               
+    name TEXT NOT NULL,            
+    nickname TEXT NOT NULL,                                
     gender TEXT,                                   
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -26,6 +28,7 @@ CREATE TABLE IF NOT EXISTS clothes (
     temp_level INTEGER NOT NULL,                         
     color TEXT NOT NULL,                                 
     style TEXT[] DEFAULT '{}'::TEXT[],                   
+    fit TEXT DEFAULT '레귤러핏',                           -- [추가] 핏(Fit) 정보 저장 컬럼
     
     -- [AI 이미지 분석 및 부가 정보]
     image_url TEXT,                                      
