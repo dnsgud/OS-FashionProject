@@ -49,9 +49,10 @@ def process_user_upload(file_path, user_email):
             "main_category": ai_result["main_category"],     
             "sub_category": ai_result["sub_category"],       
             "name": ai_result["name"],                       
-            "temp_level": 5,                                 
+            "temp_level": 5,                                 # [유지] AI 분석 불가 항목: 임의의 기본값 5 부여
             "color": ai_result["color"],                     
             "style": ai_result["style"],                     
+            "fit": "레귤러핏",                                 # [추가] AI 분석 불가 항목: 임시 기본 핏 부여
             "image_url": image_url,                          
             "ai_tags": ai_result.get("ai_tags", []),         # 삭제되었던 AI 원본 태그 DB 저장 복구!
             "is_verified": False
@@ -84,11 +85,19 @@ def confirm_ai_analysis(cloth_id, user_email):
         return None
 
 def modify_and_confirm_ai_analysis(cloth_id, user_email, modified_data):
-    """사용자가 직접 수정한 데이터를 반영"""
+    """사용자가 직접 수정한 데이터(핏, 온도 포함)를 반영하고 최종 승인 처리하는 로직이다."""
     try:
         update_data = modified_data.copy()
         update_data["is_verified"] = True
         
+        # [추가] 프론트엔드에서 넘어온 피드백 데이터의 무결성 검증 및 형변환
+        if 'temp_level' in update_data:
+            update_data['temp_level'] = int(update_data['temp_level'])
+            
+        if 'color' in update_data:
+            update_data['color'] = _sanitize_color_input(update_data['color'])
+            
+        # 프론트엔드에서 fit 속성을 넘겨주면 update_data 딕셔너리에 포함되어 자동으로 DB를 덮어쓴다.
         response = supabase.table('clothes').update(update_data).eq('id', cloth_id).eq('user_email', user_email).execute()
         return response.data
     except Exception as e:
@@ -186,8 +195,9 @@ def handle_cloth_registration(register_type, user_email, payload, file_path=None
 # 4. 옷장 데이터 수정 및 삭제 모듈 (user_email 구조로 변경)
 # ==========================================
 def _filter_closet_keys(edit_data):
-    """[알고리즘] 허용된 컬럼만 통과시키는 내부 필터링 함수"""
-    allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style']
+    """[알고리즘] 허용된 컬럼만 통과시키는 내부 필터링 함수이다."""
+    # [추가] 수정 허용 목록에 'fit' 추가
+    allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style', 'fit'] 
     filtered = {k: v for k, v in edit_data.items() if k in allowed}
     return filtered
 
