@@ -32,120 +32,57 @@
             margin: 0;
         }
 
-        /* 카테고리별 섹션 */
         .category-section {
-            margin-bottom: 50px;
+            margin-bottom: 40px;
         }
 
         .category-title {
             font-size: 1.3rem;
             color: #1e293b;
-            margin-bottom: 15px;
             font-weight: 700;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .horizontal-scroll-box {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 15px;
-            scroll-behavior: smooth;
-        }
-
-        .horizontal-scroll-box::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .horizontal-scroll-box::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 10px;
-        }
-
-        .horizontal-scroll-box::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-
-        .horizontal-scroll-box::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        .closet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 20px;
         }
 
         .closet-item {
-            flex: 0 0 auto;
-            width: 140px;
-            height: 140px;
-            background: #ffffff;
-            border-radius: 16px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 15px;
             border: 1px solid #e2e8f0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
             text-decoration: none;
-            position: relative;
+            color: inherit;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
         }
 
         .closet-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
             border-color: #4f46e5;
         }
 
         .closet-item img {
             width: 100%;
-            height: 100%;
+            height: 140px;
             object-fit: cover;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            background: #f8fafc;
         }
 
         .item-label {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            color: #0f172a;
-            font-size: 0.8rem;
-            text-align: center;
-            padding: 8px 0;
+            font-size: 0.9rem;
             font-weight: 600;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .fab-button {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            width: 60px;
-            height: 60px;
-            background-color: #4f46e5;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.8rem;
-            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
-            cursor: pointer;
-            text-decoration: none;
-            z-index: 1000;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .fab-button:hover {
-            transform: scale(1.1);
-            background-color: #3730a3;
-        }
-
-        .empty-text {
-            color: #94a3b8;
-            font-size: 0.95rem;
-            padding: 20px 0;
-            font-weight: 500;
+            color: #334155;
         }
     </style>
 </head>
@@ -154,7 +91,7 @@
     <header>
         <nav>
             <div class="logo">
-                <a href="{{ url_for('home_page') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+                <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
                 <li>
@@ -182,17 +119,12 @@
                 </li>
                 <li>
                     {% if logged_in %}
-                    <div class="user-info" style="display: flex; align-items: center; gap: 12px; font-size: 14px;">
-                        <span style="font-weight: 600; color: #475569;">
-                            <i class="fa-regular fa-circle-user"></i> {{ user_email.split('@')[0] }}님
-                        </span>
-                        <a href="{{ url_for('logout') }}" class="login-btn"
-                            style="background: #ff6b6b; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block;">
-                            Logout
-                        </a>
-                    </div>
+                    <a href="{{ url_for('logout') }}" class="login-btn"
+                        style="background-color: #ef4444; text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
                     {% else %}
-                    <a class="login-btn" href="{{ url_for('login') }}"
+                    <a href="{{ url_for('login') }}" class="login-btn"
                         style="text-decoration: none; display: inline-block;">
                         <i class="fas fa-sign-in-alt"></i> Login
                     </a>
@@ -204,132 +136,123 @@
 
     <main class="closet-page-container">
         <div class="closet-header">
-            <h2>👗 나의 디지털 옷장</h2>
+            <h2>내 옷장</h2>
         </div>
 
         <section class="category-section">
-            <h3 class="category-title">상의</h3>
-            <div class="horizontal-scroll-box">
-                {% set top_count = namespace(value=0) %}
-                {% for item in clothes %}
-                {% if item.main_category == 'top' %}
-                {% set top_count.value = top_count.value + 1 %}
-                <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item">
-                    <img src="{{ item.image_url if item.image_url else '' }}" alt="상의"
-                        onerror="this.src='https://via.placeholder.com/140?text=Top'">
-                    <div class="item-label">{{ item.name }}</div>
-                </a>
-                {% endif %}
-                {% endfor %}
-
-                {% if top_count.value == 0 %}
-                <p class="empty-text">등록된 상의가 없습니다.</p>
-                {% endif %}
-            </div>
-        </section>
-
-        <section class="category-section">
-            <h3 class="category-title">하의</h3>
-            <div class="horizontal-scroll-box">
-                {% set bottom_count = namespace(value=0) %}
-                {% for item in clothes %}
-                {% if item.main_category == 'bottom' %}
-                {% set bottom_count.value = bottom_count.value + 1 %}
-                <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item">
-                    <img src="{{ item.image_url if item.image_url else '' }}" alt="하의"
-                        onerror="this.src='https://via.placeholder.com/140?text=Bottom'">
-                    <div class="item-label">{{ item.name }}</div>
-                </a>
-                {% endif %}
-                {% endfor %}
-
-                {% if bottom_count.value == 0 %}
-                <p class="empty-text">등록된 하의가 없습니다.</p>
-                {% endif %}
-            </div>
-        </section>
-
-        <section class="category-section">
-            <h3 class="category-title">아우터</h3>
-            <div class="horizontal-scroll-box">
-                {% set outer_count = namespace(value=0) %}
-                {% for item in clothes %}
-                {% if item.main_category == 'outer' %}
-                {% set outer_count.value = outer_count.value + 1 %}
-                <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item">
-                    <img src="{{ item.image_url if item.image_url else '' }}" alt="아우터"
+            <div class="category-title"><i class="fas fa-coat"></i> 아우터</div>
+            <div class="closet-grid">
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/leather_jacket.jpg') }}" alt="옷"
                         onerror="this.src='https://via.placeholder.com/140?text=Outer'">
-                    <div class="item-label">{{ item.name }}</div>
+                    <div class="item-label">레더 자킷</div>
                 </a>
-                {% endif %}
-                {% endfor %}
-
-                {% if outer_count.value == 0 %}
-                <p class="empty-text">등록된 아우터가 없습니다.</p>
-                {% endif %}
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/cardigan.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Outer'">
+                    <div class="item-label">검정 가디건</div>
+                </a>
             </div>
         </section>
 
         <section class="category-section">
-            <h3 class="category-title">신발</h3>
-            <div class="horizontal-scroll-box">
-                {% set shoes_count = namespace(value=0) %}
-                {% for item in clothes %}
-                {% if item.main_category == 'shoes' %}
-                {% set shoes_count.value = shoes_count.value + 1 %}
-                <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item">
-                    <img src="{{ item.image_url if item.image_url else '' }}" alt="신발"
-                        onerror="this.src='https://via.placeholder.com/140?text=Shoes'">
-                    <div class="item-label">{{ item.name }}</div>
+            <div class="category-title"><i class="fas fa-shirt"></i> 상의</div>
+            <div class="closet-grid">
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/white_tshirt.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Top'">
+                    <div class="item-label">흰색 반팔티</div>
                 </a>
-                {% endif %}
-                {% endfor %}
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/striped_shirt.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Top'">
+                    <div class="item-label">스트라이프 셔츠</div>
+                </a>
+            </div>
+        </section>
 
-                {% if shoes_count.value == 0 %}
-                <p class="empty-text">등록된 신발이 없습니다.</p>
-                {% endif %}
+        <section class="category-section">
+            <div class="category-title"><i class="fas fa-socks"></i> 하의</div>
+            <div class="closet-grid">
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/jeans.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Bottom'">
+                    <div class="item-label">연청바지</div>
+                </a>
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/slacks.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Bottom'">
+                    <div class="item-label">검정 슬랙스</div>
+                </a>
+            </div>
+        </section>
+
+        <section class="category-section">
+            <div class="category-title"><i class="fas fa-shoe-prints"></i> 신발</div>
+            <div class="closet-grid">
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/sneakers.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Shoes'">
+                    <div class="item-label">화이트 스니커즈</div>
+                </a>
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/rainboots.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Shoes'">
+                    <div class="item-label">레인부츠</div>
+                </a>
+                <a href="{{ url_for('add_clothes') }}" class="closet-item">
+                    <img src="{{ url_for('static', filename='images/ugg.jpg') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Shoes'">
+                    <div class="item-label">어그부츠</div>
+                </a>
             </div>
         </section>
     </main>
 
-    <div class="fab-container">
+    <div class="fab-container"
+        style="position: fixed !important; bottom: 40px !important; right: 40px !important; z-index: 99999 !important;">
         <div class="fab-menu" id="fab-menu">
             <a href="{{ url_for('add_clothes_photo') }}" class="fab-item">📸 사진으로 등록</a>
             <a href="{{ url_for('add_clothes') }}" class="fab-item">✏️ 직접 등록</a>
         </div>
-        <button class="fab-button" onclick="toggleFab(event)" title="옷 등록하기">
-            <i class="fas fa-plus"></i>
+        <button class="fab-button" onclick="toggleFab(event)" title="옷 등록하기"
+            style="width: 60px; height: 60px; background: #4f46e5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);">
+            <i class="fas fa-plus" id="fab-icon"></i>
         </button>
     </div>
 
     <script>
-        // 1. 내비게이션 드롭다운 토글
         function toggleDropdown(event) {
             event.preventDefault();
             document.getElementById("my-dropdown").classList.toggle("show");
         }
 
-        // 2. 플로팅 등록 메뉴 토글
+        // [💡 추가] 플러스 버튼 클릭 시 두 개의 메뉴를 열고 닫아주는 핵심 자바스크립트 함수 이식
         function toggleFab(event) {
             event.preventDefault();
-            document.getElementById("fab-menu").classList.toggle("show");
+            const menu = document.getElementById('fab-menu');
+            const btn = document.querySelector('.fab-button');
+            menu.classList.toggle('show');
+            btn.classList.toggle('active');
         }
 
-        // 3. 화면 어디를 눌러도 열려있는 메뉴들을 닫아주는 통합 함수
         window.onclick = function (event) {
-            // [내비게이션 닫기]
-            if (!event.target.closest('.dropdown-wrapper')) {
+            if (!event.target.matches('.nav-link') && !event.target.closest('#my-menu-btn')) {
                 const dropdowns = document.getElementsByClassName("dropdown-menu");
                 for (let i = 0; i < dropdowns.length; i++) {
-                    dropdowns[i].classList.remove('show');
+                    let openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
                 }
             }
-
-            // [플로팅 메뉴 닫기]
+            // 바깥 영역 클릭 시 펼쳐진 플러스 버튼 메뉴를 다시 숨겨주는 센스 코드
             if (!event.target.closest('.fab-container')) {
                 const fabMenu = document.getElementById('fab-menu');
-                if (fabMenu) {
+                const fabBtn = document.querySelector('.fab-button');
+                if (fabMenu && fabMenu.classList.contains('show')) {
                     fabMenu.classList.remove('show');
+                    fabBtn.classList.remove('active');
                 }
             }
         }

@@ -63,6 +63,44 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* 🌙 다크모드 스타일 레이어 적용 (index.html 기준 통일) */
+        body.dark-mode {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        body.dark-mode header,
+        body.dark-mode footer {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .grid-box {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #334155;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode #temp-desc,
+        body.dark-mode .pick-desc {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        body.dark-mode #policy-desc,
+        body.dark-mode #modal-desc {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode #dark-mode-toggle {
+            color: #f59e0b;
+        }
     </style>
 </head>
 
@@ -70,7 +108,7 @@
     <header>
         <nav>
             <div class="logo">
-                <a href="{{ url_for('home_page') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+                <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
                 <li>
@@ -97,14 +135,23 @@
                     </div>
                 </li>
                 <li>
-                    <div class="user-info" style="display: flex; align-items: center; gap: 12px; font-size: 14px;">
-                        <span style="font-weight: 600; color: #475569;"><i class="fa-regular fa-circle-user"></i> {{
-                            session.get('user_email').split('@')[0] }}님</span>
-                        <a href="{{ url_for('logout') }}" class="login-btn"
-                            style="background: #ff6b6b; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block;">
-                            Logout
-                        </a>
-                    </div>
+                    {% if logged_in %}
+                    <a href="{{ url_for('logout') }}" class="login-btn"
+                        style="background-color: #ef4444; text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="login-btn"
+                        style="text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    {% endif %}
+                </li>
+                <li>
+                    <button id="dark-mode-toggle"
+                        style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: inherit; padding: 8px 12px; display: flex; align-items: center;">
+                        <i class="fas fa-moon"></i>
+                    </button>
                 </li>
             </ul>
         </nav>
@@ -112,31 +159,37 @@
 
     <main>
         <div class="main-grid-container">
-
             <a href="{{ url_for('weather_detail') }}" class="grid-box">
+                {% if weather %}
+                <i class="fa-solid {{ weather.get('icon', 'fa-sun') }} status-icon" id="main-weather-icon"
+                    style="font-size: 3rem; color:#f59e0b; margin-bottom: 15px;"></i>
+                <h2 class="temp" id="temp-value" style="font-size: 2.2rem; margin: 0; font-weight: 800;">{{
+                    weather.get('temp', '--') }}°C</h2>
+                <p class="status" id="temp-desc" style="color: #64748b; margin-top: 5px; font-weight: 600;">{{
+                    weather.get('status', '맑음') }}</p>
+                {% else %}
                 <i class="fa-solid fa-sun status-icon" id="main-weather-icon"
                     style="font-size: 3rem; color:#f59e0b; margin-bottom: 15px;"></i>
-                <h2 class="temp" id="temp-value" style="font-size: 2.2rem; margin: 0; font-weight: 800;">{{ weather.temp
-                    if weather else '--' }}°C</h2>
-                <p class="status" id="temp-desc" style="color: #64748b; margin-top: 5px; font-weight: 600;">{{
-                    weather.condition if weather else '데이터 불러오는 중...' }}</p>
+                <h2 class="temp" id="temp-value" style="font-size: 2.2rem; margin: 0; font-weight: 800;">--°C</h2>
+                <p class="status" id="temp-desc" style="color: #64748b; margin-top: 5px; font-weight: 600;">날씨 정보 없음</p>
+                {% endif %}
                 <div
                     style="margin-top: auto; font-size: 0.9rem; color: #94a3b8; background: #f8fafc; padding: 5px 15px; border-radius: 20px;">
                     <i class="fa-solid fa-location-dot"></i> <span class="city" id="location-name">청주시</span>
                 </div>
             </a>
 
-            <a href="{{ url_for('recommend') }}" class="grid-box">
+            <a href="{{ url_for('codi_page') }}" class="grid-box">
                 <span
                     style="position: absolute; top: 15px; background: #e0e7ff; color: #4f46e5; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">Editor's
                     Pick</span>
                 <img src="{{ url_for('static', filename='images/arsenal_uniform.jpg') }}" alt="Item" class="pick-image"
-                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; margin-top: 15px;">
-                <h4 class="pick-title" style="margin: 0 0 5px 0; font-size: 1.1rem; word-break: keep-all;">아스널 홈 유니폼
-                </h4>
+                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; margin-top: 15px;"
+                    onerror="this.src='https://placehold.co/80'">
+                <h4 class="pick-title" style="margin: 0 0 5px 0; font-size: 1.1rem; word-break: keep-all;">아이템 이름</h4>
                 <p class="pick-desc"
-                    style="font-size: 0.85rem; color: #64748b; margin: 0; padding: 0 10px; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden;">
-                    스포티한 매력으로 포인트 주기 딱 좋은 트렌디한 블록코어 아이템</p>
+                    style="font-size: 0.85rem; color: #64748b; margin: 0; padding: 0 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    아이템 설명이 여기에 들어갑니다.</p>
             </a>
 
             <div class="grid-box tip-box">
@@ -175,15 +228,8 @@
         </div>
 
         <section class="trend-section" style="margin-top: 60px; text-align: center;">
-            <h3 class="section-title">🔥 지금 뜨는 트렌드 키워드</h3>
-            <div class="hashtag-box" style="justify-content: center;">
-                <span class="hashtag" style="cursor:pointer;" onclick="openModal('#바람막이')">#바람막이</span>
-                <span class="hashtag" style="cursor:pointer;" onclick="openModal('#블록코어룩')">#블록코어룩</span>
-                <span class="hashtag" style="cursor:pointer;" onclick="openModal('#일교차코디')">#일교차코디</span>
-                <span class="hashtag" style="cursor:pointer;" onclick="openModal('#스니커즈')">#스니커즈</span>
-                <span class="hashtag" style="cursor:pointer;" onclick="openModal('#꾸안꾸')">#꾸안꾸</span>
-                <span class="hashtag" style="cursor:pointer;" onclick="openModal('#봄가디건')">#봄가디건</span>
-            </div>
+            <h3 class="section-title">패션 키워드 추천</h3>
+            <div class="hashtag-box" style="justify-content: center;"></div>
         </section>
     </main>
 
@@ -214,7 +260,7 @@
                     style="font-size: 22px; font-weight: 800; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #212529;">
                     제목</h3>
                 <div id="policy-desc" style="color: #495057; line-height: 1.7; font-size: 14px; white-space: pre-wrap;">
-                    개인정보 취급방침 및 이용약관 내용이 출력됩니다.</div>
+                    여기에 약관 내용이 들어갑니다.</div>
                 <div style="text-align: center; margin-top: 30px;">
                     <button onclick="closePolicyModal()"
                         style="padding: 12px 40px; background: #212529; color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">확인</button>
@@ -228,8 +274,8 @@
             <button class="close-btn" onclick="closeModal()">&times;</button>
             <div class="modal-body" style="padding: 20px; text-align: center;">
                 <h3 id="modal-title" style="font-size: 24px; margin-bottom: 15px;">#키워드</h3>
-                <img id="modal-img" src="" alt="추천 이미지"
-                    style="width: 100%; max-width: 250px; height: auto; border-radius: 12px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
+                <img id="modal-img" src="" alt="키워드 이미지"
+                    style="width: 100%; max-width: 250px; height: auto; border-radius: 12px; margin-bottom: 15px; display: none;">
                 <p id="modal-desc" style="color: #666; line-height: 1.6;">상세 설명이 여기에 나옵니다.</p>
                 <button onclick="closeModal()"
                     style="margin-top: 20px; padding: 10px 20px; background: #000; color: #fff; border: none; border-radius: 10px; cursor: pointer;">닫기</button>
@@ -237,86 +283,51 @@
         </div>
     </div>
 
-    <div class="fab-container">
-        <div class="fab-menu" id="fab-menu">
-            <a href="{{ url_for('add_clothes_photo') }}" class="fab-item">📸 사진으로 등록</a>
-            <a href="{{ url_for('add_clothes') }}" class="fab-item">✏️ 직접 등록</a>
-        </div>
-        <button class="fab-button" onclick="toggleFab(event)" title="옷 등록하기">
-            <i class="fas fa-plus" id="fab-icon"></i>
-        </button>
-    </div>
-
     <script>
-        const policyData = {
-            terms: { title: "이용약관", content: "제1조 (목적)\n본 약관은 'Look_Up'(이하 '회사')이 제공하는 날씨 기반 코디 추천 서비스의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다." },
-            privacy: { title: "개인정보 처리방침", content: "제1조 (수집하는 개인정보의 항목)\n회사는 원활한 서비스 제공을 위해 회원가입 시 이메일과 패스워드를 안전하게 분리 수집합니다." }
-        };
-
-        function openPolicyModal(type) {
-            document.getElementById('policy-title').innerText = policyData[type].title;
-            document.getElementById('policy-desc').innerText = policyData[type].content;
-            document.getElementById('policy-modal').style.display = 'block';
-        }
-
-        function closePolicyModal() {
-            document.getElementById('policy-modal').style.display = 'none';
-        }
-
         const keywordDetails = {
-            "#선글라스": { img: "/static/images/sunglasses.jpg", desc: "햇살이 강한 날, 룩에 힙한 포인트를 주는 여름 필수템이에요." },
-            "#반팔티": { img: "/static/images/tshirt.jpg", desc: "기본에 충실! 시원하고 쾌적하게 입을 수 있는 데일리 아이템입니다." },
-            "#피크닉룩": { img: "/static/images/picnic.jpg", desc: "당장이라도 한강으로 떠나고 싶어지는 산뜻한 피크닉 코디를 완성해보세요." },
-            "#린넨팬츠": { img: "/static/images/linen.jpg", desc: "통기성이 뛰어나 한여름에도 멋스럽고 시원하게 입을 수 있어요." },
-            "#캡모자": { img: "/static/images/cap.jpg", desc: "꾸민 듯 안 꾸민 듯 자연스러운 매력을 더해주는 포인트 아이템!" },
-            "#화이트셔츠": { img: "/static/images/shirt.jpg", desc: "어떤 하의와도 찰떡같이 어울리는 클래식의 정석입니다." },
-            "#반바지": { img: "/static/images/shorts.jpg", desc: "경쾌하고 시원한 룩을 연출하고 싶을 때 꼭 필요한 아이템이에요." },
-            "#레인부츠": { img: "/static/images/rainboots.jpg", desc: "비 오는 날에도 발을 쾌적하게 지켜주는 스타일리시한 장화!" },
-            "#방수재킷": { img: "/static/images/jacket.jpg", desc: "갑작스러운 비에도 끄떡없는 실용성 만점 아우터입니다." },
-            "#우산필수": { img: "/static/images/umbrella.jpg", desc: "오늘은 비 소식이 있어요. 외출할 때 꼭 우산을 챙겨주세요." },
-            "#바람막이": { img: "/static/images/wind.jpg", desc: "일교차가 큰 날씨에 가볍게 걸치기 좋은 필수 아우터예요." },
-            "#봄가디건": { img: "/static/images/cardigan.jpg", desc: "포근하고 단정한 느낌을 주는 간절기 코디의 정석입니다." },
-            "#톤온톤룩": { img: "/static/images/tone.jpg", desc: "비슷한 색감으로 맞춰 입어 부드럽고 세련된 인상을 줘요." },
-            "#조거팬츠": { img: "/static/images/jogger.jpg", desc: "활동성이 뛰어나면서도 힙한 스트릿 무드를 낼 수 있어요." },
-            "#패딩추천": { img: "/static/images/padding.jpg", desc: "한파에도 끄떡없는 보온성과 스타일을 동시에 챙긴 패딩 코디!" },
-            "#목도리": { img: "/static/images/scarf.jpg", desc: "찬 바람을 막아주고 귀여운 포인트를 더해주는 겨울 필수템이에요." },
-            "#어그부츠": { img: "/static/images/ugg.jpg", desc: "발끝까지 따뜻하고 포근하게 감싸주는 겨울철 잇템입니다." },
-            "#코트코디": { img: "/static/images/coat.jpg", desc: "얼어 죽어도 코트! 깔끔하고 댄디한 겨울 분위기를 내보세요." },
-            "#기모슬랙스": { img: "/static/images/slacks.jpg", desc: "칼바람에도 다리를 따뜻하게 지켜주는 마법의 슬랙스예요." },
-            "#목폴라": { img: "/static/images/turtle.jpg", desc: "목을 감싸주어 체감 온도를 확 높여주는 이너 아이템입니다." }
+            "#고프코어": { img: "{{ url_for('static', filename='images/gorpcore.jpg') }}", desc: "아웃도어 의류를 일상복과 매치하여 스타일리시하게 입는 패션이에요. 바람막이나 기능성 카고팬츠 등을 활용해 편안하면서도 힙한 무드를 낼 수 있어요." },
+            "#블록코어룩": { img: "{{ url_for('static', filename='images/blockcore.jpg') }}", desc: "스포츠 유니폼 상의를 일상적인 청바지나 스니커즈와 조합해서 입는 스타일이에요. 스포티하면서도 레트로한 길거리 감성을 연출하기에 아주 좋아요." },
+            "#워크웨어": { img: "{{ url_for('static', filename='images/workwear.jpg') }}", desc: "과거 작업복에서 유래한 스타일로, 두꺼운 캔버스 재킷이나 데님을 활용해요. 투박하지만 깊이감 있는 아메카지 특유의 멋스러운 분위기를 줍니다." },
+            "#미니멀룩": { img: "{{ url_for('static', filename='images/minimal.jpg') }}", desc: "화려한 로고나 패턴을 걷어내고 극도의 깔끔함을 추구하는 패션이에요. 모노톤 위주의 색감과 정돈된 실루엣으로 세련된 인상을 남길 수 있어요." },
+            "#시티보이룩": { img: "{{ url_for('static', filename='images/cityboy.jpg') }}", desc: "도시 속 소년들의 자유로운 감성을 넉넉한 오버핏으로 표현한 스타일이에요. 단정하면서도 캐주얼한 셔츠와 레이어드를 활용하는 게 특징이에요." },
+            "#Y2K패션": { img: "{{ url_for('static', filename='images/y2k.jpg') }}", desc: "1990년대 말부터 2000년대 초반의 세기말 감성을 그대로 가져온 패션이에요. 크롭티나 로우라이즈 팬츠처럼 과감하고 개성 넘치는 연출이 가능해요." },
+            "#올드머니룩": { img: "{{ url_for('static', filename='images/oldmoney.jpg') }}", desc: "대대손손 내려오는 상류층의 고급스러움을 담아낸 패션이에요. 브랜드 로고를 드러내지 않는 대신 캐시미어나 실크 같은 고급 소재로 은은한 우아함을 드러내요." },
+            "#그랜파코어": { img: "{{ url_for('static', filename='images/grandpa.jpg') }}", desc: "할아버지의 옷장에서 꺼낸 듯한 아늑하고 빈티지한 스타일이에요. 오버사이즈 니트 가디건이나 코듀로이 팬츠, 따뜻한 체크 패턴을 활용해 포근한 매력을 줘요." },
+            "#페스티벌룩": { img: "{{ url_for('static', filename='images/festival.jpg') }}", desc: "콘서트나 축제에서 주인공이 될 수 있는 화려하고 자유로운 패션이에요. 평소에 시도하기 어려웠던 과감한 컬러나 액세서리로 나만의 개성을 마음껏 뽐낼 수 있어요." },
+            "#긱시크룩": { img: "{{ url_for('static', filename='images/geekchic.jpg') }}", desc: "괴짜를 뜻하는 'Geek'과 세련됨을 뜻하는 'Chic'이 합쳐진 스타일이에요. 단정한 셔츠나 정장에 독특한 안경을 매치하여 지적이면서도 반전 있는 무드를 완성해요." },
+            "#발레코어": { img: "{{ url_for('static', filename='images/balletcore.jpg') }}", desc: "발레무용수의 연습복이나 무대의상에서 영감을 받은 스타일이에요. 시폰 스커트, 리본 장식, 워머 등을 활용해 우아하고 사랑스러운 분위기를 연출할 수 있어요." },
+            "#아메카지": { img: "{{ url_for('static', filename='images/amekaji.jpg') }}", desc: "미국식 캐주얼 의류를 일본 특유의 감성으로 재해석한 패션이에요. 통이 넓은 바지나 셔츠, 베스트 등을 활용해 편안하면서도 빈티지한 아웃도어 무드를 보여줘요." },
+            "#페어리코어": { img: "{{ url_for('static', filename='images/fairycore.jpg') }}", desc: "숲속 요정을 연상시키는 몽환적이고 자연 친화적인 룩이에요. 레이스나 자수 장식, 빛바랜 파스텔톤 컬러의 셔링 의상들을 겹쳐 입어 부드러운 느낌을 줘요." },
+            "#웨스턴룩": { img: "{{ url_for('static', filename='images/western.jpg') }}", desc: "미국 서부 개척 시대의 카우보이 스타일을 현대적으로 풀어낸 패션이에요. 가죽 재킷, 웨스턴 부츠, 수저 장식 벨트 등을 포인트로 사용해 거칠고 멋스러운 느낌을 내요." },
+            "#프레피룩": { img: "{{ url_for('static', filename='images/preppy.jpg') }}", desc: "미국 명문 사립고등학교 학생들의 교복 스타일에서 유래한 단정한 룩이에요. 셔츠와 니트 베스트, 넥타이, 체크무늬 스커트 등을 활용해 클래식하고 지적인 인상을 줘요." },
+            "#테크웨어": { img: "{{ url_for('static', filename='images/techwear.jpg') }}", desc: "첨단 기능성 소재와 밀리터리 디자인이 결합한 미래지향적인 패션이에요. 주머니가 많이 달린 카고팬츠나 스트랩, 버클 등을 활용해 어둡고 강렬한 도시적인 무드를 냅니다." }
         };
 
         function openModal(tagName) {
             document.getElementById('modal-title').innerText = tagName;
-            const data = keywordDetails[tagName] || {
-                img: "https://via.placeholder.com/400x300?text=Look_Up",
-                desc: "이 키워드에 대한 멋진 코디 추천을 준비하고 있어요!"
-            };
+            const data = keywordDetails[tagName] || { img: "", desc: "이 키워드에 대한 코디 추천을 준비하고 있어요!" };
             document.getElementById('modal-desc').innerText = data.desc;
+
             const imgElement = document.getElementById('modal-img');
             if (imgElement) {
-                imgElement.src = data.img;
-                imgElement.style.display = "block";
+                if (data.img) {
+                    imgElement.src = data.img;
+                    imgElement.style.display = 'block';
+                } else {
+                    imgElement.style.display = 'none';
+                }
             }
             document.getElementById('keyword-modal').style.display = 'block';
         }
 
         function closeModal() {
-            document.getElementById('keyword-modal').style.display = 'none';
+            const modal = document.getElementById('keyword-modal');
+            if (modal) { modal.style.display = 'none'; }
         }
-
-        const weatherKeywords = {
-            sunny: ["#선글라스", "#반팔티", "#피크닉룩", "#린넨팬츠", "#캡모자", "#화이트셔츠"],
-            rainy: ["#레인부츠", "#방수재킷", "#우산필수", "#고어텍스", "#장마대비", "#워터프루프"],
-            cloudy: ["#바람막이", "#봄가디건", "#톤온톤룩", "#아노락", "#조거팬츠", "#데님코디"],
-            snowy: ["#패딩추천", "#목도리", "#어그부츠", "#방한화", "#레이어드", "#핫팩"],
-            hot: ["#반바지", "#민소매", "#시원한소재", "#샌들", "#린넨", "#쇼츠"],
-            cold: ["#코트코디", "#히트텍", "#기모슬랙스", "#니트코디", "#목폴라", "#롱패딩"]
-        };
 
         const weatherTips = {
             sunny: { title: "햇살이 눈부신 오늘,<br>자외선 차단은 필수!", desc: "가벼운 반팔이나 린넨 셔츠로 시원하게!<br>선글라스나 모자로 포인트를 줘도 좋아.", icon: "fas fa-sun" },
-            rainy: { title: "비가 오는 오늘,<br>쾌적함이 중요해!", desc: "습도가 높으니 통기성 좋은 옷을 추천해.<br>비에 젖어도 금방 마르는 소재을 입어봐.", icon: "fas fa-umbrella" },
+            rainy: { title: "비가 오는 오늘,<br>쾌적함이 중요해!", desc: "습도가 높으니 통기성 좋은 옷을 추천해.<br>비에 젖어도 금방 마르는 소재를 입어봐.", icon: "fas fa-umbrella" },
             cloudy: { title: "구름 낀 흐린 날,<br>바람막이 챙겼어?", desc: "바람이 불거나 쌀쌀해질 수 있으니<br>가볍게 걸칠 수 있는 얇은 아우터가 필요해.", icon: "fas fa-cloud" },
             snowy: { title: "눈 내리는 오늘,<br>따뜻함이 최고!", desc: "보온성 좋은 아우터와 목도리는 필수야.<br>미끄러지지 않는 안전한 신발도 잊지마.", icon: "fas fa-snowflake" },
             hot: { title: "무더운 오늘,<br>시원함이 제일 중요해!", desc: "땀이 잘 마르는 소재의 반팔과 반바지!<br>더위를 피할 수 있는 밝은 색상을 추천해.", icon: "fas fa-temperature-high" },
@@ -324,33 +335,26 @@
         };
 
         function updateKeywords(temp, status) {
-            let selectedTags = [];
             let currentTip = weatherTips.sunny;
-            const st = status.toLowerCase();
-
-            if (temp >= 28) {
-                selectedTags = [...weatherKeywords.hot];
-                currentTip = weatherTips.hot;
-            } else if (temp <= 5) {
-                selectedTags = [...weatherKeywords.cold];
-                currentTip = weatherTips.cold;
-            } else if (st.includes('비') || st.includes('rain')) {
-                selectedTags = [...weatherKeywords.rainy];
-                currentTip = weatherTips.rainy;
-            } else if (st.includes('눈') || st.includes('snow')) {
-                selectedTags = [...weatherKeywords.snowy];
-                currentTip = weatherTips.snowy;
-            } else if (st.includes('흐림') || st.includes('cloud') || st.includes('구름')) {
-                selectedTags = [...weatherKeywords.cloudy];
-                currentTip = weatherKeywords.cloudy;
-            } else {
-                selectedTags = [...weatherKeywords.sunny];
-                currentTip = weatherTips.sunny;
+            if (status) {
+                const st = status.toLowerCase();
+                if (temp >= 28) currentTip = weatherTips.hot;
+                else if (temp <= 5) currentTip = weatherTips.cold;
+                else if (st.includes('비') || st.includes('rain')) currentTip = weatherTips.rainy;
+                else if (st.includes('눈') || st.includes('snow')) currentTip = weatherTips.snowy;
+                else if (st.includes('흐림') || st.includes('cloud') || st.includes('구름')) currentTip = weatherTips.cloudy;
             }
 
+            let allKeys = Object.keys(keywordDetails);
+            for (let i = allKeys.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allKeys[i], allKeys[j]] = [allKeys[j], allKeys[i]];
+            }
+
+            const selectedTags = allKeys.slice(0, 6);
             const hashtagBox = document.querySelector('.hashtag-box');
             if (hashtagBox) {
-                hashtagBox.innerHTML = selectedTags.slice(0, 6).map(tag =>
+                hashtagBox.innerHTML = selectedTags.map(tag =>
                     `<span class="hashtag" style="cursor:pointer;" onclick="openModal('${tag}')">${tag}</span>`
                 ).join('');
             }
@@ -366,22 +370,30 @@
             }
         }
 
-        async function getWeatherData() {
-            try {
-                const initialTemp = parseFloat("{{ weather.temp if weather else '18' }}");
-                const initialStatus = "{{ weather.condition if weather else '맑음' }}";
-                updateKeywords(initialTemp, initialStatus);
-            } catch (error) {
-                console.error("날씨 초기 데이터 바인딩 실패:", error);
-            }
+        // [수정] 외부 가짜 API 요청 스크립트 제거 ➡️ Flask 템플릿 변수를 통해 안전하게 캐시 바인딩하도록 수정
+        function loadServerWeatherData() {
+            const tempStr = "{{ weather.get('temp', 18) if weather else 18 }}";
+            const statusStr = "{{ weather.get('status', '맑음') if weather else '맑음' }}";
+
+            const temp = parseFloat(tempStr);
+            updateKeywords(temp, statusStr);
         }
 
         function setRandomPick() {
             const items = [
-                { image: "{{ url_for('static', filename='images/arsenal_uniform.jpg') }}", title: "아스널 홈 유니폼", desc: "스포티한 매력으로 포인트 주기 딱 좋은 트렌디한 블록코어 아이템" }
+                { image: "{{ url_for('static', filename='images/arsenal.jpg') }}", title: "아스널 홈 유니폼", desc: "스포티한 매력으로 포인트 주기 딱 좋은 트렌디한 아이템" },
+                { image: "{{ url_for('static', filename='images/madrid.jpg') }}", title: "레알 마드리드 홈 유니폼", desc: "클래식한 멋을 내는 코디 꿀템" },
+                { image: "{{ url_for('static', filename='images/barselona.jpg') }}", title: "바르셀로나 홈 유니폼", desc: "유니크한 블록코어 룩" },
+                { image: "{{ url_for('static', filename='images/munchen.jpg') }}", title: "바이에른 뮌헨 홈 유니폼", desc: "강렬한 레드 컬러 포인트" }
             ];
-            const selectedItem = items[0];
-            document.querySelector('.pick-image').src = selectedItem.image;
+            const randomIndex = Math.floor(Math.random() * items.length);
+            const selectedItem = items[randomIndex];
+
+            const pickImg = document.querySelector('.pick-image');
+            if (pickImg) {
+                pickImg.src = selectedItem.image;
+                pickImg.onerror = function () { this.src = 'https://placehold.co/80'; };
+            }
             document.querySelector('.pick-title').innerText = selectedItem.title;
             document.querySelector('.pick-desc').innerText = selectedItem.desc;
         }
@@ -400,13 +412,11 @@
         }
 
         window.onclick = function (event) {
-            if (!event.target.matches('#my-menu-btn') && !event.target.closest('#my-menu-btn')) {
+            if (!event.target.matches('.nav-link') && !event.target.closest('#my-menu-btn')) {
                 const dropdowns = document.getElementsByClassName("dropdown-menu");
                 for (let i = 0; i < dropdowns.length; i++) {
                     let openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
+                    if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); }
                 }
             }
             if (!event.target.closest('.fab-container')) {
@@ -419,11 +429,56 @@
             }
         }
 
+        function initDarkMode() {
+            const toggleBtn = document.getElementById('dark-mode-toggle');
+            if (!toggleBtn) return;
+
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+
+            toggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                    toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            });
+        }
+
         window.onload = () => {
-            getWeatherData();
+            loadServerWeatherData();
             setRandomPick();
+            initDarkMode();
         };
+
+        const policyData = {
+            terms: { title: "이용약관", content: "제1조 (목적)\n본 약관은 'Look_Up'(이하 '회사')이 제공하는 날씨 기반 코디 추천 서비스의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다." },
+            privacy: { title: "개인정보 처리방침", content: "제1조 (수집하는 개인정보의 항목)\n회사는 원활한 서비스 제공을 위해 회원가입 시 아이디, 비밀번호, 닉네임을 수집합니다." }
+        };
+
+        function openPolicyModal(type) {
+            document.getElementById('policy-title').innerText = policyData[type].title;
+            document.getElementById('policy-desc').innerText = policyData[type].content;
+            document.getElementById('policy-modal').style.display = 'block';
+        }
+
+        function closePolicyModal() { document.getElementById('policy-modal').style.display = 'none'; }
     </script>
+
+    <div class="fab-container">
+        <div class="fab-menu" id="fab-menu">
+            <a href="{{ url_for('add_clothes_photo') }}" class="fab-item">📸 사진으로 등록</a>
+            <a href="{{ url_for('add_clothes') }}" class="fab-item">✏️ 직접 등록</a>
+        </div>
+        <button class="fab-button" onclick="toggleFab(event)" title="옷 등록하기">
+            <i class="fas fa-plus" id="fab-icon"></i>
+        </button>
+    </div>
 </body>
 
 </html>
