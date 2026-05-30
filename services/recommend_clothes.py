@@ -31,18 +31,18 @@ def hex_to_hsl(hex_str):
         return 0, 0, 0
 
 def calculate_style_score(full_outfit, target_tpo):
-    """스타일(TPO) 일치도 점수 계산 (최대 45점)"""
+    """스타일(TPO) 일치도 점수 계산 (최대 30점)"""
     if not target_tpo:
-        return 45   # TPO 정보가 없으면 만점 부여
+        return 30   # TPO 정보가 없으면 만점 부여
     
     score = 0
     for cloth in full_outfit:
         if target_tpo in cloth.get('style', []):
-            score += 15  # 아이템당 15점 (3피스 = 45점)
+            score += 10  # 아이템당 10점 (3피스 풀착장 = 30점 만점)
     return score
 
 def calculate_color_score(top_combo, bottom, target_lv):
-    """색상 조화 점수 계산 (최대 35점)"""
+    """색상 조화 점수 계산 (최대 30점)"""
     top_hex = top_combo[-1]['color'] 
     bottom_hex = bottom['color']
     h1, s1, l1 = hex_to_hsl(top_hex)
@@ -58,20 +58,20 @@ def calculate_color_score(top_combo, bottom, target_lv):
     light_diff = abs(l1 - l2)
 
     if is_top_neutral or is_bottom_neutral:
-        score += 23  # 기본 무채색 조화
+        score += 20  # 기본 무채색 조화 베이스 (최대 20점)
 
     if not is_top_neutral and not is_bottom_neutral:
         if hue_diff < 30:
-            score += 23 if light_diff > 20 else 8
+            score += 20 if light_diff > 20 else 6  # 유사색 조화 점수 조정
         elif hue_diff >= 30:
             if chroma_diff < 15 and light_diff < 15:
-                score += 18
+                score += 15  # 톤온톤 조화 점수 조정
             elif hue_diff > 150:
-                score -= 15  # 보색 충돌 감점
+                score -= 10  # 보색 충돌 감점 조정
 
-    # 계절별 가산점 (최대 12점)
-    if target_lv <= 3 and (l1 >= 70 or l2 >= 60): score += 12
-    elif target_lv >= 7 and (l1 <= 30 or l2 <= 40): score += 12
+    # 계절별 톤 가산점 (최대 10점)
+    if target_lv <= 3 and (l1 >= 70 or l2 >= 60): score += 10
+    elif target_lv >= 7 and (l1 <= 30 or l2 <= 40): score += 10
 
     return score
 
@@ -88,6 +88,21 @@ def calculate_temperature_score(top_combo, bottom, target_lv):
     score = max(0, 20 - (total_diff * 10))
     
     return score
+
+def calculate_fit_score(top_combo, bottom, user_body_shape):
+    """사용자 체형과 상/하의 핏 조화도 점수 계산 (최대 20점)"""
+    top_fit = top_combo[-1].get('fit', '레귤러핏')
+    bottom_fit = bottom.get('fit', '레귤러핏')
+    
+    score = 0
+    
+    # 1. 상/하의 핏 실루엣 조화도 (10점 만점)
+    # 상하의 극단적 미스매치(머슬/슬림+와이드 등) 페널티 부여
+    if (top_fit in ['머슬핏', '슬림'] and bottom_fit == '와이드') or \
+       (top_fit == '와이드' and bottom_fit == '슬림'):
+        score += 3  
+    else:
+        score += 10 
 
 def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, clothes_db):
     """웹 서버용 추천 메인 로직"""
