@@ -8,7 +8,13 @@ CREATE TABLE IF NOT EXISTS users (
     pw TEXT NOT NULL,                               
     name TEXT NOT NULL,            
     nickname TEXT NOT NULL,                                
-    gender TEXT,                                   
+    gender TEXT,
+    
+    -- [추가] user_profile.py의 체형 정보 저장을 위한 컬럼
+    height NUMERIC(4, 1),      -- 소수점 1자리 허용 (예: 175.5)
+    weight NUMERIC(4, 1),
+    body_shape TEXT,
+    
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
