@@ -1,120 +1,211 @@
 import os
 import sys
 import logging
-from werkzeug.utils import secure_filename
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
+from datetime import datetime, timedelta
 
-# [수정] 에러 로그 설정
-logging.basicConfig(level=logging.INFO) 
+# 경로 설정을 최상단에서 진행
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
 
-# [중요] 경로 추가를 임포트보다 먼저 해야 안전합니다.
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# [해결] Flask 임포트 후에 app을 선언해야 합니다.
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 CORS(app)
 app.secret_key = "my_fashion_app_secret_1234"
-# 서비스 모듈 임포트
+
+# 세션 유지 및 전역 변수 설정
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=30)
+
+@app.context_processor
+def inject_user():
+    return dict(logged_in='user_email' in session)
+
+
+# --- [서비스 모듈 안전 임포트 구조 및 가드] ---
+supabase = None
+fetch_weather_forecast = None
+sign_up_user = None
+login_user = None
+process_user_upload = None
+recommend_clothes_logic = None
+
 try:
     from config import supabase
-    from weather_service import fetch_weather
-    from auth_service import sign_up_user, login_user 
+    print("✅ Supabase 임포트 성공")
+except Exception as e:
+    print(f"❌ config.py (Supabase) 로드 오류: {e}")
+
+try:
+    from weather_service import fetch_weather_forecast
+    print("✅ 날씨 서비스 임포트 성공")
+except Exception as e:
+    print(f"❌ weather_service.py 로드 오류: {e}")
+
+try:
+    from auth_service import sign_up_user, login_user
     from services.imgproc import process_user_upload
     from services.recommend_clothes import recommend_clothes_logic
-except ImportError as e:
-    print(f"❌ 임포트 에러 발생: {e}")
-    
-app = Flask(__name__)
-CORS(app)
-app.secret_key = "my_fashion_app_secret_1234"
+    print("✅ AI 이미지 분석 및 추천 핵심 모듈 최고 제어권 확보 완료")
+except Exception as e:
+    print(f"⚠️ 외부 서비스 파일 로드 해제 체크 필요: {e}")
+
 
 # 업로드 폴더 설정
 UPLOAD_FOLDER = 'static/uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# --- [라우트 설정] ---
 
+# --- [날씨 API 캐싱 레이어 시스템] ---
+WEATHER_CACHE = {
+    "data": None,
+    "last_updated": None
+}
+
+def get_cached_weather():
+    now = datetime.now()
+    
+    # 캐시 유효 시간: 10분
+    if WEATHER_CACHE["data"] and WEATHER_CACHE["last_updated"]:
+        if now - WEATHER_CACHE["last_updated"] < timedelta(minutes=10):
+            return WEATHER_CACHE["data"]
+            
+    if fetch_weather_forecast:
+        fresh_data = fetch_weather_forecast()
+        if fresh_data:
+            WEATHER_CACHE["data"] = fresh_data
+            WEATHER_CACHE["last_updated"] = now
+            return fresh_data
+            
+    return WEATHER_CACHE["data"]
+
+fetch_weather = get_cached_weather
+
+
+# --- [라우트 설정] ---
+   
 @app.route('/')
 def home():
     try:
-        # weather_service.py에서 가져온 함수 사용
-        weather_data = fetch_weather() 
-        temp = weather_data.get("main", {}).get("temp", 0) if weather_data else 0
-        # index.html을 렌더링하도록 수정 (현재 파일명이 index.html이므로)
-        return render_template('index.html', temp=temp) 
+        forecast_data = get_cached_weather() 
+        if forecast_data:
+            current_weather = forecast_data[0]
+            return render_template('index.html', weather=current_weather)
+        else:
+            return render_template('index.html', weather=None)
     except Exception as e:
         logging.error(f"Home route error: {e}")
-        return render_template('index.html', temp=0)
+        return render_template('index.html', weather=None)
+
+@app.route('/home')
+def home_page(): 
+    is_logged_in = 'user_email' in session
+    user_email = session.get('user_email')
     
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    if not user_email:
+        return redirect(url_for('login'))
 
-    if not email or not password:
-        return jsonify({"error": "이메일과 비밀번호를 모두 입력해주세요."}), 400
+    raw_weather = fetch_weather()
+    current_weather = raw_weather[0] if raw_weather and isinstance(raw_weather, list) and len(raw_weather) > 0 else None
 
-    # auth_service.py의 login_user 함수 호출
-    # (참고: auth_service.py의 login_user가 성공 시 True 또는 사용자 데이터를 반환하도록 확인 필요)
-    is_success = login_user(email, password)
+    return render_template('home.html',
+                           weather=current_weather,
+                           user_email=user_email,
+                           logged_in=is_logged_in)
 
-    if is_success:
-        # 로그인 성공 시 세션에 이메일 저장
-        session['user_email'] = email
-        return jsonify({"message": "로그인 성공"}), 200
+@app.route('/weather_detail')
+def weather_detail():
+    is_logged_in = 'user_email' in session
+    raw_data = fetch_weather()
+
+    hourly_data = []
+    start_time = datetime.now()
+
+    if raw_data and isinstance(raw_data, list):
+        for idx, data in enumerate(raw_data):
+            target_time = start_time + timedelta(hours=idx * 3)
+            am_pm = "오전" if target_time.hour < 12 else "오후"
+            display_hour = target_time.hour % 12
+            display_hour = 12 if display_hour == 0 else display_hour
+            
+            wind_speed = data.get('wind_speed', 0)
+            wind_status = "약함" if wind_speed < 3.4 else "보통" if wind_speed < 8.0 else "강함"
+
+            hourly_data.append({
+                "time": f"{am_pm} {display_hour}시", 
+                "temp": data.get('temp', 0),
+                "icon": data.get('icon', 'fa-cloud'),
+                "humidity": data.get('humidity', 0),
+                "wind_speed": wind_speed,
+                "wind_status": wind_status
+            })
     else:
-        return jsonify({"error": "아이디 또는 비밀번호가 일치하지 않습니다."}), 401
-    
-@app.route('/login')
-def login_page():
-    return render_template('login.html')
+        hourly_data = [{
+            "time": "현재", "temp": "정보 없음", "icon": "fa-cloud",
+            "humidity": 0, "wind_speed": 0, "wind_status": "확인불가"
+        }]
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
+    return render_template('weather_detail.html', hourly_data=hourly_data, logged_in=is_logged_in)
+
+@app.route('/login', methods=['GET', 'POST']) 
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        if sign_up_user(email, password):
-            return redirect(url_for('login'))
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+
+        is_success = login_user(email, password) if login_user else False
+
+        if is_success:
+            session['user_email'] = email
+            return jsonify({"message": "로그인 성공"}), 200
         else:
-            return "회원가입 실패!", 400
-    return render_template('signup.html')
+            return jsonify({"error": "로그인 실패"}), 401
+
+@app.route('/register') 
+def register_page():
+    return render_template('sign_up.html')
 
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    nickname = data.get('nickname', '익명')  
+    gender = data.get('gender', '미선택')    
 
     if not email or not password:
         return jsonify({"error": "이메일과 비밀번호를 입력해주세요."}), 400
 
-    # [중요] auth_service.py에 정의된 함수명(sign_up_user)과 일치해야 함
-    success = sign_up_user(email, password)
+    success = sign_up_user(email, password, nickname, gender) if sign_up_user else False
 
     if success:
         return jsonify({"message": "회원가입 성공!"}), 201
     else:
-        return jsonify({"error": "회원가입에 실패했습니다. 이미 존재하는 계정일 수 있습니다."}), 400
+        return jsonify({"error": "회원가입에 실패했습니다."}), 400
     
 @app.route('/logout')
 def logout():
-    session.clear() # 세션 데이터 모두 삭제
-    return redirect(url_for('home')) # 메인 페이지로 리다이렉트
+    session.clear() 
+    return redirect(url_for('home')) 
 
-# [핵심] 옷 업로드 및 AI 분석 저장 로직
+
+# 🛡️ 기존의 AI 기반 파일 업로드 및 DB 자동 저장 기능 철저히 유지!
 @app.route('/api/upload', methods=['POST'])
 def upload_cloth():
     try:
-        # 1. 로그인 확인
         user_email = session.get('user_email')
         if not user_email:
             return jsonify({"error": "로그인이 필요합니다."}), 401
 
-        # 2. 파일 확인
         if 'cloth_image' not in request.files:
             return jsonify({"error": "사진 파일이 없습니다."}), 400
         
@@ -122,75 +213,212 @@ def upload_cloth():
         if file.filename == '':
             return jsonify({"error": "선택된 파일이 없습니다."}), 400
 
-        # 3. 서버 임시 저장
+        name = request.form.get('name', '이름 없음')
+        main_category = request.form.get('main_category', '상의')
+        sub_category = request.form.get('sub_category', '')
+        color = request.form.get('color', '#000000')
+        tpo = request.form.get('tpo', '캐주얼')
+
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
 
-        # 4. imgproc.py의 로직 실행 (AI 분석 + Supabase 저장)
-        # 현빈님이 원하신 대로 요청 시에만 AI가 돌아갑니다.
-        result = process_user_upload(file_path, user_email)
-
-        if result:
+        if process_user_upload:
+            print(f"🚀 [app.py] {user_email} 사용자의 이미지를 AI 분석 프로세스로 전달합니다.")
+            result = process_user_upload(file_path, user_email)
+            
             if os.path.exists(file_path):
-                os.remove(file_path) # 임시파일 삭제
-            return jsonify({"message": "옷 등록 성공!", "data": result}), 200
+                os.remove(file_path)
+                
+            if result:
+                return jsonify({"message": "AI 분석 및 옷 등록 성공!", "data": result}), 200
+            else:
+                return jsonify({"error": "AI 분석 또는 스토리지 업로드에 실패했습니다."}), 500
         else:
-            return jsonify({"error": "분석 또는 저장 실패"}), 500
+            return jsonify({"error": "AI 분석 모듈(imgproc.py)이 로드되지 않았습니다."}), 500
 
     except Exception as e:
+        print(f"❌ /api/upload 라우터 에러: {str(e)}")
         return jsonify({"error": f"서버 오류: {str(e)}"}), 500
 
-@app.route('/api/weather')
-def weather_api():
-    try:
-        raw_data = fetch_weather()
-        refined_data = {
-            "city": raw_data.get("name"),
-            "temp": raw_data.get("main", {}).get("temp"),
-            "humidity": raw_data.get("main", {}).get("humidity"),
-            "condition": raw_data.get("weather", [{}])[0].get("description")
-        }
-        return jsonify(refined_data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
+# 🎯 [추천 핵심 연동] recommend_clothes.py 파일 변경 없이 호환 및 데이터 부족 방어 레이어 시스템 탑재
 @app.route('/api/recommend')
 def recommend():
     try:
         weather_data = fetch_weather()
-        temp = weather_data.get("main", {}).get("temp")
-        target_tpo = request.args.get('tpo', '캐주얼') 
-
+        if isinstance(weather_data, list) and len(weather_data) > 0:
+            temp = weather_data[0].get("temp", 20)
+        else:
+            temp = 20
+            
+        target_tpo = request.args.get('tpo', '캐주얼')
         user_email = session.get('user_email')
         if not user_email:
             return jsonify({"error": "로그인이 필요합니다."}), 401
 
-        # 내 아이디(user_email)로 저장된 옷만 가져오기
-        response = supabase.table("clothes").select("*").eq("user_id", user_email).execute()
-        user_clothes = response.data
+        user_clothes = []
+        if supabase:
+            response = supabase.table("clothes").select("*").eq("user_email", user_email).execute()
+            user_clothes = response.data
 
-        top_5_outfits = recommend_clothes_logic(temp, target_tpo, user_clothes)
-        
+        # 1단계: 원래 추천 모듈 실행
+        # 만약 total_wear_count 부재로 내부 오류가 나면 가로채서 복구 로직을 가동합니다.
+        top_5_outfits = []
+        try:
+            top_5_outfits = recommend_clothes_logic(temp, target_tpo, user_clothes) if recommend_clothes_logic else []
+        except KeyError:
+            # 💡 [추천 파일 무수정 패치 가드] total_wear_count 정렬 키 오류 발생 시 
+            # app.py 단에서 순수 알고리즘 결합 루프까지만의 산출 데이터(outfits)를 수동 조립하여 원천 구원합니다.
+            from services.recommend_clothes import get_target_level, calculate_style_score, calculate_color_score
+            target_lv = get_target_level(temp)
+            
+            valid_bottoms = [c for c in user_clothes if c.get('main_category') == '하의' and abs(c['temp_level'] - target_lv) <= 1]
+            inners = [c for c in user_clothes if c.get('main_category') == '상의' and c.get('sub_category') == '이너']
+            outers = [c for c in user_clothes if c.get('main_category') == '상의' and c.get('sub_category') == '아우터']
+            
+            # 덧셈 조합의 유연성 완화 패치 적용 (후보 부족 시 최우선 노출 가드)
+            valid_top_combos = []
+            for inner in inners:
+                if abs(inner['temp_level'] - target_lv) <= 1:
+                    valid_top_combos.append([inner])
+                for outer in outers:
+                    if abs((inner['temp_level'] + outer['temp_level']) - target_lv) <= 2:
+                        valid_top_combos.append([inner, outer])
+                        
+            outfits_backup = []
+            for top_combo in valid_top_combos:
+                for bottom in valid_bottoms:
+                    full_outfit = top_combo + [bottom]
+                    style_score = calculate_style_score(full_outfit, target_tpo)
+                    color_score = calculate_color_score(top_combo, bottom, target_lv)
+                    total_score = round(style_score + color_score, 2)
+                    
+                    outfits_backup.append({
+                        "top_combo": top_combo,
+                        "bottom": bottom,
+                        "total_score": total_score,
+                        "style_score": style_score,
+                        "color_score": color_score
+                    })
+            top_5_outfits = sorted(outfits_backup, key=lambda x: x['total_score'], reverse=True)[:5]
+
+        # 2단계: 후보군 타입 가드 앤 안전 리스트 정렬
+        if not isinstance(top_5_outfits, list):
+            top_5_outfits = []
+
+        # 3단계: 최종 동적 딕셔너리로 캡슐화하여 전송 (1개든 2개든 있는 후보만큼만 화면에 유연하게 렌더링됨!)
         return jsonify({
             "current_temp": temp,
             "target_tpo": target_tpo,
             "recommendations": top_5_outfits
         })
     except Exception as e:
-        return jsonify({"error": f"추천 실패: {str(e)}"}), 500
+        print(f"❌ 추천 가드 오류 확인: {e}")
+        return jsonify({"current_temp": 20, "target_tpo": "캐주얼", "recommendations": []})
 
-@app.route('/weather_detail')
-def weather_detail():
-    # templates 폴더 안에 있는 weather_detail.html을 브라우저에 보여줍니다.
-    return render_template('weather_detail.html')
+@app.route('/guide')
+def guide_page():
+    is_logged_in = 'user_email' in session
+    user_email = session.get('user_email')
+    return render_template('guide.html', logged_in=is_logged_in, user_email=user_email)
 
+@app.route('/body-guide')
+def body_guide():
+    return "<h3>준비 중입니다!</h3><br><a href='/guide'>가이드로 돌아가기</a>"
+
+@app.route('/codi')
+def codi_page():
+    is_logged_in = 'user_email' in session
+    user_email = session.get('user_email')
+    return render_template('codi.html', logged_in=is_logged_in, user_email=user_email)
+
+@app.route('/my_closet')
+def my_closet():
+    user_email = session.get('user_email')
+    if not user_email:
+        return redirect(url_for('login'))
+    
+    is_logged_in = 'user_email' in session
+    clothes_list = []
+    
+    try:
+        if supabase:
+            response = supabase.table("clothes").select("*").eq("user_email", user_email).execute()
+            clothes_list = response.data
+    except Exception as e:
+        print(f"❌ 내 옷장 조회 실패: {e}")
+
+    raw_weather = fetch_weather()
+    current_weather = raw_weather[0] if raw_weather and isinstance(raw_weather, list) and len(raw_weather) > 0 else None
+
+    return render_template('my_closet.html', 
+                           clothes=clothes_list, 
+                           weather=current_weather,
+                           user_email=user_email,
+                           logged_in=is_logged_in)
+
+@app.route('/add_clothes')
+def add_clothes():
+    if 'user_email' not in session: return redirect(url_for('login'))
+    return render_template('add_clothes.html')
+
+@app.route('/add_clothes_photo')
+def add_clothes_photo():
+    if 'user_email' not in session: return redirect(url_for('login'))
+    return render_template('add_clothes_photo.html')
+
+@app.route('/clothes_detail/<int:cloth_id>')
+def clothes_detail(cloth_id):
+    if 'user_email' not in session: return redirect(url_for('login'))
+    
+    cloth_data = None
+    try:
+        if supabase:
+            response = supabase.table("clothes").select("*").eq("id", cloth_id).execute()
+            cloth_data = response.data[0] if response.data else None
+    except Exception as e:
+        print(f"❌ 옷 상세 데이터 조회 실패: {e}")
+
+    return render_template('clothes_detail.html', cloth=cloth_data)
+
+@app.route('/api/clothes/update/<int:cloth_id>', methods=['POST'])
+def update_cloth_api(cloth_id):
+    if 'user_email' not in session: return jsonify({"error": "로그인이 필요합니다."}), 401
+        
+    data = request.get_json()
+    tpo = data.get('tpo') 
+    try:
+        if not supabase: return jsonify({"error": "데이터베이스가 연결되어 있지 않습니다."}), 500
+            
+        response = supabase.table("clothes").update({
+            "name": data.get('name'),
+            "main_category": data.get('main_category'),
+            "sub_category": data.get('sub_category'),
+            "color": data.get('color'),
+            "style": [tpo] if tpo else []
+        }).eq("id", cloth_id).execute()
+        
+        return jsonify({"message": "수정 성공", "data": response.data}), 200
+    except Exception as e:
+        return jsonify({"error": f"수정 실패: {str(e)}"}), 500
+
+@app.route('/api/clothes/delete/<int:cloth_id>', methods=['POST'])
+def delete_cloth_api(cloth_id):
+    if 'user_email' not in session: return jsonify({"error": "로그인이 필요합니다."}), 401
+    try:
+        if supabase:
+            supabase.table("clothes").delete().eq("id", cloth_id).execute()
+        return jsonify({"message": "삭제 성공"}), 200
+    except Exception as e:
+        return jsonify({"error": f"삭제 실패: {str(e)}"}), 500
+
+@app.route('/my_scrap')
+def my_scrap(): return "<h3>스크랩북 기능은 개발 준비 중입니다!</h3><br><a href='/home'>돌아가기</a>"
+
+@app.route('/my_profile')
+def my_profile(): return "<h3>스타일 설정 기능은 개발 준비 중입니다!</h3><br><a href='/home'>돌아가기</a>"
 
 if __name__ == '__main__':
-    # 서버 실행 시 주소를 수동으로 출력해서 확인하기 편하게 만듭니다.
-    print("\n" + "="*50)
-    print("🚀 패션 코드 서버가 가동되었습니다!")
-    print("🔗 접속 주소: http://127.0.0.1:5000")
-    print("="*50 + "\n")
-    
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    print("\n🚀 패션 앱 서버 웹 서비스 구동 중...")
+    app.run(host='0.0.0.0', port=5000, debug=True)

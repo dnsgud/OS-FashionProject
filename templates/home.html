@@ -64,7 +64,7 @@
             }
         }
 
-        /* 🌙 다크모드 적용 시 스타일 변경 레이어 */
+        /* 🌙 다크모드 스타일 레이어 적용 (index.html 기준 통일) */
         body.dark-mode {
             background-color: #0f172a;
             color: #f8fafc;
@@ -370,9 +370,8 @@
             }
         }
 
-        // [수정] 외부 가짜 API 호출 스크립트 제거 및 백엔드 바인딩 데이터 연동
+        // [수정] 외부 가짜 API 요청 스크립트 제거 ➡️ Flask 템플릿 변수를 통해 안전하게 캐시 바인딩하도록 수정
         function loadServerWeatherData() {
-            // Flask template 태그가 백엔드 가동 시점에 실제 텍스트 값으로 치환됨
             const tempStr = "{{ weather.get('temp', 18) if weather else 18 }}";
             const statusStr = "{{ weather.get('status', '맑음') if weather else '맑음' }}";
 
@@ -381,7 +380,6 @@
         }
 
         function setRandomPick() {
-            // [수정] static 하위 경로에 맞는 이미지 배열 매핑
             const items = [
                 { image: "{{ url_for('static', filename='images/arsenal.jpg') }}", title: "아스널 홈 유니폼", desc: "스포티한 매력으로 포인트 주기 딱 좋은 트렌디한 아이템" },
                 { image: "{{ url_for('static', filename='images/madrid.jpg') }}", title: "레알 마드리드 홈 유니폼", desc: "클래식한 멋을 내는 코디 꿀템" },
@@ -403,6 +401,14 @@
         function toggleDropdown(event) {
             event.preventDefault();
             document.getElementById("my-dropdown").classList.toggle("show");
+        }
+
+        function toggleFab(event) {
+            event.preventDefault();
+            const menu = document.getElementById('fab-menu');
+            const btn = document.querySelector('.fab-button');
+            menu.classList.toggle('show');
+            btn.classList.toggle('active');
         }
 
         window.onclick = function (event) {
@@ -445,7 +451,7 @@
         }
 
         window.onload = () => {
-            loadServerWeatherData(); // 수정된 날씨 데이터 맵핑 함수 호출
+            loadServerWeatherData();
             setRandomPick();
             initDarkMode();
         };
@@ -462,14 +468,6 @@
         }
 
         function closePolicyModal() { document.getElementById('policy-modal').style.display = 'none'; }
-
-        function toggleFab(event) {
-            event.preventDefault();
-            const menu = document.getElementById('fab-menu');
-            const btn = document.querySelector('.fab-button');
-            menu.classList.toggle('show');
-            btn.classList.toggle('active');
-        }
     </script>
 
     <div class="fab-container">
