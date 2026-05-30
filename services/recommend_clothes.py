@@ -91,10 +91,22 @@ def calculate_temperature_score(top_combo, bottom, target_lv):
 
 def calculate_fit_score(top_combo, bottom, user_body_shape):
     """사용자 체형과 상/하의 핏 조화도 점수 계산 (최대 20점)"""
-    top_fit = top_combo[-1].get('fit', '레귤러핏')
-    bottom_fit = bottom.get('fit', '레귤러핏')
+    # 기본 핏 텍스트 추출
+    top_fit = top_combo[-1].get('fit', '스탠다드')
+    bottom_fit = bottom.get('fit', '스탠다드')
     
-    score = 0
+    # 용어 기반 선형 레벨 매핑
+    fit_map = {
+        '슬림': 1, '슬림핏': 1,
+        '스탠다드': 2, '스탠다드핏': 2,
+        '세미와이드': 3, '세미와이드핏': 3,
+        '와이드': 4, '와이드핏': 4,
+        '오버': 5, '오버핏': 5,
+    }
+    
+    top_lv = fit_map.get(top_fit, 2)     # 맵에 없으면 기본값 스탠다드(2)로 방어
+    bottom_lv = fit_map.get(bottom_fit, 2)
+    
     
     # 1. 상/하의 핏 실루엣 조화도 (10점 만점)
     # 상하의 극단적 미스매치(머슬/슬림+와이드 등) 페널티 부여
