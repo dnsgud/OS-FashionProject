@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - 스크랩북</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f6f8fa;
+            color: #24292f;
+            padding: 50px 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* 라이트/다크모드 스타일 */
+        body.dark-mode {
+            background: #1c1c1e;
+            color: #f2f2f7;
+        }
+
+        body.dark-mode .scrap-card,
+        body.dark-mode .back-btn {
+            background: #2c2c2e;
+            color: #f2f2f7;
+            border-color: #48484a;
+        }
+
+        body.dark-mode .scrap-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .scrap-desc,
+        body.dark-mode .temp-tag {
+            color: #aeaeb2;
+        }
+
+        .scrap-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* 상단 헤더 영역 */
+        .scrap-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .scrap-header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .scrap-header p {
+            color: #57606a;
+            font-size: 16px;
+        }
+
+        body.dark-mode .scrap-header p {
+            color: #aeaeb2;
+        }
+
+        /* 스크랩북 그리드 레이아웃 */
+        .scrap-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 20px;
+        }
+
+        @media (min-width: 480px) {
+            .scrap-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .scrap-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .scrap-card {
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 추천 코디 조합을 텍스트와 이모지로 시각화하는 박스 */
+        .item-preview-box {
+            width: 100%;
+            height: 180px;
+            background: #eaeef2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        body.dark-mode .item-preview-box {
+            background: #3a3a3c;
+        }
+
+        .item-icons {
+            font-size: 36px;
+            letter-spacing: 5px;
+        }
+
+        .temp-tag {
+            background: #0969da;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        body.dark-mode .temp-tag {
+            background: #2f81f7;
+        }
+
+        .card-body {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .scrap-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #24292f;
+            margin-bottom: 8px;
+        }
+
+        .scrap-desc {
+            font-size: 14px;
+            color: #57606a;
+            line-height: 1.5;
+        }
+
+        /* 하트 취소 버튼 */
+        .heart-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: 0.2s;
+        }
+
+        body.dark-mode .heart-btn {
+            background: #2c2c2e;
+            border-color: #48484a;
+        }
+
+        .heart-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 텅 비었을 때 메시지 */
+        .empty-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            color: #8c959f;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* 하단 네비게이션 */
+        .back-footer {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .back-btn {
+            padding: 12px 25px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background: white;
+            color: #24292f;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <div class="scrap-container">
+
+        <div class="scrap-header">
+            <h1>🔖 마이 코디 스크랩북</h1>
+            <p>온도별 맞춤 추천에서 하트(좋아요)를 누른 나만의 개인화 코디 조합입니다.</p>
+        </div>
+
+        <div id="scrapGrid" class="scrap-grid">
+        </div>
+
+        <div class="back-footer">
+            <a href="{{ url_for('home_page') }}" class="back-btn" style="text-decoration: none; display: inline-block;">
+                ← 메인으로 돌아가기
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        // 추천 페이지에서 저장한 하트 리스트 불러오기 (없으면 빈 배열)
+        let likedStyles = JSON.parse(localStorage.getItem('likedRecommendations')) || [];
+
+        function renderScraps() {
+            const grid = document.getElementById('scrapGrid');
+            grid.innerHTML = '';
+
+            if (likedStyles.length === 0) {
+                grid.innerHTML = `
+            <div class="empty-msg">
+                ❤️ 아직 스크랩한 코디가 없습니다.<br>
+                보유한 옷 기반 '온도별 코디 추천'에서 마음에 드는 조합에 하트를 눌러보세요!
+            </div>`;
+                return;
+            }
+
+            likedStyles.forEach((style, index) => {
+                const card = document.createElement('div');
+                card.className = 'scrap-card';
+                card.innerHTML = `
+            <button class="heart-btn" onclick="unlikeStyle(${index})" title="스크랩 취소">❤️</button>
+            <div class="item-preview-box">
+                <span class="temp-tag">${style.tempRange || '기온 정보'}</span>
+                <div class="item-icons">${style.icons || '👕👖'}</div>
+            </div>
+            <div class="card-body">
+                <div class="scrap-title">${style.title || '추천 코디 조합'}</div>
+                <div class="scrap-desc">
+                    <strong>상의:</strong> ${style.top || '선택 안 됨'}<br>
+                    <strong>하의:</strong> ${style.bottom || '선택 안 됨'}<br>
+                    ${style.outer ? `<strong>아우터:</strong> ${style.outer}` : ''}
+                </div>
+            </div>
+        `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 하트 해제 (스크랩 삭제)
+        function unlikeStyle(index) {
+            likedStyles.splice(index, 1);
+            localStorage.setItem('likedRecommendations', JSON.stringify(likedStyles));
+            renderScraps();
+        }
+
+        // 로드 시 실행
+        window.onload = function () {
+            renderScraps();
+        };
+    </script>
+
+</body>
+
+</html>

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>맞춤 코디 추천 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         :root {
             --primary: #4f46e5;
@@ -20,101 +22,238 @@
             font-family: 'Pretendard', sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .container {
-            max-width: 900px; width: 100%;
-            padding: 60px 20px; box-sizing: border-box;
+            max-width: 900px;
+            width: 100%;
+            padding: 60px 20px;
+            box-sizing: border-box;
             text-align: center;
         }
 
         /* 헤더 섹션 */
-        .header-section h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
-        .header-section p { font-size: 1.1rem; color: var(--text-light); margin-bottom: 30px; }
+        .header-section h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .header-section p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
 
         /* 기온 및 버튼 영역 */
         .action-card {
-            background: white; border-radius: 24px; padding: 30px;
-            border: 1px solid var(--border); margin-bottom: 40px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
+
         .temp-tag {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 8px 16px; background: #eff6ff; color: #3b82f6;
-            border-radius: 20px; font-weight: 700; margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #eff6ff;
+            color: #3b82f6;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
         }
+
         .recommend-btn {
-            background: var(--primary); color: white; border: none;
-            padding: 16px 40px; font-size: 1.2rem; font-weight: 700;
-            border-radius: 14px; cursor: pointer; transition: all 0.2s;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
             box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
         }
-        .recommend-btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        .recommend-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
 
         /* 결과 영역 (순위별 리스트) */
-        .result-area { display: none; width: 100%; animation: fadeInUp 0.5s ease; }
-        
-        .rank-section { margin-bottom: 40px; text-align: left; }
-        .rank-title { 
-            display: inline-block; padding: 6px 14px; border-radius: 10px;
-            font-size: 0.9rem; font-weight: 800; margin-bottom: 15px;
+        .result-area {
+            display: none;
+            width: 100%;
+            animation: fadeInUp 0.5s ease;
         }
-        .rank-1 { background: #e0e7ff; color: #4f46e5; } /* 1순위 강조 */
-        .rank-others { background: #f1f5f9; color: #475569; }
+
+        .rank-section {
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .rank-title {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .rank-1 {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        /* 1순위 강조 */
+        .rank-others {
+            background: #f1f5f9;
+            color: #475569;
+        }
 
         /* 상하의 세트 카드 가로 정렬 */
         .codi-set-wrapper {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-            background: white; border: 1px solid var(--border);
-            border-radius: 24px; padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
         }
 
-        .item-card { text-align: center; }
-        .item-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; margin-bottom: 15px; }
-        
+        .item-card {
+            text-align: center;
+        }
+
+        .item-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+
         /* 💡 레이어드 상의 유연 렌더링용 내부 플렉스 박스 확장 패치 */
         .clothes-flex-row {
-            display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
 
-        .single-item-node { width: 110px; text-align: center; }
+        .single-item-node {
+            width: 110px;
+            text-align: center;
+        }
 
         .item-img-box {
-            width: 100px; height: 130px; background: #f8fafc;
-            border-radius: 16px; display: flex; justify-content: center;
-            align-items: center; margin: 0 auto 10px auto; border: 1px solid #f1f5f9;
+            width: 100px;
+            height: 130px;
+            background: #f8fafc;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 10px auto;
+            border: 1px solid #f1f5f9;
+            font-size: 2.2rem;
+            /* 최신 프론트 파일 아이콘 크기 스타일 적용 */
+            color: #cbd5e1;
         }
+
         .item-img-box img {
-            width: 100%; height: 100%; object-fit: cover; border-radius: 16px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
         }
-        .item-name { font-size: 0.95rem; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-desc { font-size: 0.8rem; color: var(--text-light); }
+
+        .item-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-desc {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
 
         /* 하단 팁 박스 */
         .tip-box {
-            background: #eef2ff; color: #4338ca; padding: 18px 25px;
-            border-radius: 16px; text-align: left; font-weight: 600;
-            display: flex; align-items: center; gap: 12px; margin-top: 20px;
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 18px 25px;
+            border-radius: 16px;
+            text-align: left;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         /* 로딩 스피너 및 메세지 공용 디자인 */
-        .status-message { font-size: 1.1rem; color: #94a3b8; padding: 40px 0; font-weight: 600; }
-        .spinner { animation: spin 1s linear infinite; font-size: 2rem; color: #4f46e5; margin-bottom: 12px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .status-message {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            padding: 40px 0;
+            font-weight: 600;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+            font-size: 2rem;
+            color: #4f46e5;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 600px) {
-            .codi-set-wrapper { grid-template-columns: 1fr; }
+            .codi-set-wrapper {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -143,22 +282,22 @@
 
     <script>
         // 페이지가 켜지자마자 백엔드에서 날씨를 읽어와서 상단 기온 태그를 교체합니다.
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             try {
                 const res = await fetch('/api/recommend?tpo=캐주얼');
-                if(res.ok) {
+                if (res.ok) {
                     const info = await res.json();
                     document.getElementById('realtime-temp-display').innerHTML = `<i class="fas fa-thermometer-half"></i> 현재 기온: ${info.current_temp}°C`;
                 }
-            } catch(e) {
+            } catch (e) {
                 document.getElementById('realtime-temp-display').innerHTML = `<i class="fas fa-thermometer-half"></i> 현재 기온: 18°C (기본)`;
             }
         });
 
         // [코디 추천받기] 버튼 동적 클릭 처리기
-        document.getElementById('btn-recommend-trigger').addEventListener('click', async function() {
+        document.getElementById('btn-recommend-trigger').addEventListener('click', async function () {
             const container = document.getElementById('result-container');
-            
+
             // 로딩 메시지 및 회전 스피너 작동
             container.innerHTML = `
                 <div class="status-message">
@@ -170,12 +309,12 @@
             try {
                 // 1단계: 파이썬 서버 데이터 요청
                 const response = await fetch('/api/recommend?tpo=캐주얼');
-                if(!response.ok) throw new Error("등록된 내 옷 데이터를 찾을 수 없거나 로그인이 필요합니다.");
-                
+                if (!response.ok) throw new Error("등록된 내 옷 데이터를 찾을 수 없거나 로그인이 필요합니다.");
+
                 const data = await response.json();
                 const outfits = data.recommendations; // 최대 5개 코디 리스트
 
-                if(!outfits || outfits.length === 0) {
+                if (!outfits || outfits.length === 0) {
                     container.innerHTML = `<div class="status-message">⚠️ 현재 기온 대역 및 가이드 레벨에 맞는 의류가 부족합니다. 먼저 마이룸에서 상·하의 옷을 등록해 주세요!</div>`;
                     return;
                 }
@@ -185,23 +324,38 @@
                 // 2단계: 수신받은 리스트 순회하며 가로 정렬 카드 드로잉
                 outfits.forEach((outfit, i) => {
                     const rankClass = (i === 0) ? 'rank-1' : 'rank-others';
+
+                    // ✨ [최신 프론트 파일 추가분 이식 1]: 1순위일 때 왕관 아이콘 조건문 추가 및 텍스트 조합 규칙 업데이트
+                    const crownIcon = (i === 0) ? '<i class="fas fa-crown"></i> ' : '';
                     const rankText = (i + 1) + '순위 추천 코디 (종합 평점: ' + outfit.total_score + '점)';
 
                     // 상의 묶음 데이터 파싱 (이너 단독, 혹은 이너+아우터 동시 처리 자동 순회)
+                    // ✨ [최신 프론트 파일 추가분 이식 2]: 이미지 데이터가 유실되었거나 없을 경우 Font Awesome 아이콘 분기 처리 가드 적용
                     const topItemsHtml = outfit.top_combo.map(top => `
                         <div class="single-item-node">
                             <div class="item-img-box">
-                                <img src="${top.image_url || 'https://via.placeholder.com/100x130?text=LookUp'}" onerror="this.src='https://via.placeholder.com/100x130?text=LookUp'">
+                                ${top.image_url ? `<img src="${top.image_url}" onerror="this.src='https://via.placeholder.com/100x130?text=LookUp'">` : `<i class="${top.img || 'fas fa-tshirt'}"></i>`}
                             </div>
                             <div class="item-name">${top.name}</div>
                             <div class="item-desc">${top.sub_category}</div>
                         </div>
                     `).join('');
 
+                    // ✨ [최신 프론트 파일 추가분 이식 3]: 하의 이미지 부재 시 아이콘 백업 처리 적용
+                    const bottomItemHtml = `
+                        <div class="single-item-node">
+                            <div class="item-img-box">
+                                ${outfit.bottom.image_url ? `<img src="${outfit.bottom.image_url}" onerror="this.src='https://via.placeholder.com/100x130?text=LookUp'">` : `<i class="${outfit.bottom.img || 'fas fa-socks'}"></i>`}
+                            </div>
+                            <div class="item-name">${outfit.bottom.name}</div>
+                            <div class="item-desc">하의</div>
+                        </div>
+                    `;
+
                     const section = document.createElement('div');
                     section.className = 'rank-section';
                     section.innerHTML = `
-                        <span class="rank-title ${rankClass}">${i === 0 ? '<i class="fas fa-crown"></i> ' : ''}${rankText}</span>
+                        <span class="rank-title ${rankClass}">${crownIcon}${rankText}</span>
                         <div class="codi-set-wrapper">
                             <div class="item-card">
                                 <div class="item-label">TOP (상의 조합)</div>
@@ -212,13 +366,7 @@
                             <div class="item-card">
                                 <div class="item-label">BOTTOM (하의)</div>
                                 <div class="clothes-flex-row">
-                                    <div class="single-item-node">
-                                        <div class="item-img-box">
-                                            <img src="${outfit.bottom.image_url || 'https://via.placeholder.com/100x130?text=LookUp'}" onerror="this.src='https://via.placeholder.com/100x130?text=LookUp'">
-                                        </div>
-                                        <div class="item-name">${outfit.bottom.name}</div>
-                                        <div class="item-desc">하의</div>
-                                    </div>
+                                    ${bottomItemHtml}
                                 </div>
                             </div>
                         </div>
@@ -228,12 +376,15 @@
 
                 // 결과 노출 및 팁 가이드 출력
                 document.getElementById('tip-area').style.display = 'block';
+
+                // ✨ [최신 프론트 파일 추가분 이식 4]: 추천 완료 후 부드럽게 화면 하단 스크롤링 기능 반영
                 window.scrollTo({ top: container.offsetTop - 20, behavior: 'smooth' });
 
-            } catch(err) {
+            } catch (err) {
                 container.innerHTML = `<div class="status-message" style="color: #ef4444;">❌ 오류: ${err.message}</div>`;
             }
         });
     </script>
 </body>
+
 </html>

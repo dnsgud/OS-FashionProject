@@ -35,12 +35,37 @@
             font-size: 1.2rem;
             color: #64748b;
             cursor: pointer;
-            padding: 5px id="back-link";
+            padding: 5px;
+        }
+
+        /* ✨ 최신 프론트엔드 이미지 박스 및 아이콘 스타일 반영 */
+        .image-area {
+            width: 100%;
+            height: 300px;
+            background-color: #f1f5f9;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .no-img-icon {
+            font-size: 4rem;
+            color: #cbd5e1;
         }
     </style>
 </head>
 
 <body>
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
     <header>
         <a href="{{ url_for('my_closet') }}" class="back-btn" style="text-decoration: none; display: inline-block;">
             <i class="fas fa-arrow-left"></i>
@@ -51,9 +76,13 @@
     <main style="flex: 1; max-width: 600px; margin: 40px auto; width: 100%; padding: 0 20px; box-sizing: border-box;">
         <div
             style="background: white; border-radius: 24px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; text-align: center;">
-            <img id="cloth-img" src="{{ url_for('static', filename='images/leather_jacket.jpg') }}" alt="옷"
-                style="width: 100%; max-width: 300px; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 25px;"
-                onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
+
+            <div class="image-area">
+                <i class="fas fa-tshirt no-img-icon" id="no-image" style="display: none;"></i>
+                <img id="cloth-img" src="{{ url_for('static', filename='images/leather_jacket.jpg') }}" alt="옷"
+                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;"
+                    onerror="this.style.display='none'; document.getElementById('no-image').style.display='block';">
+            </div>
 
             <div style="text-align: left; margin-bottom: 30px;">
                 <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">옷 이름</label>
@@ -66,6 +95,10 @@
 
                 <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">색상</label>
                 <input type="text" id="info-color" class="info-input" value="블랙" readonly
+                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box; margin-bottom:20px;">
+
+                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">추천 계절</label>
+                <input type="text" id="info-season" class="info-input" value="봄, 가을" readonly
                     style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box;">
             </div>
 
@@ -120,7 +153,7 @@
             if (!isEditMode) {
                 toggleEditMode(true);
             } else {
-                // [교정] 오타 주소(/api/clothes/edit/) 대신 본래 app.py의 명세 수신 주소(/api/clothes/update/)로 정상 매핑 완료
+                // 기존 데이터 전송 구조 유지 및 새로 이식된 계절(season) 필드까지 함께 패킹하여 서버 전송 명세 추가
                 fetch(`/api/clothes/update/${currentClothId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -128,7 +161,8 @@
                         name: document.getElementById('info-name').value,
                         main_category: document.getElementById('info-cat').value,
                         sub_category: "",
-                        color: document.getElementById('info-color').value
+                        color: document.getElementById('info-color').value,
+                        season: document.getElementById('info-season').value // 계절 필드 DB 전송 확장
                     })
                 })
                     .then(res => {
