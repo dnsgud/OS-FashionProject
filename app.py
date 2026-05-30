@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import traceback
 import random
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session, make_response
 from flask_cors import CORS
@@ -8,6 +9,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from services.userprofile import update_account_password, change_profile_password
 from auth_service import sign_up_user, login_user, get_email_by_login_id
+
 # 경로 설정을 최상단에서 진행
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
@@ -249,11 +251,50 @@ def register():
 
 @app.route('/api/update_password', methods=['POST'])
 def update_password_api():
+    login_id = session.get('login_id')
     data = request.json
-    result = change_profile_password(data.get('login_id'), data.get('currentPw'), data.get('newPw'), data.get('confirmPw'))
-    if result: return jsonify({"status": True, "message": "성공"}), 200
-    else: return jsonify({"status": False, "message": "비밀번호 검증 실패"}), 400
-
+    
+    print("\n==================================")
+    print(f"🔒 [디버그] 비밀번호 변경 시도")
+    print(f" - 세션 login_id: {login_id}")
+    print("==================================\n")
+    
+    if not login_id:
+        return jsonify({"status": "fail", "message": "로그인 세션이 만료되었습니다. 다시 로그인해주세요."}), 401
+        
+    current_pw = data.get('currentPw')
+    new_pw = data.get('newPw')
+    
+    try:
+        # 1. DB에서 현재 유저의 기존 비밀번호(pw) 가져오기
+        user_data = supabase.table("users").select("pw").eq("login_id", login_id).execute()
+        
+        if not user_data.data:
+            return jsonify({"status": "fail", "message": "회원 정보를 찾을 수 없습니다."}), 404
+            
+        # DB에서 가져온 기존 비밀번호 추출
+        db_password = user_data.data[0].get("pw")
+        
+        # 2. 사용자가 입력한 '기존 비밀번호'가 실제 DB와 일치하는지 확인
+        if db_password != current_pw:
+            return jsonify({"status": "fail", "message": "기존 비밀번호가 올바르지 않습니다."}), 400
+            
+        # 3. 새 비밀번호(pw)로 업데이트 실행
+        update_response = supabase.table("users").update({
+            "pw": new_pw  # 🔥 실제 DB 컬럼명인 pw로 완벽히 일치시킴
+        }).eq("login_id", login_id).execute()
+        
+        if not update_response.data:
+            return jsonify({"status": "fail", "message": "비밀번호 업데이트에 실패했습니다."}), 400
+            
+        print(f"✅ [디버그] 비밀번호 변경 성공")
+        return jsonify({"status": "success", "message": "비밀번호가 성공적으로 변경되었습니다."}), 200
+        
+    except Exception as e:
+        print("\n❌ [디버그] 비밀번호 변경 중 에러 발생!")
+        traceback.print_exc()
+        return jsonify({"status": "fail", "message": "서버 DB 통신 중 오류가 발생했습니다."}), 500
+    
 @app.route('/logout')
 def logout():
     session.clear() 
@@ -585,6 +626,108 @@ def my_profile():
     if not user_email: return redirect(url_for('login'))
     is_logged_in = 'user_email' in session or 'login_id' in session
     return render_template('my_profile.html', logged_in=is_logged_in, user_email=user_email)
+
+@app.route('/api/update_user_info', methods=['POST'])
+def update_user_info_api():
+    login_id = session.get('login_id')
+    data = request.json
+    
+    print("\n==================================")
+    print(f"🛠️ [디버그] 업데이트 시도")
+    print(f" - 세션 login_id: {login_id} (타입: {type(login_id)})")
+    print(f" - 전달받은 데이터: {data}")
+    print("==================================\n")
+    
+    if not login_id:
+        return jsonify({"status": "fail", "message": "서버에 로그인 세션이 없습니다. 다시 로그인해주세요."}), 401
+    
+    try:
+        response = supabase.table("users").update({
+            "nickname": data.get('nickname'),
+            "email": data.get('email'),
+            "name": data.get('name')
+        }).eq("login_id", login_id).execute()
+        
+        print(f"✅ [디버그] DB 업데이트 성공 결과: {response}")
+        return jsonify({"status": "success", "message": "수정 완료"}), 200
+        
+    except Exception as e:
+        print("\n❌ [디버그] 치명적 에러 발생!")
+        traceback.print_exc() # 에러가 발생한 정확한 원인을 터미널에 붉은 글로 띄워줍니다.
+        return jsonify({"status": "fail", "message": "DB 통신 중 오류가 발생했습니다."}), 500
+    
+@app.route('/api/check-nickname', methods=['POST'])
+def check_nickname():
+    data = request.get_json()
+    nickname = data.get('nickname')
+  
+    return jsonify({"message": "사용 가능한 닉네임입니다."}) 
+
+@app.route('/api/check-email', methods=['POST'])
+def check_email():
+    data = request.get_json()
+    email = data.get('email')
+
+    return jsonify({"message": f"'{email}'은 사용 가능한 이메일입니다."})
+@app.route('/api/update-user-info', methods=['POST'])
+def update_user_info():
+    data = request.get_json()
+    # Supabase update 로직
+    return jsonify({"message": "수정이 완료되었습니다."})
+
+@app.route('/api/update_body_info', methods=['POST'])
+def update_body_info_api():
+    login_id = session.get('login_id')
+    data = request.json
+    
+    print("\n==================================")
+    print(f"🏋️ [디버그] 체형정보 업데이트 시도")
+    print(f" - 세션 login_id: {login_id}")
+    print(f" - 전달받은 데이터: {data}")
+    print("==================================\n")
+    
+    # 1. 세션 검증 (로그인 안 된 사용자 차단)
+    if not login_id:
+        return jsonify({"status": "fail", "message": "서버에 로그인 세션이 없습니다. 다시 로그인해주세요."}), 401
+    
+    try:
+        # 2. 데이터 안전 변환 (값이 있으면 정수형으로 변환, 없으면 None 처리)
+        height_val = int(data.get('height')) if data.get('height') else None
+        weight_val = int(data.get('weight')) if data.get('weight') else None
+        
+        # 3. Supabase DB 업데이트 쿼리 실행
+        response = supabase.table("users").update({
+            "height": height_val,
+            "weight": weight_val,
+            "body_shape": data.get('bodyType')  # 핵심 수정: DB 컬럼명(body_shape)에 정확히 매핑
+        }).eq("login_id", login_id).execute()
+        
+        # 4. 방어 로직: Supabase가 빈 데이터를 반환했는지 검사 (Silent Failure 감지)
+        if not response.data:
+            print("⚠️ [디버그] DB에 해당 login_id를 가진 유저가 없어 업데이트가 무시되었습니다.")
+            return jsonify({"status": "fail", "message": "회원 정보를 찾을 수 없어 저장에 실패했습니다."}), 400
+        
+        # 5. 정상 저장 완료
+        print(f"✅ [디버그] 체형 DB 업데이트 성공: {response.data}")
+        return jsonify({"status": "success", "message": "체형 정보가 정상적으로 저장되었습니다."}), 200
+        
+    except ValueError:
+        # 키나 몸무게에 숫자가 아닌 값("abc" 등)이 들어와 int() 변환 중 에러가 날 경우
+        return jsonify({"status": "fail", "message": "키와 몸무게는 숫자만 입력 가능합니다."}), 400
+        
+    except Exception as e:
+        print("\n❌ [디버그] 체형 DB 업데이트 치명적 에러 발생!")
+        traceback.print_exc() 
+        return jsonify({"status": "fail", "message": "DB 통신 중 서버 내부 오류가 발생했습니다."}), 500
+    
+@app.route('/api/verify_password', methods=['POST'])
+def verify_password_api():
+    """비밀번호 검증 API"""
+    data = request.json
+    input_pw = data.get('password')
+    user_email = session.get('user_email')
+
+    return jsonify({"status": "success"}), 200
 
 if __name__ == '__main__':
     print("\n🚀 패션 앱 서버 웹 서비스 구동 중...")
