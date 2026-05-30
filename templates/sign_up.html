@@ -189,7 +189,7 @@
                 <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
-                <li><a href="{{ url_for('guide_page') }}" class="nav-link"
+                <li><a href="{{ url_for('guide_main') }}" class="nav-link"
                         style="color: inherit; text-decoration: none;"><i class="fas fa-book"></i> Guide</a></li>
                 <li><a href="{{ url_for('codi_page') }}" class="nav-link"
                         style="color: inherit; text-decoration: none;"><i class="fas fa-tshirt"></i> Codi</a></li>
@@ -340,11 +340,12 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    email: email,
-                    password: password,
-                    nickname: nickname,
-                    name: name,
-                    username: username
+                    email: email,           // app.py의 data.get('email')
+                    password: password,     // app.py의 data.get('password')
+                    nickname: nickname,     // app.py의 data.get('nickname')
+                    username: username,     // app.py의 data.get('username')
+                    name: name,             // app.py의 data.get('name')
+                    gender: '미선택'        // gender가 없다면 기본값 추가
                 })
             })
                 .then(async res => {

@@ -113,3 +113,17 @@ def login_user(login_id, password):
     except Exception as e:
         print(f"네트워크 에러: {e}")
         return None
+    
+def get_email_by_login_id(login_id):
+    try:
+        db_url = f"{Config.SUPABASE_URL}/rest/v1/users?login_id=eq.{login_id}&select=email"
+        db_headers = {
+            "apikey": Config.SUPABASE_KEY,
+            "Authorization": f"Bearer {Config.SUPABASE_KEY}"
+        }
+        response = requests.get(db_url, headers=db_headers)
+        if response.ok and response.json():
+            return response.json()[0].get("email")
+    except Exception as e:
+        print(f"❌ 이메일 조회 실패: {e}")
+    return None    

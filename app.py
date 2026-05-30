@@ -5,9 +5,8 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, s
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-from services import userprofile
 from services.userprofile import update_account_password, change_profile_password
-
+from auth_service import sign_up_user, login_user, get_email_by_login_id
 
 # 경로 설정을 최상단에서 진행
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +25,9 @@ def make_session_permanent():
 
 @app.context_processor
 def inject_user():
-    return dict(logged_in='user_email' in session)
+    # 이메일 혹은 아이디 둘 중 하나라도 세션에 있으면 로그인된 것으로 간주
+    is_logged_in = 'user_email' in session or 'login_id' in session
+    return dict(logged_in=is_logged_in)
 
 
 # --- [서비스 모듈 안전 임포트 구조 및 가드] ---
@@ -173,17 +174,26 @@ def login():
 
     if request.method == 'POST':
         data = request.get_json()
-        email = data.get('email')
+        login_id = data.get('login_id')
         password = data.get('password')
 
-        is_success = login_user(email, password) if login_user else False
+        # auth_service의 login_user는 login_id로 이메일을 찾아 토큰을 발급함
+        is_success = login_user(login_id, password) if login_user else False
 
         if is_success:
-            session['user_email'] = email
+            # [수정] 세션에 login_id 뿐만 아니라 기존 서비스가 참조하는 user_email도 저장
+            # auth_service에서 로그인 시 실제 이메일을 반환받도록 로직을 확장하거나,
+            # DB에서 해당 아이디의 이메일을 한 번 더 조회하여 세션에 넣어야 합니다.
+            session['login_id'] = login_id
+            
+            # 💡 중요: 기존 'user_email' 세션을 사용하는 모든 페이지를 위해 이메일 주입
+            # 실제 이메일 값을 가져오기 위해 auth_service에서 이메일 조회를 수행하세요
+            # (현재 auth_service 내부 파이프라인에서 이미 이메일을 조회하므로 이를 반환받도록 개선 권장)
+            session['user_email'] = get_email_by_login_id(login_id) # 별도 함수 생성 권장
+            
             return jsonify({"message": "로그인 성공"}), 200
         else:
-            return jsonify({"error": "로그인 실패"}), 401
-
+            return jsonify({"error": "아이디 또는 비밀번호가 틀렸습니다."}), 401
 @app.route('/register') 
 def register_page():
     return render_template('sign_up.html')
@@ -191,29 +201,44 @@ def register_page():
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "데이터가 없습니다."}), 400
+
+    # 1. 프론트에서 보내는 키값과 일치하게 가져오기
     email = data.get('email')
     password = data.get('password')
-    nickname = data.get('nickname', '익명')  
-    name = data.get('name', '이름 없음')         
-    username = data.get('username', '')        
-    gender = data.get('gender', '미선택')    
+    nickname = data.get('nickname')
+    username = data.get('username') # 이게 login_id
+    name = data.get('name')
+    gender = data.get('gender', '미선택')
 
-    if not email or not password:
-        return jsonify({"error": "이메일과 비밀번호를 입력해주세요."}), 400
+    # 2. 필수 값 누락 체크 (하나라도 없으면 400 에러)
+    if not email or not password or not username:
+        return jsonify({"error": "필수 정보를 모두 입력해주세요."}), 400
 
-    success = False
-    if sign_up_user:
-        try:
-            # 새로 추가된 이름(name)과 아이디(username)를 포함하여 회원가입 시도
-            success = sign_up_user(email=email, password=password, nickname=nickname, gender=gender, name=name, username=username)
-        except TypeError:
-            # 만약 auth_service.py 내부 함수가 아직 옛날 규격(인자 4개)이라면 튕기지 않고 이전 버전으로 가입 처리
-            success = sign_up_user(email, password, nickname, gender)
+    # 3. 서비스 함수 호출 (6개 인자 모두 전달)
+    try:
+        success = sign_up_user(email, password, nickname, username, name, gender)
+        if success:
+            return jsonify({"message": "회원가입 성공!"}), 201
+        else:
+            return jsonify({"error": "DB 저장 실패"}), 400
+    except Exception as e:
+        print(f"서버 에러: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/send-code', methods=['POST'])
+def send_code():
+    data = request.json
+    # 여기서 이메일 발송 로직 수행 (SMTP 등)
+    return jsonify({"status": "success"})
 
-    if success:
-        return jsonify({"message": "회원가입 성공!"}), 201
-    else:
-        return jsonify({"error": "회원가입에 실패했습니다."}), 400
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password():
+    data = request.json
+    # 여기서 DB의 비밀번호 갱신 로직 수행
+    return jsonify({"status": "success"})
+
     
 @app.route('/api/update_password', methods=['POST'])
 def update_password_api():
