@@ -215,3 +215,35 @@ def authorize_profile_edit(login_id, current_pw):
         
     print("[알고리즘 에러] 비밀번호 불일치로 회원정보 수정 접근이 거부되었다")
     return None
+
+def _verify_current_password(login_id, current_pw):
+    # 프론트엔드 입력 현재 비밀번호와 DB 데이터 일치 여부 대조 유틸리티
+    if not login_id or not current_pw:
+        return False
+        
+    try:
+        query = supabase.table('users').select('pw').eq('login_id', login_id).execute()
+        
+        if query.data and query.data[0].get('pw') == current_pw:
+            return True
+            
+        print("[알고리즘 경고] 현재 비밀번호 불일치 감지")
+        return False
+        
+    except Exception as e:
+        print(f"[DB 에러] 비밀번호 대조 쿼리 실행 실패: {e}")
+        return False
+
+
+def change_profile_password(login_id, current_pw, new_pw, new_pw_confirm):
+    # 3중 입력 폼 값을 동시에 받아 기존 암호 검증과 신규 갱신을 일괄 처리하는 메인 제어기
+    
+    # 1. 선행 보안 관문으로 현재 비밀번호의 일치 여부 판별
+    if not _verify_current_password(login_id, current_pw):
+        print("[알고리즘 에러] 기존 비밀번호 불일치로 변경 파이프라인 즉시 차단")
+        return False
+        
+    print("[알고리즘 로그] 기존 비밀번호 일치 확인 완료, 신규 갱신 파이프라인 이관")
+    
+    # 2. 검증 완료 시 위쪽의 원본 갱신 모듈을 호출하여 새 비밀번호 무결성 검증 및 DB 적재 위임
+    return update_account_password(login_id, new_pw, new_pw_confirm)
