@@ -9,6 +9,110 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        /* 기본 레이아웃 보완 */
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .guide-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .guide-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+            border-color: #4f46e5;
+        }
+
+        /* 📌 마이메뉴 드롭다운 필수 CSS 구체화 */
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            min-width: 160px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #e2e8f0;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 16px;
+            color: #334155;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f1f5f9;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        /* 🌓 다크모드 대응 통합 가드 스타일 완벽화 */
+        body.dark-mode {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        body.dark-mode header,
+        body.dark-mode nav {
+            color: #f8fafc;
+        }
+
+        body.dark-mode .guide-card {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .guide-card h2 {
+            color: #ffffff;
+        }
+
+        body.dark-mode .guide-card p {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .guide-card:hover {
+            border-color: #6366f1;
+        }
+
+        body.dark-mode .dropdown-menu {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .dropdown-menu a {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .dropdown-menu a:hover {
+            background: #334155;
+            color: #ffffff;
+        }
+    </style>
 </head>
 
 <body>
@@ -19,7 +123,7 @@
             </div>
             <ul>
                 <li>
-                    <a href="{{ url_for('guide_page') }}" class="nav-link"
+                    <a href="{{ url_for('guide_main') }}" class="nav-link"
                         style="color: inherit; text-decoration: none;">
                         <i class="fas fa-book"></i> Guide
                     </a>
@@ -60,59 +164,80 @@
 
     <main class="guide-page-container" style="max-width: 1000px; margin: 60px auto; padding: 0 20px;">
         <h1 class="guide-main-title"
-            style="font-size: 2.2rem; font-weight: 800; margin-bottom: 40px; text-align: center;">Fashion Guide for
-            Beginners</h1>
+            style="font-size: 2.2rem; font-weight: 800; margin-bottom: 40px; text-align: center;">
+            Fashion Guide for Beginners
+        </h1>
 
         <div class="guide-grid"
             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-            <section class="guide-card"
-                style="background: white; border-radius: 24px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.01);">
-                <h2>🧺 캡슐 워드롭</h2>
-                <p style="color: #64748b; font-size: 0.95rem;">돌려 입기 좋은 최소한의 필수 아이템 리스트</p>
-                <ul style="padding-left: 20px; line-height: 1.8;">
-                    <li>흰색 무지 티셔츠 & 검정 슬랙스</li>
-                    <li>중청 데님 & 베이직 가디건</li>
-                </ul>
-            </section>
 
-            <section class="guide-card"
-                style="background: white; border-radius: 24px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.01);">
-                <h2>👤 체형별 가이드</h2>
-                <p style="color: #64748b; font-size: 0.95rem;">자신의 체형에 맞는 최적의 실루엣 추천</p>
-                <button class="submit-btn" onclick="alert('체형별 상세 가이드는 준비 중입니다!')"
-                    style="padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: 10px;">자세히
-                    보기</button>
-            </section>
+            <a href="{{ url_for('guide_dictionary') }}" style="text-decoration: none; color: inherit; display: block;">
+                <section class="guide-card" style="cursor: pointer; height: 100%;">
+                    <h2>🧺 기본 패션 아이템 도감</h2>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 15px;">돌려 입기 좋은 최소한의 필수 아이템 리스트</p>
+                    <ul style="padding-left: 20px; line-height: 1.8; margin: 0;">
+                        <li>흰색 무지 티셔츠 & 검정 슬랙스</li>
+                        <li>중청 데님 & 베이직 가디건</li>
+                    </ul>
+                </section>
+            </a>
 
-            <section class="guide-card"
-                style="background: white; border-radius: 24px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.01);">
-                <h2>📅 TPO 가이드</h2>
-                <p style="color: #64748b; font-size: 0.95rem;">상황별(캠퍼스, 데이트, 면접) 스타일링 룰</p>
-                <ul style="padding-left: 20px; line-height: 1.8;">
-                    <li>캠퍼스: 편안한 시티보이 룩 혹은 맨투맨 활성 코디</li>
-                    <li>데이트: 깔끔한 니트 앤 슬랙스 댄디 연출</li>
-                </ul>
-            </section>
+            <a href="{{ url_for('body_guide') }}" style="text-decoration: none; color: inherit; display: block;">
+                <section class="guide-card" style="cursor: pointer; height: 100%;">
+                    <h2>👤 체형별 가이드</h2>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 15px;">자신의 체형에 맞는 최적의 실루엣 추천</p>
+                    <button class="submit-btn"
+                        style="padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: 10px; pointer-events: none;">
+                        자세히 보기
+                    </button>
+                </section>
+            </a>
+
+            <a href="{{ url_for('tpo_guide') }}" style="text-decoration: none; color: inherit; display: block;">
+                <section class="guide-card" style="cursor: pointer; height: 100%;">
+                    <h2>📅 TPO 가이드</h2>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 15px;">상황별(캠퍼스, 데이트, 면접) 코디 공식</p>
+                    <ul style="padding-left: 20px; line-height: 1.8; margin: 0;">
+                        <li>캠퍼스: 편안 한 시티보이 룩 혹은 맨투맨 활성 코디</li>
+                        <li>데이트: 깔끔한 니트 앤 슬랙스 댄디 연출</li>
+                    </ul>
+                </section>
+            </a>
+
+            <a href="{{ url_for('color_guide') }}" style="text-decoration: none; color: inherit; display: block;">
+                <section class="guide-card" style="cursor: pointer; height: 100%;">
+                    <h2>🎨 컬러 매칭</h2>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 15px;">실패 없는 색 조합 가이드</p>
+                    <ul
+                        style="padding-left: 20px; line-height: 1.8; margin: 0; list-style-type: none; padding-left: 0;">
+                        <li style="color: #64748b; font-size: 0.95rem;">보색 및 톤온톤 매칭 기법 제공</li>
+                    </ul>
+                </section>
+            </a>
+
         </div>
     </main>
 
     <script>
         function toggleDropdown(event) {
             event.preventDefault();
+            event.stopPropagation(); // 이벤트 버블링 차단 (메뉴 즉시 닫힘 방지)
             document.getElementById("my-dropdown").classList.toggle("show");
         }
 
-        // 다크모드 동적 적용 레이어
+        // 페이지 로드 시 다크모드 상태 검사 및 적용
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
 
+        // 드롭다운 외부 영역 클릭 제어 완벽화
         window.onclick = function (event) {
-            if (!event.target.matches('.nav-link') && !event.target.closest('#my-menu-btn')) {
-                const dropdowns = document.getElementsByClassName("dropdown-menu");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    let openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); }
+            const myMenuBtn = document.getElementById('my-menu-btn');
+            const dropdownMenu = document.getElementById('my-dropdown');
+
+            if (myMenuBtn && !myMenuBtn.contains(event.target)) {
+                if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.remove('show');
                 }
             }
         }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 사진 등록 - Look_Up</title>
+    <title>AI 분석 결과 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -42,7 +42,7 @@
         }
 
         main {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 40px auto;
             padding: 0 20px;
         }
@@ -54,19 +54,17 @@
             margin-bottom: 40px;
         }
 
-        /* 메인 컨테이너 */
         .registration-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 40px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
             display: grid;
             grid-template-columns: 1fr 1.2fr;
             gap: 40px;
             position: relative;
         }
 
-        /* 왼쪽: 이미지 영역 */
         .image-section {
             display: flex;
             flex-direction: column;
@@ -76,13 +74,10 @@
             width: 100%;
             aspect-ratio: 1/1;
             background: #f1f5f9;
-            border: 2px dashed #cbd5e1;
-            border-radius: 20px;
+            border-radius: 24px;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
             overflow: hidden;
             position: relative;
         }
@@ -91,31 +86,16 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: none;
         }
 
-        .upload-box i {
-            font-size: 3rem;
-            color: #94a3b8;
-            margin-bottom: 10px;
-        }
-
-        .upload-box p {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        /* AI 로딩 오버레이 */
         .ai-loading {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: none;
+            background: rgba(255, 255, 255, 0.85);
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -138,11 +118,10 @@
             }
         }
 
-        /* 오른쪽: 입력 폼 영역 */
         .form-section {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 22px;
         }
 
         .input-group {
@@ -152,55 +131,154 @@
         }
 
         .input-group label {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            color: #475569;
+            color: #1e293b;
         }
 
         .form-input {
-            padding: 12px 15px;
+            padding: 14px 16px;
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 1rem;
             background: #f8fafc;
             font-family: inherit;
+            color: #334155;
+            outline: none;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
+            border-color: #6366f1;
             background: white;
         }
 
-        /* TPO 해시태그 디자인 */
-        .tpo-group {
-            margin-top: 10px;
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .color-preview {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #000000;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+
+        .color-code-input {
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #334155;
+            background: #f8fafc;
+            width: 120px;
+            text-align: center;
+            outline: none;
         }
 
         .hashtag-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 2px;
         }
 
         .tag {
-            padding: 8px 16px;
+            padding: 10px 18px;
             background: #f1f5f9;
             border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 700;
             color: #64748b;
             cursor: pointer;
             transition: all 0.2s;
+            user-select: none;
         }
 
         .tag.active {
-            background: var(--primary);
-            color: white;
+            background: #e0e7ff;
+            color: #4f46e5;
         }
 
-        /* 하단 저장 버튼 */
+        .temp-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .temp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .temp-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .temp-badge {
+            background: #e0e7ff;
+            color: #4f46e5;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .slider-container {
+            position: relative;
+            margin-bottom: 16px;
+            padding: 10px 0;
+        }
+
+        .temp-slider {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #3b82f6, #eab308, #ef4444);
+            outline: none;
+        }
+
+        .temp-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid #4f46e5;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .temp-description {
+            font-size: 0.9rem;
+            color: #64748b;
+            line-height: 1.5;
+            margin: 0;
+        }
+
         .save-btn {
             grid-column: span 2;
             margin-top: 20px;
@@ -208,7 +286,7 @@
             background: #1e293b;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
@@ -219,11 +297,6 @@
             background: #0f172a;
         }
 
-        #file-input {
-            display: none;
-        }
-
-        /* 커스텀 모달 스타일 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -302,7 +375,7 @@
             }
         }
 
-        @media (max-width: 800px) {
+        @media (max-width: 850px) {
             .registration-card {
                 grid-template-columns: 1fr;
             }
@@ -315,80 +388,94 @@
 </head>
 
 <body>
-    <script>
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-        }
-    </script>
-
     <header>
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <a href="{{ url_for('add_clothes_photo_detail') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
     </header>
 
     <main>
-        <h1 class="page-title">AI로 옷 분석하기</h1>
+        <h1 class="page-title">AI 분석 결과</h1>
 
         <div class="registration-card">
             <div class="image-section">
-                <div class="upload-box" id="upload-box" onclick="document.getElementById('file-input').click()">
+                <div class="upload-box">
                     <div class="ai-loading" id="ai-loading">
                         <div class="spinner"></div>
-                        <p style="color:var(--primary)">AI 분석 중...</p>
+                        <p style="color:var(--primary); font-weight:700;">AI 의상 분석 중...</p>
                     </div>
-                    <i class="fas fa-arrow-up" id="upload-icon"></i>
-                    <p id="upload-text">클릭해서 사진 선택하기</p>
-                    <img id="preview-img" src="" alt="미리보기">
+                    <img id="analyzed-img" src="" alt="분석 이미지">
                 </div>
             </div>
 
             <div class="form-section">
                 <div class="input-group">
                     <label>이름</label>
-                    <input type="text" id="name" class="form-input" placeholder="예: 무신사 스탠다드 검정 슬랙스">
+                    <input type="text" id="name" class="form-input" placeholder="분석 중...">
                 </div>
 
                 <div class="input-group">
-                    <label>옷 종류</label>
+                    <label>메인 카테고리</label>
                     <select id="category-main" class="form-input">
                         <option value="">대분류 선택</option>
                         <option value="상의">상의</option>
                         <option value="하의">하의</option>
                         <option value="아우터">아우터</option>
-                        <option value="신발">신발</option>
+                        <option value="원피스">원피스</option>
                     </select>
                 </div>
 
                 <div class="input-group">
-                    <label>옷 종류 (세부)</label>
-                    <select id="category-sub" class="form-input">
-                        <option value="">먼저 대분류를 선택해 줘!</option>
+                    <label>서브 카테고리</label>
+                    <select id="category-sub" class="form-input" disabled>
+                        <option value="">먼저 메인 카테고리를 선택하세요</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>핏 선택</label>
+                    <select id="category-fit" class="form-input" disabled>
+                        <option value="">먼저 메인 카테고리를 선택해 줘!</option>
                     </select>
                 </div>
 
                 <div class="input-group">
                     <label>색상</label>
-                    <input type="color" id="color" class="form-input"
-                        style="height: 50px; padding: 5px; cursor: pointer;">
+                    <div class="color-picker-wrapper">
+                        <div class="color-preview" id="color-preview"></div>
+                        <input type="text" id="color-code" class="color-code-input" value="#000000" readonly>
+                    </div>
                 </div>
 
-                <div class="tpo-group">
-                    <label style="font-size: 0.9rem; font-weight: 700; color: #475569;">TPO (가로로 밀어서 선택해 봐!)</label>
+                <div class="input-group">
+                    <label>스타일</label>
                     <div class="hashtag-container">
-                        <span class="tag" onclick="toggleTag(this)">#데일리</span>
+                        <span class="tag" onclick="toggleTag(this)">#캐주얼</span>
                         <span class="tag" onclick="toggleTag(this)">#데이트</span>
-                        <span class="tag" onclick="toggleTag(this)">#캠퍼스</span>
-                        <span class="tag" onclick="toggleTag(this)">#면접/격식</span>
-                        <span class="tag" onclick="toggleTag(this)">#운동/스포티</span>
-                        <span class="tag" onclick="toggleTag(this)">#피크닉</span>
-                        <span class="tag" onclick="toggleTag(this)">#파티</span>
+                        <span class="tag" onclick="toggleTag(this)">#비즈니스</span>
+                        <span class="tag" onclick="toggleTag(this)">#스트릿</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>체감 온도 레벨 설정</label>
+                    <div class="temp-card">
+                        <div class="temp-header">
+                            <span class="temp-title">내가 느끼는 옷의 두께감</span>
+                            <span class="temp-badge" id="temp-badge">Lv.5</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="10" value="5" class="temp-slider" id="temp-slider"
+                                oninput="updateTempLevel(this.value)">
+                        </div>
+                        <p class="temp-description" id="temp-desc">
+                            🌡️ <strong>[Lv.5 완연한 봄·가을 / 17°C ~ 19°C]</strong> 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은
+                            옷이야.
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <button class="save-btn" onclick="saveItem()">저장</button>
+            <button class="save-btn" onclick="saveItem()">최종 저장</button>
         </div>
-
-        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
     </main>
 
     <div class="modal-overlay" id="save-modal">
@@ -402,77 +489,144 @@
     </div>
 
     <script>
-        // 사진 선택 시 동작
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const previewImg = document.getElementById('preview-img');
-                previewImg.src = e.target.result;
-                previewImg.style.display = 'block';
-                document.getElementById('upload-icon').style.display = 'none';
-                document.getElementById('upload-text').style.display = 'none';
-
-                startAIAnalysis();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // AI 분석 시뮬레이션
-        function startAIAnalysis() {
-            const loading = document.getElementById('ai-loading');
-            loading.style.display = 'flex';
-
-            setTimeout(() => {
-                loading.style.display = 'none';
-
-                document.getElementById('name').value = "네이비 와이드 데님 팬츠";
-                document.getElementById('category-main').value = "하의";
-                updateSubCategory();
-                document.getElementById('category-sub').value = "데님";
-                document.getElementById('color').value = "#000080";
-
-                const tags = document.querySelectorAll('.tag');
-                tags[0].classList.add('active');
-                tags[2].classList.add('active');
-            }, 2000);
-        }
-
-        // 대분류에 따른 소분류 변경
+        // 1. 데이터 정의 (기존 구조 유지)
         const subData = {
             "상의": ["반팔 티셔츠", "긴팔 티셔츠", "셔츠/블라우스", "맨투맨/후드", "니트/스웨터"],
             "하의": ["데님", "슬랙스", "트레이닝/조거", "치마", "반바지"],
             "아우터": ["코트", "자켓", "패딩", "가디건", "바람막이"],
-            "신발": ["스니커즈", "구두", "부츠", "샌들/슬리퍼"]
+            "원피스": ["미니 원피스", "롱 원피스"]
         };
 
-        document.getElementById('category-main').onchange = updateSubCategory;
+        const fitData = {
+            "상의": ["오버핏", "스탠다드핏", "세미오버핏"],
+            "하의": ["와이드핏", "테이퍼드핏", "슬림핏", "레귤러핏"],
+            "아우터": ["루즈핏", "레귤러핏"],
+            "원피스": ["기본핏"]
+        };
 
-        function updateSubCategory() {
+        const tempDescriptions = {
+            1: "한여름 폭염 날씨에 입는 얇고 시원한 민소매나 반바지 종류야.",
+            2: "여름철에 시원하게 단품으로 입기 좋은 반팔 티셔츠와 얇은 셔츠 종류야.",
+            3: "늦여름이나 초가을 날씨에 알맞은 얇은 긴팔이나 7부 소매 옷이야.",
+            4: "선선한 봄·가을 바람에 입기 좋은 기본 셔츠나 얇은 가디건 종류야.",
+            5: "완연한 봄·가을 / 17°C ~ 19°C 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은 옷이야.",
+            6: "쌀쌀해진 초겨울 날씨에 이너로 받쳐 입기 좋은 도톰한 니트나 자켓이야.",
+            7: "초겨울 한파를 막아주는 가벼운 경량 패딩이나 도톰한 코트 종류야.",
+            8: "본격적인 겨울 추위에 꺼내 입는 두꺼운 겨울 울 코트나 누빔 점퍼야.",
+            9: "강추위 겨울 날씨에 몸을 보호해 줄 따뜻한 다운 패딩과 롱패딩 종류야.",
+            10: "한겨울 최강 한파 속에 입는 극강의 보온성을 가진 헤비 다운 패딩 종류야."
+        };
+
+        // 전역 변수로 저장할 이미지 URL 바구니
+        let globalStorageImageUrl = "";
+
+        // 메인 카테고리 변경 시 소분류/핏 동적 변경 함수
+        document.getElementById('category-main').onchange = handleMainCategoryChange;
+
+        function handleMainCategoryChange() {
             const main = document.getElementById('category-main').value;
             const subSelect = document.getElementById('category-sub');
-            subSelect.innerHTML = "";
+            const fitSelect = document.getElementById('category-fit');
 
-            if (subData[main]) {
+            subSelect.innerHTML = "";
+            fitSelect.innerHTML = "";
+
+            if (main && subData[main] && fitData[main]) {
+                subSelect.disabled = false;
+                fitSelect.disabled = false;
+
                 subData[main].forEach(item => {
                     const opt = document.createElement('option');
-                    opt.value = item;
-                    opt.innerText = item;
+                    opt.value = item; opt.innerText = item;
                     subSelect.appendChild(opt);
                 });
+
+                fitData[main].forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item; opt.innerText = item;
+                    fitSelect.appendChild(opt);
+                });
             } else {
-                subSelect.innerHTML = "<option>먼저 대분류를 선택해 줘!</option>";
+                subSelect.disabled = true;
+                fitSelect.disabled = true;
+                subSelect.innerHTML = '<option value="">먼저 메인 카테고리를 선택하세요</option>';
+                fitSelect.innerHTML = '<option value="">먼저 메인 카테고리를 선택해 줘!</option>';
             }
         }
 
-        // 태그 토글
         function toggleTag(el) {
             el.classList.toggle('active');
         }
 
-        // 저장 버튼 누를 때 모달 열기
+        function updateTempLevel(value) {
+            const badge = document.getElementById('temp-badge');
+            const desc = document.getElementById('temp-desc');
+            if (badge) badge.innerText = `Lv.${value}`;
+
+            let descHtml = `🌡️ <strong>[Lv.${value} 두께감 적용]</strong> ${tempDescriptions[value] || ''}`;
+            if (value == 5) {
+                descHtml = `🌡️ <strong>[Lv.5 완연한 봄·가을 / 17°C ~ 19°C]</strong> 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은 옷이야.`;
+            }
+            if (desc) desc.innerHTML = descHtml;
+        }
+
+        // 💡 [핵심 수정]: 페이지가 열릴 때 앞 화면(add_clothes_photo)에서 저장한 AI 진짜 데이터를 가져와서 채워넣음
+        window.addEventListener('DOMContentLoaded', () => {
+            const aiDataRaw = localStorage.getItem('ai_data');
+
+            if (!aiDataRaw) {
+                alert('비정상적인 접근이거나 분석된 데이터가 없습니다! 업로드 화면으로 돌아갑니다.');
+                location.href = "{{ url_for('add_clothes_photo') }}";
+                return;
+            }
+
+            const aiData = JSON.parse(aiDataRaw);
+
+            // 1. AI가 분석해서 올려준 이미지 띄우기
+            const analyzedImg = document.getElementById('analyzed-img');
+            if (analyzedImg) {
+                analyzedImg.src = aiData.image_url || "/static/uploads/mock_image.png";
+            }
+            globalStorageImageUrl = aiData.image_url || "";
+
+            // 로딩 인디케이터 제거
+            const loadingIndicator = document.getElementById('ai-loading');
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+
+            // 2. AI가 가공해준 텍스트 데이터를 입력창에 자동 매핑
+            document.getElementById('name').value = aiData.name || 'AI 추천 옷 스타일';
+
+            const mainCat = aiData.main_category || '상의';
+            document.getElementById('category-main').value = mainCat;
+
+            // 메인 카테고리에 맞춰 소분류 리스트 동적 갱신 실행
+            handleMainCategoryChange();
+
+            // 3. AI가 뽑아준 세부 옷 종류 및 핏 자동 선택
+            if (aiData.sub_category) {
+                document.getElementById('category-sub').value = aiData.sub_category;
+            }
+            if (aiData.fit) {
+                document.getElementById('category-fit').value = aiData.fit;
+            }
+
+            // 4. 색상 매핑
+            const hexColor = aiData.color || '#4f46e5';
+            const colorPreview = document.getElementById('color-preview');
+            const colorCode = document.getElementById('color-code');
+            if (colorPreview) colorPreview.style.backgroundColor = hexColor;
+            if (colorCode) colorCode.value = hexColor;
+
+            // 5. 추천 두께감(기온 레벨) 슬라이더 초기화
+            const tempLevel = aiData.temp_level || 5;
+            const tempSlider = document.getElementById('temp-slider');
+            if (tempSlider) {
+                tempSlider.value = tempLevel;
+                updateTempLevel(tempLevel);
+            }
+        });
+
+        // 저장 버튼 클릭 시 모달 열기
         function saveItem() {
             if (!document.getElementById('name').value) {
                 alert('옷의 이름을 입력해줘!');
@@ -481,17 +635,36 @@
             document.getElementById('save-modal').style.display = 'flex';
         }
 
-        // 모달창 닫기
         function closeModal() {
             document.getElementById('save-modal').style.display = 'none';
         }
 
-        // 최종 저장 확정
-        function confirmSave() {
-            document.getElementById('save-modal').style.display = 'none';
-            alert('성공적으로 저장되었어!');
-            location.href = 'index.html';
+        async function confirmSave() {
+            const aiData = JSON.parse(localStorage.getItem('ai_data'));
+            const clothId = aiData.id; // app.py에서 받아온 바로 그 ID
+
+            const finalData = {
+                id: clothId, // 백엔드에서 찾을 ID
+                name: document.getElementById('name').value,
+                main_category: document.getElementById('category-main').value,
+                sub_category: document.getElementById('category-sub').value,
+                color: document.getElementById('color-code').value,
+                temp_level: document.getElementById('temp-slider').value,
+                tags: [] // 태그 수집 로직 추가
+            };
+
+            const response = await fetch('/api/upload', { // 동일한 라우터지만 is_json이 True이므로 A분기 실행
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(finalData)
+            });
+
+            if (response.ok) {
+                alert("🎉 옷장 등록 완료!");
+                location.href = "{{ url_for('my_closet') }}";
+            }
         }
+
     </script>
 </body>
 

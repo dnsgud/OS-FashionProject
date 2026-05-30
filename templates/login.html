@@ -105,6 +105,12 @@
             margin-left: 5px;
         }
 
+        /* [업데이트 이식] 비밀번호 찾기 링크용 간격 조절 */
+        .login-links span {
+            margin: 0 8px;
+            color: #cbd5e1;
+        }
+
         .flash-messages {
             background-color: #fef2f2;
             border: 1px solid #fca5a5;
@@ -117,7 +123,122 @@
             padding-left: 0;
             text-align: left;
             display: none;
-            /* 에러 발생 시 JS로 노출 제어 */
+        }
+
+        /* [업데이트 이식] 파일 속 비밀번호 찾기 모달 팝업 추가 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.3);
+            /* 살짝 투명한 블러느낌의 어두운 배경 */
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            text-align: left;
+        }
+
+        .modal-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .modal-card p {
+            font-size: 0.88rem;
+            color: #64748b;
+            margin: 0 0 25px 0;
+            line-height: 1.4;
+        }
+
+        .modal-form-group {
+            margin-bottom: 18px;
+        }
+
+        .modal-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .modal-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-control {
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            box-sizing: border-box;
+        }
+
+        .modal-control:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: #fff;
+        }
+
+        .modal-btn {
+            padding: 0 16px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .modal-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .modal-submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -141,6 +262,8 @@
         <div class="login-links">
             아직 회원이 아니신가요?
             <a href="{{ url_for('register_page') }}">회원가입</a>
+            <span>|</span>
+            <a href="#" onclick="event.preventDefault(); openModal('pw-modal')">비밀번호 찾기</a>
         </div>
 
         <div class="social-login">
@@ -150,8 +273,53 @@
         </div>
     </div>
 
+    <div id="pw-modal" class="modal-overlay" onclick="if(event.target == this) closeModal('pw-modal')">
+        <div class="modal-card">
+            <button class="modal-close-btn" onclick="closeModal('pw-modal')">&times;</button>
+
+            <h3>비밀번호 찾기</h3>
+            <p>가입 시 등록한 정보를 입력하면 이메일로 임시 인증번호를 발송해 드립니다.</p>
+
+            <div id="pw-step-verify">
+                <div class="modal-form-group">
+                    <label for="find-pw-name">이름</label>
+                    <input type="text" id="find-pw-name" class="modal-control" placeholder="홍길동">
+                </div>
+                <div class="modal-form-group">
+                    <label for="find-pw-id">아이디</label>
+                    <input type="text" id="find-pw-id" class="modal-control" placeholder="아이디 입력">
+                </div>
+                <div class="modal-form-group">
+                    <label for="find-pw-email">이메일 주소</label>
+                    <div class="modal-input-wrapper">
+                        <input type="email" id="find-pw-email" class="modal-control" placeholder="example@email.com">
+                        <button type="button" class="modal-btn" onclick="sendPwVerifyCode()">코드 발송</button>
+                    </div>
+                </div>
+                <div class="modal-form-group">
+                    <label for="find-pw-code">인증번호</label>
+                    <input type="text" id="find-pw-code" class="modal-control" placeholder="6자리 번호 입력">
+                </div>
+                <button type="button" class="modal-submit-btn" onclick="verifyPwCode()">본인 확인 완료</button>
+            </div>
+
+            <div id="pw-step-reset" style="display: none;">
+                <div class="modal-form-group">
+                    <label for="new-pw">새 비밀번호 입력</label>
+                    <input type="password" id="new-pw" class="modal-control" placeholder="8자리 이상 새 비밀번호">
+                </div>
+                <div class="modal-form-group">
+                    <label for="new-pw-confirm">새 비밀번호 확인</label>
+                    <input type="password" id="new-pw-confirm" class="modal-control" placeholder="새 비밀번호 다시 입력">
+                </div>
+                <button type="button" class="modal-submit-btn" style="background: #4f46e5;"
+                    onclick="submitResetPw()">비밀번호 완전히 변경하기</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // [교정] 기존 Form 전송을 걷어내고 app.py가 수신할 수 있게 JSON 데이터 빌드 송신
+        // 비동기 로그인 API 통신 함수 보존
         function submitLogin(event) {
             event.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -166,7 +334,6 @@
             })
                 .then(async res => {
                     if (res.ok) {
-                        // 로그인 성공 시 app.py의 대피 화면 라우터 정보로 이동
                         location.href = "{{ url_for('home_page') }}";
                     } else {
                         const errData = await res.json();
@@ -182,6 +349,61 @@
 
         function signInWithGoogle() {
             alert("구글 소셜 로그인은 준비 중입니다. 이메일 로그인을 이용해 주세요!");
+        }
+
+        /* [업데이트 이식] 파일 속 모달창 열고 닫기 및 단계별 인증 흐름 스크립트 엔진 결합 */
+        def_step_view = function initPwStep() {
+            document.getElementById('pw-step-verify').style.display = 'block';
+            document.getElementById('pw-step-reset').style.display = 'none';
+        }
+
+        function openModal(id) {
+            initPwStep(); // 모달 열때 항상 1단계가 먼저 보이도록 초기화
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function sendPwVerifyCode() {
+            const email = document.getElementById('find-pw-email').value;
+            if (!email) { alert('코드를 전송받을 이메일을 먼저 적어줘!'); return; }
+            alert('입력하신 이메일(' + email + ')로 6자리 인증 코드가 성공적으로 전송되었어!');
+        }
+
+        function verifyPwCode() {
+            const name = document.getElementById('find-pw-name').value;
+            const id = document.getElementById('find-pw-id').value;
+            const email = document.getElementById('find-pw-email').value;
+            const code = document.getElementById('find-pw-code').value;
+
+            if (!name || !id || !email || !code) {
+                alert('모든 필드를 올바르게 기입하고 인증을 진행해줘!');
+                return;
+            }
+
+            alert('본인 확인 인증이 완료되었어! 새 비밀번호를 설정해줘.');
+            document.getElementById('pw-step-verify').style.display = 'none';
+            document.getElementById('pw-step-reset').style.display = 'block';
+        }
+
+        function submitResetPw() {
+            const newPw = document.getElementById('new-pw').value;
+            const newPwConfirm = document.getElementById('new-pw-confirm').value;
+
+            if (!newPw || !newPwConfirm) {
+                alert('새 비밀번호를 확인창까지 모두 입력해줘!');
+                return;
+            }
+
+            if (newPw !== newPwConfirm) {
+                alert('입력한 두 비밀번호가 일치하지 않아. 다시 확인해줘!');
+                return;
+            }
+
+            alert('비밀번호 변경이 정상적으로 처리되었어! 다시 로그인해봐.');
+            closeModal('pw-modal');
         }
     </script>
 </body>

@@ -32,7 +32,7 @@
             border: 1px solid #e2e8f0;
         }
 
-        /* 📸 질문해주신 이미지 섹션 전용 스타일 구성 유지 */
+        /* 📸 이미지 섹션 전용 스타일 구성 유지 */
         .image-section {
             border: 2px dashed #cbd5e1;
             border-radius: 16px;
@@ -63,6 +63,53 @@
             display: none;
             object-fit: cover;
             margin: 0 auto;
+        }
+
+        /* ✨ [최신 프론트 파일 디자인 이식]: 핏 선택 버튼 및 두께 슬라이더 스타일 */
+        .fit-options-wrapper {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .fit-btn {
+            padding: 12px 24px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .fit-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .fit-btn.selected {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+
+        .slider-wrapper {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .temp-slider {
+            width: 100%;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+
+        .temp-desc-text {
+            font-size: 0.95rem;
+            color: #4f46e5;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -107,7 +154,7 @@
     <main class="add-clothes-container">
         <h2 class="page-title">내 옷장에 추가하기</h2>
 
-        <form class="upload-card" action="{{ url_for('add_clothes') }}" method="POST">
+        <form class="upload-card" id="clothes-upload-form" action="{{ url_for('add_clothes') }}" method="POST">
 
             <div class="image-section" onclick="document.getElementById('file-input').click()">
                 <div id="upload-placeholder" style="text-align: center;">
@@ -157,6 +204,35 @@
                 </div>
             </div>
 
+            <div style="margin-bottom: 25px;">
+                <label style="font-weight: 700; color: #334155; display: block; margin-bottom: 10px;">핏 종류</label>
+                <div class="fit-options-wrapper">
+                    <button type="button" class="fit-btn selected" onclick="selectFit(this)">슬림핏</button>
+                    <button type="button" class="fit-btn" onclick="selectFit(this)">정핏(레귤러)</button>
+                    <button type="button" class="fit-btn" onclick="selectFit(this)">루즈핏</button>
+                    <button type="button" class="fit-btn" onclick="selectFit(this)">오버핏</button>
+                </div>
+                <input type="hidden" id="selected-fit-value" name="fit_type" value="슬림핏">
+            </div>
+
+            <div style="margin-bottom: 35px;">
+                <label style="font-weight: 700; color: #334155; display: block; margin-bottom: 10px;">체감 두께감 (추천 가이드
+                    레벨)</label>
+                <div class="slider-wrapper">
+                    <div
+                        style="display: flex; justify-content: space-between; color: #64748b; font-size: 0.85rem; font-weight: 600;">
+                        <span>얇음 (한여름용)</span>
+                        <span>보통 (봄/가을용)</span>
+                        <span>두꺼움 (한겨울용)</span>
+                    </div>
+                    <input type="range" id="temp-level" name="temp_level" min="1" max="5" value="3" class="temp-slider"
+                        oninput="updateTempDescription()">
+                    <div style="text-align: center; margin-top: 5px;">
+                        <span class="temp-desc-text" id="temp-desc">기본 두께 (봄, 가을 가디건/셔츠 두께)</span>
+                    </div>
+                </div>
+            </div>
+
             <button type="button" onclick="openSaveModal()"
                 style="width:100%; padding:18px; background:#4f46e5; color:white; border:none; border-radius:16px; font-size:1.1rem; font-weight:700; cursor:pointer;">
                 등록 완료하기
@@ -203,7 +279,6 @@
             }
         }
 
-        // [✨ 추가] 선택한 이미지를 즉시 미리보기 해주는 클라이언트 스크립트 기능 보존
         function previewImage(event) {
             const input = event.target;
             const previewImg = document.getElementById('preview-img');
@@ -223,14 +298,46 @@
         function updateColorText() {
             document.getElementById('cloth-color-text').value = document.getElementById('cloth-color').value;
         }
+
+        /* ✨ [최신 프론트 파일 스크립트 이식 1]: 핏 종류 동적 버튼 토글 및 값 동기화 */
+        function selectFit(element) {
+            const fitButtons = document.querySelectorAll('.fit-btn');
+            fitButtons.forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+
+            // 숨겨진 hidden input에 유저가 누른 핏 텍스트 삽입
+            document.getElementById('selected-fit-value').value = element.textContent;
+        }
+
+        /* ✨ [최신 프론트 파일 스크립트 이식 2]: 레인지 값에 따른 가이드 설명 문구 실시간 제어 매핑 */
+        const tempDescriptions = {
+            "1": "매우 얇음 (한여름용 시원한 린넨/반팔 두께)",
+            "2": "조금 얇음 (초여름/늦봄 가벼운 면 티셔츠 두께)",
+            "3": "기본 두께 (봄, 가을 가디건/셔츠 두께)",
+            "4": "조금 두꺼움 (초겨울/늦가을 도톰한 니트/맨투맨 두께)",
+            "5": "매우 두꺼움 (한겨울용 롱패딩/헤비 아우터 두께)"
+        };
+
+        function updateTempDescription() {
+            const level = document.getElementById('temp-level').value;
+            document.getElementById('temp-desc').textContent = tempDescriptions[level] || "";
+        }
+
         function openSaveModal() {
             if (!document.getElementById('cloth-name').value || !document.getElementById('main-category').value) {
                 alert("이름과 옷 종류는 꼭 선택해 줘!"); return;
             }
             document.getElementById('saveConfirmModal').style.display = 'flex';
         }
+
         function closeSaveModal() { document.getElementById('saveConfirmModal').style.display = 'none'; }
+
         function toggleDropdown(event) { event.preventDefault(); document.getElementById("my-dropdown").classList.toggle("show"); }
+
+        // 페이지 켜지자마자 기본 두께감 설명 연동 초기화
+        window.addEventListener('DOMContentLoaded', () => {
+            updateTempDescription();
+        });
     </script>
 </body>
 

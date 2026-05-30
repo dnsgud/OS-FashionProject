@@ -4,7 +4,9 @@ import time
 import logging
 from dotenv import load_dotenv
 
-load_dotenv()
+# 💡 안전장치: 현재 파일(weather_service.py)과 같은 폴더 또는 상위 폴더의 .env를 명확하게 지정해서 로드합니다.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # --- 캐시 설정을 위한 전역 변수 ---
 weather_cache = {
@@ -22,11 +24,17 @@ def fetch_weather_forecast():
         return weather_cache["data"]
 
     api_key = os.getenv("OPENWEATHER_API_KEY")
+    
+    # 💡 API Key가 제대로 로드되었는지 체크하는 방어 로직
+    if not api_key:
+        logging.error("❌ [weather_service] OPENWEATHER_API_KEY를 .env 파일에서 찾을 수 없습니다!")
+        return None
+
     # 5일 / 3시간 간격 예보 API (Cheongju 기준)
     url = f"https://api.openweathermap.org/data/2.5/forecast?q=Cheongju&appid={api_key}&units=metric" 
     
     try:
-        response = requests.get(url, timeout=10) # 5에서 10으로 변경
+        response = requests.get(url, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -38,23 +46,22 @@ def fetch_weather_forecast():
             }
 
             forecast_list = []
-            # 응답 데이터 리스트가 존재하는지 확인 (방어적 프로그래밍)
             api_list = data.get('list', [])
             
             for i in range(min(4, len(api_list))): 
                 item = api_list[i]
                 
-                # 안전하게 데이터 추출 (.get 활용으로 KeyError 방지)
                 main_info = item.get('main', {})
                 wind_info = item.get('wind', {})
                 weather_info = item.get('weather', [{}])[0]
                 weather_main = weather_info.get('main', 'Clouds')
                 
+                # 💡 핵심 수정: 'condition'을 'status'로 변경하여 app.py와 연동되게 만듭니다!
                 forecast_list.append({
                     "temp": round(main_info.get('temp', 0)),
                     "humidity": main_info.get('humidity', 0),       # 습도 (%)
                     "wind_speed": wind_info.get('speed', 0),        # 풍속 (m/s)
-                    "condition": weather_dict.get(weather_main, "알 수 없음"),
+                    "status": weather_dict.get(weather_main, "알 수 없음"), # ✨ condition -> status로 변경!
                     "icon": get_icon_class(weather_main),
                     "dt_txt": item.get('dt_txt', '')
                 })
@@ -66,7 +73,7 @@ def fetch_weather_forecast():
             print("Fetched new weather data from API.")
             return forecast_list
         else:
-            logging.error(f"Weather API error: Status code {response.status_code}")
+            logging.error(f"Weather API error: Status code {response.status_code}. API 키나 URL을 확인하세요.")
             return None
 
     except Exception as e:

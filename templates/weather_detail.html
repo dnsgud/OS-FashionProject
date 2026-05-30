@@ -24,6 +24,18 @@
             font-weight: 600;
         }
 
+        /* [업데이트] 메인 날씨 카드 스타일 */
+        .weather-detail-main {
+            background: #fff;
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f1f5f9;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        /* [업데이트] 파일 속 추가된 시간별 기온 섹션 스타일 */
         .hourly-section {
             background: #fff;
             border-radius: 32px;
@@ -33,6 +45,37 @@
             border: 1px solid #f1f5f9;
         }
 
+        .hourly-list {
+            display: flex;
+            justify-content: space-between;
+            overflow-x: auto;
+            gap: 20px;
+            padding-bottom: 10px;
+        }
+
+        .hourly-item {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .hourly-item .time {
+            font-size: 13px;
+            color: #adb5bd;
+            margin-bottom: 10px;
+        }
+
+        .hourly-item i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #4dabf7;
+        }
+
+        .hourly-item .h-temp {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        /* 미세먼지 그리드 및 카드 스타일 */
         .dust-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -93,7 +136,7 @@
                 <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
-                <li><a href="{{ url_for('guide_page') }}" class="nav-link"
+                <li><a href="{{ url_for('guide_main') }}" class="nav-link"
                         style="color: inherit; text-decoration: none;"><i class="fas fa-book"></i> Guide</a></li>
                 <li><a href="{{ url_for('codi_page') }}" class="nav-link"
                         style="color: inherit; text-decoration: none;"><i class="fas fa-tshirt"></i> Codi</a></li>
@@ -124,8 +167,7 @@
             <i class="fas fa-arrow-left"></i> 메인으로 돌아가기
         </a>
 
-        <section class="weather-detail-main"
-            style="background: #fff; padding: 40px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; text-align: center; margin-bottom: 25px;">
+        <section class="weather-detail-main">
             <span id="current-date" style="color: #64748b; font-size: 1rem; font-weight: 600;"></span>
 
             {% if hourly_data and hourly_data|length > 0 %}
@@ -155,6 +197,35 @@
             <div
                 style="margin-top: 25px; font-weight: 700; color: #4f46e5; background: #f5f7ff; display: inline-block; padding: 8px 20px; border-radius: 20px;">
                 <i class="fa-solid fa-location-dot"></i> 충청북도 청주시 서원구 충대로 1
+            </div>
+        </section>
+
+        <section class="hourly-section">
+            <h4 style="margin-bottom: 20px; font-weight: 800; font-size: 1.1rem; color: #1e293b; text-align: left;">시간별
+                기온</h4>
+            <div class="hourly-list">
+                {% if hourly_data and hourly_data|length > 0 %}
+                {% for hour in hourly_data %}
+                <div class="hourly-item">
+                    <p class="time">{{ hour.get('time', loop.index ~ '시') }}</p>
+                    <i class="fa-solid {{ hour.get('icon', 'fa-sun') }}"></i>
+                    <p class="h-temp">{{ hour.get('temp', '--') }}°</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="hourly-item">
+                    <p class="time">오후 3시</p><i class="fas fa-sun"></i>
+                    <p class="h-temp">--°</p>
+                </div>
+                <div class="hourly-item">
+                    <p class="time">오후 6시</p><i class="fas fa-cloud-sun"></i>
+                    <p class="h-temp">--°</p>
+                </div>
+                <div class="hourly-item">
+                    <p class="time">오후 9시</p><i class="fas fa-cloud"></i>
+                    <p class="h-temp">--°</p>
+                </div>
+                {% endif %}
             </div>
         </section>
 
