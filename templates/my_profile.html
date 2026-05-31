@@ -265,22 +265,27 @@
                     <div class="form-group">
                         <label>닉네임</label>
                         <div class="row">
-                            <input type="text" id="userNickname" value="">
-                            <button class="check-btn" onclick="checkNickname()">중복확인</button>
+                            <input type="text" id="userNickname" value="{{ users.nickname if users else '' }}">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>이메일</label>
                         <div class="row">
-                            <input type="email" id="userEmail" value="">
+                            <input type="email" id="userEmail" value="{{ users.email if users else '' }}">
                             <button class="check-btn" onclick="checkEmail()">중복확인</button>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>이름</label>
-                        <input type="text" id="userName" value="">
+                        <select id="userName">
+                            {% if users %}
+                            <option value="{{ users.name }}" selected>{{ users.name }}</option>
+                            {% else %}
+                            <option value="">사용자 정보 없음</option>
+                            {% endif %}
+                        </select>
                     </div>
 
                     <button class="save-btn" onclick="updateUserInfo()">수정하기</button>
@@ -323,25 +328,32 @@
 
                 <div class="form-group">
                     <label>키(cm)</label>
-                    <input type="number" id="bodyHeight" value="">
+                    <input type="number" id="bodyHeight" value="{{ users.height if users and users.height else '' }}">
                 </div>
 
                 <div class="form-group">
                     <label>몸무게(kg)</label>
-                    <input type="number" id="bodyWeight" value="">
+                    <input type="number" id="bodyWeight" value="{{ users.weight if users and users.weight else '' }}">
                 </div>
 
                 <div class="form-group">
                     <label>체형</label>
                     <select id="bodyType" onchange="updateDescription()">
-                        <option value="reverse">역삼각형</option>
-                        <option value="triangle">삼각형</option>
-                        <option value="straight">일자형</option>
+                        <option value="역삼각형" {% if users and users.body_shape=='역삼각형' %}selected{% endif %}>역삼각형
+                        </option>
+                        <option value="삼각형" {% if users and users.body_shape=='삼각형' %}selected{% endif %}>삼각형</option>
+                        <option value="일자형" {% if users and users.body_shape=='일자형' %}selected{% endif %}>일자형</option>
                     </select>
                 </div>
 
                 <div class="info-box" id="bodyDescription">
+                    {% if users and users.body_shape == '삼각형' %}
+                    하체 비율이 상대적으로 큰 체형입니다.
+                    {% elif users and users.body_shape == '일자형' %}
+                    상체와 하체 비율이 비슷한 체형입니다.
+                    {% else %}
                     넓은 어깨와 좁은 허리를 가진 체형입니다.
+                    {% endif %}
                 </div>
 
                 <br>
@@ -351,7 +363,6 @@
                 </button>
 
             </div>
-
         </div>
 
     </div>
@@ -374,7 +385,6 @@
 
                 if (result.status === "success") {
                     alert("회원 정보가 수정되었습니다.");
-                    // [추가] 성공 시 페이지 새로고침
                     location.reload();
                 } else {
                     alert(result.message || "수정 실패");
@@ -384,20 +394,18 @@
                 alert("서버 연결 중 오류가 발생했습니다.");
             }
         }
+
         async function saveBodyInfo() {
             const height = document.getElementById('bodyHeight').value;
             const weight = document.getElementById('bodyWeight').value;
             const bodyType = document.getElementById('bodyType').value;
 
-            // 1. 전송할 데이터 확인 (F12 개발자 도구의 '콘솔' 탭에서 확인)
             console.log("전송하는 체형 데이터:", { height, weight, bodyType });
 
             try {
                 const response = await fetch('/api/update_body_info', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // 2. 서버가 세션을 사용 중이므로 login_id는 제외하고 전송합니다.
-                    // (만약 서버 백엔드에서 body_type으로 받길 원한다면 키 값을 body_type: bodyType 으로 변경하세요)
                     body: JSON.stringify({
                         height: height,
                         weight: weight,
@@ -406,7 +414,6 @@
                 });
 
                 const result = await response.json();
-                // 3. 서버 응답 결과 확인
                 console.log("서버 응답:", result);
 
                 if (result.status === "success") {
@@ -420,20 +427,18 @@
                 alert("서버 연결 오류");
             }
         }
-        function showTab(tabId, btn) {
-            // 1. 모든 탭 숨기기
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
 
-            // 2. 모든 버튼의 active 클래스 제거
+        function showTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.sidebar .menu-btn').forEach(button => button.classList.remove('active'));
 
-            // 3. 선택한 탭과 버튼 활성화
             const targetTab = document.getElementById(tabId);
             if (targetTab) targetTab.classList.add('active');
 
-            if (tabId === 'profile') {
-                resetAllTabs();
-            }
+            if (btn) btn.classList.add('active');
+
+            // 어떤 탭으로 이동하든 무조건 입력 폼과 단계를 원복하도록 바깥으로 뺐어
+            resetAllTabs();
         }
 
         // 수정된 비밀번호 검증 함수
@@ -441,7 +446,6 @@
             const inputPw = document.getElementById('infoCurrentPw').value;
 
             try {
-                // 서버에 현재 비밀번호가 맞는지 확인하는 API 요청
                 const response = await fetch('/api/verify_password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -451,7 +455,6 @@
                 const result = await response.json();
 
                 if (result.status === "success") {
-                    // 서버에서 맞다고 하면 다음 단계로 이동
                     document.getElementById('infoStep1').classList.remove('active');
                     document.getElementById('infoStep2').classList.add('active');
                 } else {
@@ -460,17 +463,6 @@
             } catch (error) {
                 alert("서버 오류가 발생했습니다.");
             }
-        }
-        // 닉네임 중복 확인
-        async function checkNickname() {
-            const nickname = document.getElementById('userNickname').value;
-            const response = await fetch('/api/check-nickname', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nickname })
-            });
-            const result = await response.json();
-            alert(result.message);
         }
 
         // 이메일 중복 확인
@@ -497,7 +489,6 @@
             }
         }
 
-
         // 모든 탭의 입력 폼과 단계를 초기 상태로 되돌리는 함수
         function resetAllTabs() {
             const infoPw = document.getElementById('infoCurrentPw');
@@ -510,7 +501,6 @@
             if (nPw) nPw.value = "";
             if (cPw) cPw.value = "";
 
-            // 회원정보 수정 단계를 다시 1단계(비밀번호 검증)로 원복
             const step1 = document.getElementById('infoStep1');
             const step2 = document.getElementById('infoStep2');
             if (step1 && step2) {
@@ -523,34 +513,30 @@
             const value = document.getElementById('bodyType').value;
             const box = document.getElementById('bodyDescription');
 
-            if (value === 'reverse') {
+            if (value === '역삼각형') {
                 box.innerHTML = '넓은 어깨와 좁은 허리를 가진 체형입니다.';
-            } else if (value === 'triangle') {
+            } else if (value === '삼각형') {
                 box.innerHTML = '하체 비율이 상대적으로 큰 체형입니다.';
             } else {
                 box.innerHTML = '상체와 하체 비율이 비슷한 체형입니다.';
             }
         }
 
-
         async function changePassword() {
             const currentPw = document.getElementById('pwCurrentPw').value;
             const newPw = document.getElementById('newPw').value;
             const confirmPw = document.getElementById('confirmPw').value;
 
-            // 1. 빈칸 입력 방지
             if (!currentPw || !newPw || !confirmPw) {
                 alert("모든 항목을 입력해주세요.");
                 return;
             }
 
-            // 2. 새 비밀번호 길이 확인
             if (newPw.length < 6) {
                 alert("새 비밀번호는 6자 이상이어야 합니다.");
                 return;
             }
 
-            // 3. 새 비밀번호 일치 여부 확인
             if (newPw !== confirmPw) {
                 alert("새 비밀번호가 서로 일치하지 않습니다.");
                 return;
@@ -560,12 +546,11 @@
                 const response = await fetch('/api/update_password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ currentPw, newPw }) // 프론트에서 일치 여부를 검증했으므로 newPw만 보냅니다.
+                    body: JSON.stringify({ currentPw, newPw })
                 });
 
                 const result = await response.json();
 
-                // 🚨 핵심 수정: 반드시 "success"일 때만 성공 처리하도록 변경
                 if (result.status === "success") {
                     alert("비밀번호 변경 완료!");
                     location.reload();

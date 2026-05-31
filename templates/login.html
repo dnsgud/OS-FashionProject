@@ -461,17 +461,16 @@
 
             if (!code) return alert("인증번호를 입력해 주세요.");
 
-            // app.py의 @app.route('/api/find-pw/verify') 로 전송
             const res = await fetch('/api/find-pw/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, code })
+                // 💡 백엔드 파라미터명(input_code)과 일치하도록 명시적으로 매핑합니다.
+                body: JSON.stringify({ email: email, input_code: code })
             });
             const data = await res.json();
 
             if (res.ok && data.success) {
                 alert(data.message);
-                // 1단계 창 숨기고 2단계(새 비밀번호 재설정 창) 띄우기
                 document.getElementById('pw-step-verify').style.display = 'none';
                 document.getElementById('pw-step-reset').style.display = 'block';
             } else {
@@ -485,9 +484,12 @@
             const new_pw_confirm = document.getElementById('new-pw-confirm').value;
 
             if (!new_pw || !new_pw_confirm) return alert("비밀번호를 입력해 주세요.");
+
+            // 💡 [핵심 추가] 백엔드의 _validate_password_match 로직과 동기화
+            if (new_pw.length < 6) return alert("보안을 위해 비밀번호는 6자리 이상 입력해 주세요.");
             if (new_pw !== new_pw_confirm) return alert("비밀번호가 서로 일치하지 않습니다.");
 
-            // app.py의 @app.route('/api/find-pw/reset') 로 전송
+            // 백엔드의 reset_password_and_auto_login(login_id, new_pw, new_pw_confirm)와 완벽히 매칭됨
             const res = await fetch('/api/find-pw/reset', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -496,7 +498,7 @@
             const data = await res.json();
 
             if (res.ok && data.success) {
-                alert(data.message);
+                alert(data.message || "비밀번호가 성공적으로 변경되었습니다.");
                 // 자동 로그인이 완료되었으므로 바로 대시보드 메인으로 리다이렉트
                 location.href = "{{ url_for('home_page') }}";
             } else {

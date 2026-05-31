@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>옷 등록하기 - Look_Up</title>
+    <title>옷 상세보기 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet"
@@ -404,22 +404,19 @@
     </header>
 
     <main class="add-clothes-container">
-        <h2 class="page-title">내 옷장에 새 옷 추가하기</h2>
+        <h2 class="page-title">옷 상세보기 및 수정</h2>
 
-        <form id="clothes-form" action="{{ url_for('add_clothes') }}" method="POST" enctype="multipart/form-data">
+        <form id="clothes-form" action="{{ url_for('update_clothes') }}" method="POST">
+
+            <input type="hidden" id="cloth-id-input" name="cloth_id" value="">
+
             <div class="upload-card">
-                <div class="image-section" onclick="document.getElementById('file-input').click()">
-                    <div id="upload-placeholder" style="text-align: center;">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>클릭해서 사진 선택하기</p>
-                    </div>
-                    <img id="preview-img" alt="옷 미리보기">
-                    <input type="file" id="file-input" name="cloth_image" accept="image/*" style="display: none;"
-                        onchange="previewImage(event)">
+                <div class="image-section" style="cursor: default;">
+                    <img id="preview-img" alt="옷 미리보기"
+                        style="display: none; width: 100%; height: 100%; object-fit: cover;">
                 </div>
 
                 <div class="form-section">
-
                     <div class="form-group">
                         <label>이름</label>
                         <input type="text" id="cloth-name" name="cloth_name" placeholder="예: 무신사 스탠다드 검정 슬랙스">
@@ -485,13 +482,22 @@
                         </div>
                     </div>
 
-                    <div class="button-group">
-                        <button type="button" class="btn-main-save" onclick="openSaveModal()">저장</button>
+                    <div class="button-group" style="display: flex; gap: 15px;">
+                        <button type="button" class="btn-main-save" onclick="openSaveModal()"
+                            style="flex: 3;">저장</button>
+                        <button type="button" class="btn-main-delete" onclick="openDeleteModal()" title="삭제"
+                            style="flex: 1; padding: 20px; border-radius: 16px; border: none; background: #f1f5f9; color: #64748b; font-size: 1.3rem; cursor: pointer;"><i
+                                class="fas fa-trash-can"></i></button>
                     </div>
 
                 </div>
             </div>
         </form>
+
+        <form id="delete-form" action="{{ url_for('delete_clothes') }}" method="POST" style="display: none;">
+            <input type="hidden" id="delete-cloth-id-input" name="cloth_id" value="">
+        </form>
+
     </main>
 
     <div id="saveConfirmModal" class="confirm-modal-overlay" onclick="if(event.target == this) closeSaveModal()">
@@ -504,23 +510,18 @@
         </div>
     </div>
 
+    <div id="deleteConfirmModal" class="confirm-modal-overlay" onclick="if(event.target == this) closeDeleteModal()">
+        <div class="confirm-modal-box">
+            <h3>정말 삭제하시겠습니까?</h3>
+            <div class="modal-btn-group">
+                <button class="m-btn m-btn-cancel" onclick="closeDeleteModal()">취소</button>
+                <button class="m-btn m-btn-danger" style="background: #ef4444; color: white;"
+                    onclick="executeDelete()">삭제</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function previewImage(event) {
-            const input = event.target;
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const previewImg = document.getElementById('preview-img');
-                    const placeholder = document.getElementById('upload-placeholder');
-
-                    previewImg.src = e.target.result;
-                    previewImg.style.display = 'block';
-                    placeholder.style.display = 'none';
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
         const subCategoryData = {
             top: ["이너", "아우터"],
             bottom: ["바지"],
@@ -544,6 +545,69 @@
             10: "🌋 <b>[Lv.10 극심한 폭염 / 35°C 이상]</b> 땀 흡수가 잘 되고 몸에 달라붙지 않는, 무더위를 버티기 위한 생존형 여름 옷이야."
         };
 
+        // DOMContentLoaded 시 백엔드 API에서 데이터를 받아와 화면에 세팅
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clothId = urlParams.get('id');
+
+            if (!clothId) return;
+
+            // 수정/삭제 시 폼에 담아 보낼 ID 세팅
+            document.getElementById('cloth-id-input').value = clothId;
+            document.getElementById('delete-cloth-id-input').value = clothId;
+
+            try {
+                const response = await fetch(`/api/clothes/${clothId}`);
+                const data = await response.json();
+
+                // 1. 이미지 세팅
+                if (data.image_url) {
+                    const previewImg = document.getElementById('preview-img');
+                    previewImg.src = data.image_url;
+                    previewImg.style.display = 'block';
+                }
+
+                // 2. 텍스트 input 세팅 (.innerText가 아닌 .value 사용)
+                document.getElementById('cloth-name').value = data.name || '';
+
+                // 3. 카테고리 및 핏 세팅
+                document.getElementById('main-category').value = data.main_category || '';
+                updateSubCategoryAndFit(); // 이 함수가 서브카테고리와 핏 버튼을 그려줌
+
+                // 버튼이 그려진 직후에 서브 카테고리와 기존 핏 값 선택 처리
+                document.getElementById('sub-category').value = data.sub_category || '';
+                document.getElementById('selected-fit').value = data.fit || '';
+                document.querySelectorAll('.fit-btn').forEach(btn => {
+                    if (btn.textContent === data.fit) {
+                        btn.classList.add('selected');
+                    }
+                });
+
+                // 4. 색상 세팅
+                if (data.color) {
+                    document.getElementById('cloth-color').value = data.color;
+                    updateColorText();
+                }
+
+                // 5. 스타일 태그 세팅
+                const styles = data.style || [];
+                document.getElementById('selected-tags').value = styles.join(',');
+                document.querySelectorAll('.tpo-tag').forEach(tag => {
+                    const tagText = tag.textContent.replace('#', '');
+                    if (styles.includes(tagText)) {
+                        tag.classList.add('selected');
+                    }
+                });
+
+                // 6. 온도 레벨 세팅
+                document.getElementById('temp-level').value = data.temp_level || 5;
+                updateTempDescription();
+
+            } catch (error) {
+                console.error("의류 데이터를 불러오는 중 오류 발생:", error);
+            }
+        });
+
         function updateTempDescription() {
             const currentLevel = document.getElementById('temp-level').value;
             document.getElementById('temp-val-display').textContent = `Lv.${currentLevel}`;
@@ -557,7 +621,7 @@
 
             subCatSelect.innerHTML = "";
             fitContainer.innerHTML = "";
-            document.getElementById('selected-fit').value = ""; // 핏 초기화
+            document.getElementById('selected-fit').value = "";
 
             if (mainCat && subCategoryData[mainCat]) {
                 subCategoryData[mainCat].forEach(item => {
@@ -590,8 +654,6 @@
             const fitButtons = document.querySelectorAll('.fit-btn');
             fitButtons.forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
-
-            // hidden input에 선택한 핏 세팅
             document.getElementById('selected-fit').value = element.textContent;
         }
 
@@ -602,22 +664,19 @@
 
         function toggleTag(element) {
             element.classList.toggle('selected');
-
-            // 선택된 모든 스타일 태그 취합하여 hidden input에 콤마 분리 형태로 세팅
             const selectedTags = Array.from(document.querySelectorAll('.tpo-tag.selected'))
                 .map(tag => tag.textContent.replace('#', ''));
             document.getElementById('selected-tags').value = selectedTags.join(',');
         }
 
+        // 저장 관련 함수
         function openSaveModal() {
             const name = document.getElementById('cloth-name').value;
             const mainCat = document.getElementById('main-category').value;
-
             if (!name || !mainCat) {
-                alert("이름과 옷 종류는 꼭 선택해 줘!");
+                alert("이름과 옷 종류는 꼭 입력해 줘!");
                 return;
             }
-
             document.getElementById('saveConfirmModal').style.display = 'flex';
         }
 
@@ -625,14 +684,24 @@
             document.getElementById('saveConfirmModal').style.display = 'none';
         }
 
-        // 단순히 페이지 이동을 하던 것에서, Form 데이터를 제출(Submit)하도록 수정
         function executeSave() {
+            // 방금 수정한 폼 데이터를 /update_clothes 로 전송
             document.getElementById('clothes-form').submit();
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            updateTempDescription();
-        });
+        // 삭제 관련 함수
+        function openDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+        }
+
+        function executeDelete() {
+            // 삭제용 폼(cloth_id 포함)을 /delete_clothes 로 전송
+            document.getElementById('delete-form').submit();
+        }
     </script>
 </body>
 

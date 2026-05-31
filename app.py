@@ -4,12 +4,15 @@ import logging
 import traceback
 import uuid
 import random
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session, make_response
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session, make_response, flash
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-from services.userprofile import update_account_password, change_profile_password
+from services.userprofile import update_account_password, change_profile_password, _filter_body_profile_data
 from auth_service import sign_up_user, login_user, get_email_by_login_id, fetch_user_profile
+from services.imgproc import update_closet_cloth, delete_closet_cloth
+from services.auth import _validate_password_match
+
 # 경로 설정을 최상단에서 진행
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
@@ -121,7 +124,7 @@ def api_request_find_id():
 
 @app.route('/api/find-id/verify', methods=['POST'])
 def api_verify_find_id():
-    data = request.get_json()
+    data = request.get_json()  
     name = data.get('name')
     email = data.get('email')
     code = data.get('code')
@@ -130,38 +133,64 @@ def api_verify_find_id():
     if login_id: return jsonify({"success": True, "login_id": login_id}), 200
     return jsonify({"success": False, "error": "인증번호가 일치하지 않거나 만료되었습니다."}), 400
 
-@app.route('/api/find-pw/request', methods=['POST'])
-def api_request_find_pw():
-    data = request.get_json()
-    name = data.get('name')
-    login_id = data.get('login_id')
-    email = data.get('email')
-    if not request_find_password: return jsonify({"success": False, "error": "모듈이 로드되지 않았습니다."}), 500
-    if request_find_password(name, login_id, email): return jsonify({"success": True, "message": "본인 확인 성공! 이메일로 인증번호가 발송되었습니다."}), 200
-    return jsonify({"success": False, "error": "입력하신 3가지 회원 정보가 일치하지 않습니다."}), 400
-
-@app.route('/api/find-pw/verify', methods=['POST'])
-def api_verify_find_pw():
-    data = request.get_json()
-    email = data.get('email')
-    code = data.get('code')
-    if not verify_password_reset_code: return jsonify({"success": False, "error": "모듈이 로드되지 않았습니다."}), 500
-    if verify_password_reset_code(email, code): return jsonify({"success": True, "message": "본인 인증이 완료되었습니다. 새 비밀번호를 설정해 주세요."}), 200
-    return jsonify({"success": False, "error": "인증번호가 일치하지 않습니다."}), 400
-
 @app.route('/api/find-pw/reset', methods=['POST'])
 def api_reset_pw():
     data = request.get_json()
     login_id = data.get('login_id')
     new_pw = data.get('new_pw')
     new_pw_confirm = data.get('new_pw_confirm')
-    if not reset_password_and_auto_login: return jsonify({"success": False, "error": "모듈이 로드되지 않았습니다."}), 500
+    
+    if not reset_password_and_auto_login: 
+        return jsonify({"success": False, "error": "모듈이 로드되지 않았습니다."}), 500
+        
     login_result = reset_password_and_auto_login(login_id, new_pw, new_pw_confirm)
+    
     if login_result:
         session['login_id'] = login_id
         session['user_email'] = get_email_by_login_id(login_id)
+        
+        # 💡 [핵심 추가] 반환된 로그인 결과(access_token)를 세션에 넣어주어야 
+        # 이후 다른 페이지에서 Supabase 권한 에러가 나지 않습니다.
+        session['access_token'] = login_result 
+        
         return jsonify({"success": True, "message": "비밀번호가 성공적으로 변경되었으며 자동 로그인 처리되었습니다!"}), 200
+        
     return jsonify({"success": False, "error": "비밀번호 무결성 검증 규칙을 위반했거나 세션 발급에 실패했습니다."}), 400
+
+@app.route('/api/find-pw/request', methods=['POST'])
+def api_request_find_pw():
+    data = request.get_json()
+    name = data.get('name')
+    login_id = data.get('login_id')
+    email = data.get('email')
+    
+    # 1. 모듈 정상 로드 확인
+    if not request_find_password: 
+        return jsonify({"success": False, "error": "모듈이 로드되지 않았습니다."}), 500
+        
+    # 2. 코어 알고리즘 호출 (이름, 아이디, 이메일 일치 여부 대조 및 메일 발송)
+    if request_find_password(name, login_id, email): 
+        return jsonify({"success": True, "message": "본인 확인 성공! 이메일로 인증번호가 발송되었습니다."}), 200
+        
+    # 3. 불일치 시 에러 반환
+    return jsonify({"success": False, "error": "입력하신 3가지 회원 정보가 일치하지 않습니다."}), 400
+
+@app.route('/api/find-pw/verify', methods=['POST'])
+def api_verify_find_pw():
+    data = request.get_json()
+    email = data.get('email')
+    
+    # 💡 [핵심 수정] JS에서 보낸 키값과 동일하게 'input_code'로 추출합니다.
+    input_code = data.get('input_code') 
+    
+    if not verify_password_reset_code: 
+        return jsonify({"success": False, "error": "모듈이 로드되지 않았습니다."}), 500
+        
+    # 변경된 변수명(input_code)을 코어 모듈로 넘겨줍니다.
+    if verify_password_reset_code(email, input_code): 
+        return jsonify({"success": True, "message": "본인 인증이 완료되었습니다. 새 비밀번호를 설정해 주세요."}), 200
+        
+    return jsonify({"success": False, "error": "인증번호가 일치하지 않습니다."}), 400
 
 
 # --- [기본 페이지 라우트 설정] ---
@@ -647,6 +676,80 @@ def delete_cloth_api(cloth_id):
         return jsonify({"message": "삭제 성공"}), 200
     except Exception as e: return jsonify({"error": f"삭제 실패: {str(e)}"}), 500
 
+from flask import request, redirect, url_for, session, flash
+
+# -------------------------------------------------------------------
+# [1] 옷 정보 수정 라우터 (프론트엔드의 id="clothes-form"과 연결)
+# -------------------------------------------------------------------
+@app.route('/update_clothes', methods=['POST'])
+def update_clothes():
+    # 1. 세션에서 현재 로그인한 사용자의 이메일 확인 (보안)
+    user_email = session.get('user_email')
+    if not user_email:
+        flash("로그인이 필요합니다.")
+        return redirect(url_for('login_page')) # 로그인 페이지 라우터 이름에 맞게 수정하세요
+
+    # 2. 프론트엔드에서 hidden input으로 보낸 cloth_id 추출
+    cloth_id = request.form.get('cloth_id')
+    
+    if not cloth_id:
+        flash("잘못된 접근입니다. (옷 ID 누락)")
+        return redirect(url_for('my_closet'))
+
+    # 3. 프론트엔드 폼에서 넘어온 데이터를 딕셔너리로 추출
+    # key 이름은 만드신 _filter_closet_keys()의 allowed 리스트와 정확히 일치시킵니다.
+    styles_str = request.form.get('styles', '')
+    
+    edit_data = {
+        'name': request.form.get('cloth_name'),
+        'main_category': request.form.get('main_category'),
+        'sub_category': request.form.get('sub_category'),
+        'fit': request.form.get('fit'),
+        'color': request.form.get('cloth_color'),
+        'temp_level': request.form.get('temp_level'),
+        # 프론트에서 "캐주얼,데이트" 형태로 콤마로 묶어서 보낸 것을 다시 리스트로 변환
+        'style': styles_str.split(',') if styles_str else [] 
+    }
+
+    # 4. 작성하신 '옷장 의류 정보 수정 메인 컨트롤러' 호출
+    # (이 함수 내부에서 _filter, _validate, _execute 가 차례대로 실행됨)
+    result = update_closet_cloth(cloth_id, user_email, edit_data)
+    
+    if result:
+        flash("옷 정보가 성공적으로 수정되었습니다.")
+        return redirect(url_for('my_closet')) # 성공 시 옷장 화면으로 이동
+    else:
+        flash("옷 정보 수정에 실패했습니다.")
+        return redirect(url_for('my_closet')) # 실패 시에도 일단 옷장으로 이동 (또는 이전 페이지)
+
+
+# -------------------------------------------------------------------
+# [2] 옷 삭제 라우터 (프론트엔드의 id="delete-form"과 연결)
+# -------------------------------------------------------------------
+@app.route('/delete_clothes', methods=['POST'])
+def delete_clothes():
+    # 1. 세션에서 로그인 확인
+    user_email = session.get('user_email')
+    if not user_email:
+        flash("로그인이 필요합니다.")
+        return redirect(url_for('login_page'))
+
+    # 2. 프론트엔드 폼에서 cloth_id 추출
+    cloth_id = request.form.get('cloth_id')
+
+    if not cloth_id:
+        flash("잘못된 접근입니다.")
+        return redirect(url_for('my_closet'))
+
+    # 3. 작성하신 '옷장 의류 영구 삭제 메인 컨트롤러' 호출
+    success = delete_closet_cloth(cloth_id, user_email)
+
+    if success:
+        flash("옷이 성공적으로 삭제되었습니다.")
+    else:
+        flash("삭제에 실패했거나 권한이 없습니다.")
+    return redirect(url_for('my_closet'))
+
 # 수정된 라우트
 @app.route('/api/clothes/confirm', methods=['POST'])
 def confirm_clothes():
@@ -771,58 +874,66 @@ def check_email():
     except Exception as e:
         print(f"이메일 중복 확인 에러: {e}")
         return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
+
+@app.route('/api/check-nickname', methods=['POST'])
+def check_nickname():
+    data = request.get_json()
+    nickname = data.get('nickname')
     
+    if not nickname:
+        return jsonify({"error": "닉네임을 입력해주세요."}), 400
+        
+    try:
+        # 1번 단계에서 만든 모듈을 호출하여 검증한다 (경로는 기존 환경에 맞게 services.auth로 지정)
+        from services.auth import check_nickname_duplicate
+        if check_nickname_duplicate(nickname):
+            return jsonify({"message": f"'{nickname}'은(는) 사용 가능한 닉네임입니다."}), 200
+        else:
+            return jsonify({"error": "이미 사용 중인 닉네임입니다."}), 400
+    except Exception as e:
+        print(f"닉네임 중복 확인 에러: {e}")
+        return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
+        
 @app.route('/api/update-user-info', methods=['POST'])
 def update_user_info():
     data = request.get_json()
     # Supabase update 로직
     return jsonify({"message": "수정이 완료되었습니다."})
 
+
 @app.route('/api/update_body_info', methods=['POST'])
-def update_body_info_api():
+def update_body_info():
     login_id = session.get('login_id')
-    data = request.json
-    
-    print("\n==================================")
-    print(f"🏋️ [디버그] 체형정보 업데이트 시도")
-    print(f" - 세션 login_id: {login_id}")
-    print(f" - 전달받은 데이터: {data}")
-    print("==================================\n")
-    
-    # 1. 세션 검증 (로그인 안 된 사용자 차단)
     if not login_id:
-        return jsonify({"status": "fail", "message": "서버에 로그인 세션이 없습니다. 다시 로그인해주세요."}), 401
+        return jsonify({"status": "error", "message": "로그인이 필요합니다."}), 401
+
+    # 프론트엔드에서 보낸 원본 데이터 받기
+    data = request.get_json()
     
+    # 작성하신 필터 함수가 읽을 수 있도록 딕셔너리 구조를 맞춰줍니다.
+    # HTML의 JS가 'bodyType'이라는 이름으로 체형을 보냈으므로 이를 'body_shape'로 매핑합니다.
+    input_data = {
+        "height": data.get('height'),
+        "weight": data.get('weight'),
+        "body_shape": data.get('bodyType') 
+    }
+
+    # 🔥 유저님이 작성한 훌륭한 필터링 로직 통과!
+    clean_data = _filter_body_profile_data(input_data)
+    
+    # 만약 필터링 후 남은 데이터가 아무것도 없다면 (모두 유효성 검사 실패 시)
+    if not clean_data:
+        return jsonify({"status": "error", "message": "입력한 데이터가 유효한 형식이 아닙니다."}), 400
+
     try:
-        # 2. 데이터 안전 변환 (값이 있으면 정수형으로 변환, 없으면 None 처리)
-        height_val = int(data.get('height')) if data.get('height') else None
-        weight_val = int(data.get('weight')) if data.get('weight') else None
-        
-        # 3. Supabase DB 업데이트 쿼리 실행
-        response = supabase.table("users").update({
-            "height": height_val,
-            "weight": weight_val,
-            "body_shape": data.get('bodyType')  # 핵심 수정: DB 컬럼명(body_shape)에 정확히 매핑
-        }).eq("login_id", login_id).execute()
-        
-        # 4. 방어 로직: Supabase가 빈 데이터를 반환했는지 검사 (Silent Failure 감지)
-        if not response.data:
-            print("⚠️ [디버그] DB에 해당 login_id를 가진 유저가 없어 업데이트가 무시되었습니다.")
-            return jsonify({"status": "fail", "message": "회원 정보를 찾을 수 없어 저장에 실패했습니다."}), 400
-        
-        # 5. 정상 저장 완료
-        print(f"✅ [디버그] 체형 DB 업데이트 성공: {response.data}")
-        return jsonify({"status": "success", "message": "체형 정보가 정상적으로 저장되었습니다."}), 200
-        
-    except ValueError:
-        # 키나 몸무게에 숫자가 아닌 값("abc" 등)이 들어와 int() 변환 중 에러가 날 경우
-        return jsonify({"status": "fail", "message": "키와 몸무게는 숫자만 입력 가능합니다."}), 400
+        # 필터링된 안전한 데이터(clean_data)를 그대로 DB에 업데이트
+        response = supabase.table('users').update(clean_data).eq('login_id', login_id).execute()
+        return jsonify({"status": "success", "message": "체형 정보가 성공적으로 저장되었습니다."})
         
     except Exception as e:
-        print("\n❌ [디버그] 체형 DB 업데이트 치명적 에러 발생!")
-        traceback.print_exc() 
-        return jsonify({"status": "fail", "message": "DB 통신 중 서버 내부 오류가 발생했습니다."}), 500
-    
+        print(f"[DB 에러] 체형 정보 업데이트 실패: {e}")
+        return jsonify({"status": "error", "message": "서버 오류로 저장에 실패했습니다."}), 500
+
 @app.route('/api/verify_password', methods=['POST'])
 def verify_password_api():
     data = request.json

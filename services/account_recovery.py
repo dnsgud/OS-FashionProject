@@ -4,6 +4,7 @@ import smtplib
 import os
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
+import time
 
 # 기본 시스템 환경 변수와 꼬이지 않도록, 메일 전용 설정 파일만 특정해서 로드한다
 load_dotenv(".mail_env")
@@ -127,6 +128,8 @@ def reset_password_and_auto_login(login_id, new_pw, new_pw_confirm):
         return None
         
     print("[DB 로그] 비밀번호 초기화 완료, 즉각적인 자동 로그인 세션으로 전환한다")
+    
+    time.sleep(1)
     
     # 2. 갱신 성공 시 auth_service.py의 커스텀 로그인 모듈을 호출하여 인증을 수행한다
     login_result = login_user(login_id, new_pw)

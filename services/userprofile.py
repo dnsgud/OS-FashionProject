@@ -1,4 +1,5 @@
 import traceback
+from services.auth import _validate_password_match
 
 try:
     from config import supabase
@@ -29,37 +30,38 @@ def fetch_user_profile(login_id):
 try:
     from auth import (
         _validate_login_id, _validate_email_format, _validate_name, _validate_nickname,
-        check_login_id_duplicate, check_email_duplicate
+        check_login_id_duplicate, check_email_duplicate, check_nickname_duplicate
     )
 except ImportError:
     pass
 
 def _filter_modified_profile_data(input_data, current_profile):
-    # 프론트엔드 전송 데이터 중 실질적 변경이 발생한 항목만 이중 필터링하는 내부 로직
+    # 프론트엔드 전송 데이터 중 실질적 변경이 발생한 항목만 이중 필터링하는 내부 로직이다
     clean_data = {}
     
-    # 1. 텍스트 데이터(이름, 닉네임) 무결성 검증
+    # 1. 이름 데이터 (중복 검사 없이 형식 무결성만 확인 후 그대로 갱신한다)
     if "name" in input_data and _validate_name(input_data["name"]):
         clean_data["name"] = input_data["name"].strip()
-    if "nickname" in input_data and _validate_nickname(input_data["nickname"]):
-        clean_data["nickname"] = input_data["nickname"].strip()
         
-    # 2. 고유 데이터(아이디, 이메일) 변경 시에만 중복 및 규격 검증 (백엔드 이중 잠금)
-    if "login_id" in input_data:
-        new_id = input_data["login_id"]
-        if new_id != current_profile.get("login_id"):
-            if _validate_login_id(new_id) and check_login_id_duplicate(new_id):
-                clean_data["login_id"] = new_id
+    # 2. 닉네임 데이터 변경 시 형식 검사 및 DB 중복 검증을 동시에 수행한다
+    if "nickname" in input_data:
+        new_nickname = input_data["nickname"].strip()
+        if new_nickname != current_profile.get("nickname"):
+            if _validate_nickname(new_nickname) and check_nickname_duplicate(new_nickname):
+                clean_data["nickname"] = new_nickname
             else:
-                raise ValueError("아이디 이중 검증 실패")
+                raise ValueError("닉네임 이중 검증 실패 (형식 오류 또는 중복)")
                 
+    # [수정 사항] 기획 변경으로 인해 아이디(login_id) 수정 로직은 전면 철거되었다.
+                
+    # 3. 이메일 데이터 변경 시 무결성 및 중복 검증을 수행한다
     if "email" in input_data:
-        new_email = input_data["email"]
+        new_email = input_data["email"].strip()
         if new_email != current_profile.get("email"):
             if _validate_email_format(new_email) and check_email_duplicate(new_email):
                 clean_data["email"] = new_email
             else:
-                raise ValueError("이메일 이중 검증 실패")
+                raise ValueError("이메일 이중 검증 실패 (형식 오류 또는 중복)")
                 
     return clean_data
 

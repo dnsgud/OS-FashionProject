@@ -127,3 +127,33 @@ def get_email_by_login_id(login_id):
     except Exception as e:
         print(f"❌ 이메일 조회 실패: {e}")
     return None    
+
+def fetch_user_profile(login_id):
+    """
+    login_id를 기반으로 public.users 테이블에서 해당 사용자의 
+    모든 정보(닉네임, 이메일, 이름 등)를 가져옵니다.
+    """
+    # Supabase REST API 호출 경로
+    db_url = f"{Config.SUPABASE_URL}/rest/v1/users?login_id=eq.{login_id}"
+    db_headers = {
+        "apikey": Config.SUPABASE_KEY,
+        "Authorization": f"Bearer {Config.SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
+    
+    try:
+        response = requests.get(db_url, headers=db_headers)
+        
+        # 요청이 성공하고 데이터가 존재하는 경우
+        if response.status_code == 200:
+            data = response.json()
+            # 조회된 데이터가 리스트 형태 [ {...} ]로 오므로, 첫 번째 요소를 반환
+            return data[0] if data else None
+        else:
+            print(f" [오류] 사용자 정보 조회 실패: {response.status_code}, {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f" [에러] 네트워크 예외 발생: {e}")
+        return None

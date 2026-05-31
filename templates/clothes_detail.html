@@ -3,117 +3,713 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>옷 상세 정보 - Look_Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>옷 등록하기 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        /* 기존 CSS 동일 */
+        .add-clothes-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #0f172a;
+            margin-bottom: 40px;
+            font-weight: 800;
+        }
+
+        /* 
+           데스크톱 화면에서 3개의 영역으로 쪼개어 배치할 수 있도록 
+           grid-template-areas를 활용해서 레이아웃을 다시 설계했어!
+        */
+        .upload-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: grid;
+            gap: 30px 50px;
+            border: 1px solid #f1f5f9;
+            width: 100%;
+            box-sizing: border-box;
+            grid-template-columns: 0.4fr 0.6fr;
+            grid-template-areas:
+                "img-area main-inputs"
+                ". bottom-inputs";
+        }
+
+        /* 사진 등록 박스가 '이름~스타일' 박스의 높이를 그대로 따라가도록 매핑했어 */
+        .image-section {
+            grid-area: img-area;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            /* 이름~스타일 구역의 높이와 1:1로 일치하게 설정 */
+            min-height: 0;
+            box-sizing: border-box;
+        }
+
+        .image-section img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* 세로가 줄어들어도 사진이 찌그러지지 않고 영역에 맞게 잘 보존돼 */
+        }
+
+        .image-section:hover {
+            border-color: #4f46e5;
+            background: #e0e7ff;
+        }
+
+        .image-section i {
+            font-size: 4rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .image-section p {
+            color: #64748b;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        /* 이름부터 스타일까지 묶어둔 우측 상단 메인 양식 구역 */
+        .form-main-inputs {
+            grid-area: main-inputs;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 체감 온도와 하단 버튼들을 모아둔 우측 하단 구역 */
+        .form-bottom-inputs {
+            grid-area: bottom-inputs;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.05rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 16px 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            border-color: #4f46e5;
+        }
+
+        .color-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .color-group input[type="color"] {
+            width: 55px;
+            height: 55px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .color-group input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-group input[type="color"]::-webkit-color-swatch {
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+        }
+
+        .fit-container,
+        .tpo-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding-bottom: 12px;
+            scrollbar-width: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .fit-container::-webkit-scrollbar,
+        .tpo-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .fit-btn,
+        .tpo-tag {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .fit-btn.selected,
+        .tpo-tag.selected {
+            background: #e0e7ff;
+            color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .info-text {
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 12px 0;
+        }
+
+        .temp-level-wrapper {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .temp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .temp-display {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #4f46e5;
+            background: #e0e7ff;
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+
+        .temp-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(to right, #3b82f6, #60a5fa, #fbbf24, #f97316, #ef4444);
+            outline: none;
+            margin: 15px 0;
+        }
+
+        .temp-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 3px solid #4f46e5;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .temp-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #f1f5f9;
+        }
+
+        .temp-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 3px solid #4f46e5;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .temp-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            background: #f1f5f9;
+        }
+
+        .temp-description {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.6;
+            min-height: 48px;
+            word-break: keep-all;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 12px;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            margin-top: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            gap: 15px;
+        }
+
+        .btn-main-save {
+            flex: 3;
+            padding: 20px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-main-save:hover {
+            background: #4338ca;
+        }
+
+        .btn-main-delete {
+            flex: 1;
+            padding: 20px;
+            border-radius: 16px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-main-delete:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .confirm-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .confirm-modal-box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            animation: popUp 0.3s ease;
+        }
+
+        .confirm-modal-box h3 {
+            font-size: 1.4rem;
+            color: #0f172a;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .m-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .m-btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .m-btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .m-btn-confirm {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .m-btn-confirm:hover {
+            background: #4338ca;
+        }
+
+        .m-btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .m-btn-danger:hover {
+            background: #dc2626;
+        }
+
+        @keyframes popUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .upload-card {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "img-area"
+                    "main-inputs"
+                    "bottom-inputs";
+                gap: 25px;
+            }
+
+            .image-section {
+                min-height: 350px;
+                /* 모바일 환경에서는 한 줄 배치이므로 보기 편하게 적정 세로값 부여 */
+            }
+        }
     </style>
 </head>
 
 <body>
-    <header>...</header>
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="{{ url_for('home_page') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+            </div>
+            <ul>
+                <li><a href="{{ url_for('my_closet') }}" class="nav-link"
+                        style="color: inherit; text-decoration: none;">옷장</a></li>
+            </ul>
+        </nav>
+    </header>
 
     <main class="add-clothes-container">
-        <h2 class="page-title" id="page-title">{{ "옷 상세 정보" if cloth else "내 옷장에 새 옷 추가하기" }}</h2>
+        <h2 class="page-title">옷 상세보기</h2>
 
-        <div class="upload-card">
-            <div class="image-section" onclick="document.getElementById('file-input').click()">
+        <form id="clothes-form" action="{{ url_for('update_clothes') }}" method="POST">
 
-                <div id="upload-placeholder" style="text-align: center;">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>클릭해서 사진 선택하기</p>
-                </div>
-                <img id="preview-img" alt="옷 미리보기" style="display: none;">
+            <input type="hidden" name="cloth_id" value="{{ cloth.id }}">
 
-                <input type="hidden" id="cloth-data-json" value='{{ cloth | tojson | safe if cloth else "" }}'>
-            </div>
-
-            <div class="form-section">
-                <input type="hidden" id="cloth-id" value="{{ cloth.id if cloth else '' }}">
-
-                <div class="form-group">
-                    <label>이름</label>
-                    <input type="text" id="cloth-name" value="{{ cloth.name if cloth else '' }}"
-                        placeholder="예: 무신사 스탠다드 검정 슬랙스">
-                </div>
-
-                <div class="form-group">
-                    <label>메인 카테고리</label>
-                    <select id="main-category" onchange="updateSubCategoryAndFit()">
-                        <option value="">대분류 선택</option>
-                        <option value="top" {{ 'selected' if cloth and cloth.main_category=='top' }}>상의</option>
-                        <option value="bottom" {{ 'selected' if cloth and cloth.main_category=='bottom' }}>하의</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>서브 카테고리</label>
-                    <select id="sub-category">
-                        <option value="{{ cloth.sub_category if cloth else '' }}">{{ cloth.sub_category if cloth else
-                            '먼저 메인 카테고리를 선택하세요' }}</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>핏 선택</label>
-                    <div class="fit-container" id="fit-container">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>색상</label>
-                    <div class="color-group">
-                        <input type="color" id="cloth-color" value="{{ cloth.color if cloth else '#000000' }}"
-                            onchange="updateColorText()">
-                        <input type="text" id="cloth-color-text" value="{{ cloth.color if cloth else '#000000' }}"
-                            readonly style="width: 120px; background: #f8fafc; text-align: center;">
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn-main-save" onclick="openSaveModal()">저장</button>
-                    {% if cloth %}
-                    <button class="btn-main-delete" onclick="openDeleteModal()"><i
-                            class="fas fa-trash-can"></i></button>
+            <div class="upload-card">
+                <div class="image-section">
+                    {% if cloth and cloth.image_url %}
+                    <img src="{{ cloth.image_url }}" alt="{{ cloth.name }}">
+                    {% else %}
+                    <i class="fas fa-cloud-arrow-up"></i>
+                    <p>이미지가 없습니다.</p>
                     {% endif %}
                 </div>
+
+                <div class="form-main-inputs">
+                    <div class="form-group">
+                        <label>이름</label>
+                        <input type="text" id="cloth-name" name="cloth_name" value="{{ cloth.name }}" placeholder="">
+                    </div>
+
+                    <div class="form-group">
+                        <label>메인 카테고리</label>
+                        <select id="main-category" name="main_category" onchange="updateSubCategoryAndFit()">
+                            <option value="top" {% if cloth.main_category=='top' %}selected{% endif %}>상의</option>
+                            <option value="bottom" {% if cloth.main_category=='bottom' %}selected{% endif %}>하의
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>서브 카테고리</label>
+                        <select id="sub-category" name="sub_category">
+                            <option value="{{ cloth.sub_category }}" selected>{{ cloth.sub_category }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>색상</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="color" value="{{ cloth.color }}" disabled
+                                style="width: 50px; height: 50px; border: none; background: none; cursor: default;">
+                            <span style="font-weight: 600; color: #334155;">{{ cloth.color }}</span>
+                            <input type="hidden" name="cloth_color" value="{{ cloth.color }}">
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="saved-fit" value="{{ cloth.fit }}">
+
+                    <div class="form-group">
+                        <label>핏 선택</label>
+                        <input type="hidden" id="selected-fit" name="fit" value="{{ cloth.fit }}">
+                        <div class="fit-container" id="fit-container"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>스타일</label>
+                        <input type="hidden" id="selected-tags" name="styles" value="">
+                        <div class="tpo-scroll-container">
+                            {% set saved_styles = cloth.style if cloth.style else [] %}
+                            <span class="tpo-tag {{ 'selected' if '캐주얼' in saved_styles }}"
+                                onclick="toggleTag(this)">#캐주얼</span>
+                            <span class="tpo-tag {{ 'selected' if '데이트' in saved_styles }}"
+                                onclick="toggleTag(this)">#데이트</span>
+                            <span class="tpo-tag {{ 'selected' if '비지니스' in saved_styles }}"
+                                onclick="toggleTag(this)">#비지니스</span>
+                            <span class="tpo-tag {{ 'selected' if '스트릿' in saved_styles }}"
+                                onclick="toggleTag(this)">#스트릿</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-bottom-inputs">
+                    <div class="form-group">
+                        <label>체감 온도 레벨 설정</label>
+                        <div class="temp-level-wrapper">
+                            <div class="temp-header">
+                                <span style="font-size: 0.95rem; color:#64748b; font-weight: 600;">내가 느끼는 옷의
+                                    두께감</span>
+                                <span class="temp-display" id="temp-val-display">Lv.{{ cloth.temp_level }}</span>
+                            </div>
+
+                            <input type="range" id="temp-level" name="temp_level" class="temp-slider" min="1" max="10"
+                                value="{{ cloth.temp_level }}" oninput="updateTempDescription()">
+
+                            <div class="temp-description" id="temp-desc-display"></div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-main-save" onclick="openSaveModal()">저장</button>
+                        <button type="button" class="btn-main-delete" onclick="openDeleteModal()" title="삭제"><i
+                                class="fas fa-trash-can"></i></button>
+                    </div>
+                </div>
             </div>
-        </div>
+        </form>
+
+        <form id="delete-form" action="{{ url_for('delete_clothes') }}" method="POST" style="display: none;">
+            <input type="hidden" name="cloth_id" value="{{ cloth.id }}">
+        </form>
     </main>
 
+    <div id="saveConfirmModal" class="confirm-modal-overlay" onclick="if(event.target == this) closeSaveModal()">
+        <div class="confirm-modal-box">
+            <h3>저장하시겠습니까?</h3>
+            <div class="modal-btn-group">
+                <button class="m-btn m-btn-cancel" onclick="closeSaveModal()">취소</button>
+                <button class="m-btn m-btn-confirm" onclick="executeSave()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteConfirmModal" class="confirm-modal-overlay" onclick="if(event.target == this) closeDeleteModal()">
+        <div class="confirm-modal-box">
+            <h3>정말 삭제하시겠습니까?</h3>
+            <div class="modal-btn-group">
+                <button class="m-btn m-btn-cancel" onclick="closeDeleteModal()">취소</button>
+                <button class="m-btn m-btn-danger" onclick="executeDelete()">삭제</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            // 1. 데이터를 안전하게 가져오기
-            const jsonData = document.getElementById('cloth-data-json').value;
-            const clothData = jsonData ? JSON.parse(jsonData) : null;
+        const subCategoryData = {
+            top: ["이너", "아우터"],
+            bottom: ["바지"],
+        };
 
-            if (clothData) {
-                console.log("데이터 로드 성공:", clothData);
+        const fitData = {
+            top: ["슬림핏", "레귤러핏", "오버핏"],
+            bottom: ["슬림핏", "레귤러핏", "와이드핏"]
+        };
 
-                // 이미지 처리
-                document.getElementById('upload-placeholder').style.display = 'none';
-                const preview = document.getElementById('preview-img');
-                preview.src = clothData.image_url;
-                preview.style.display = 'block';
+        const tempDescriptions = {
+            1: "🥶 <b>[Lv.1 극한의 추위 / 4°C 이하]</b> 패딩, 두꺼운 코트, 목도리가 필수인 한겨울 날씨에 입는 옷이야.",
+            2: "❄️ <b>[Lv.2 쌀쌀한 겨울 / 5°C ~ 8°C]</b> 코트, 가죽 자켓, 히트텍 등 겨울철 찬 바람을 막아줄 수 있는 옷이야.",
+            3: "🧥 <b>[Lv.3 초겨울·늦가을 / 9°C ~ 11°C]</b> 자켓, 트렌치코트, 니트, 스타킹이 어울리는 서늘한 날씨용 옷이야.",
+            4: "🍁 <b>[Lv.4 선선한 가을 / 12°C ~ 16°C]</b> 자켓, 가디건, 청자켓, 면바지 등 아침저녁으로 쌀쌀할 때 딱 좋은 옷이야.",
+            5: "🌾 <b>[Lv.5 완연한 봄·가을 / 17°C ~ 19°C]</b> 얇은 니트, 맨투맨, 후드티, 청바지 등 단품으로 가볍게 입기 좋은 옷이야.",
+            6: "🌤️ <b>[Lv.6 쾌적한 환절기 / 20°C ~ 22°C]</b> 긴팔티, 가벼운 셔츠, 슬랙스, 면바지 등 활동하기 가장 쾌적한 날씨의 옷이야.",
+            7: "🍃 <b>[Lv.7 초여름 날씨 / 23°C ~ 26°C]</b> 반팔티, 얇은 셔츠, 반바지 등 살짝 더워지기 시작할 때 시원하게 입는 옷이야.",
+            8: "☀️ <b>[Lv.8 한여름 무더위 / 27°C 이상]</b> 민소매, 반팔, 반바지, 린넨 소재 옷 등 가만히 있어도 땀이 나는 더운 날 입는 옷이야.",
+            9: "🔥 <b>[Lv.9 폭염 주의 / 33°C 내외]</b> 매우 통기성이 좋은 기능성 의류나 가장 얇고 시원한 소재의 여름 전용 옷이야.",
+            10: "🌋 <b>[Lv.10 극심한 폭염 / 35°C 이상]</b> 땀 흡수가 잘 되고 몸에 달라붙지 않는, 무더위를 버티기 위한 생존형 여름 옷이야."
+        };
 
-                // 카테고리 설정
-                document.getElementById('main-category').value = clothData.main_category;
+        function updateTempDescription() {
+            const currentLevel = document.getElementById('temp-level').value;
+            document.getElementById('temp-val-display').textContent = `Lv.${currentLevel}`;
+            document.getElementById('temp-desc-display').innerHTML = tempDescriptions[currentLevel];
+        }
 
-                // 서브카테고리/핏 생성 함수 실행
-                updateSubCategoryAndFit();
+        function updateSubCategoryAndFit() {
+            const mainCat = document.getElementById('main-category').value;
+            const subCatSelect = document.getElementById('sub-category');
+            const fitContainer = document.getElementById('fit-container');
+            const savedFit = document.getElementById('saved-fit').value;
 
-                // 데이터 매핑
-                document.getElementById('sub-category').value = clothData.sub_category;
+            subCatSelect.innerHTML = "";
+            fitContainer.innerHTML = "";
 
-                // 핏 버튼 활성화
-                setTimeout(() => {
-                    const fitBtns = document.querySelectorAll('.fit-btn');
-                    fitBtns.forEach(btn => {
-                        if (btn.textContent === clothData.fit) btn.classList.add('selected');
-                    });
-                }, 50); // 핏 버튼이 생성된 후 실행되도록 약간의 지연
+            if (mainCat && fitData[mainCat]) {
+                subCategoryData[mainCat].forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.text = item;
+                    subCatSelect.appendChild(option);
+                });
+
+                fitData[mainCat].forEach(fitName => {
+                    const button = document.createElement('button');
+                    button.type = "button";
+                    button.className = 'fit-btn';
+                    button.textContent = fitName;
+
+                    if (fitName === savedFit) {
+                        button.classList.add('selected');
+                        document.getElementById('selected-fit').value = fitName;
+                    }
+
+                    button.onclick = function () {
+                        document.querySelectorAll('.fit-btn').forEach(b => b.classList.remove('selected'));
+                        button.classList.add('selected');
+                        document.getElementById('selected-fit').value = fitName;
+                    };
+                    fitContainer.appendChild(button);
+                });
             }
+        }
+
+        function toggleTag(element) {
+            element.classList.toggle('selected');
+        }
+
+        window.onload = () => {
+            updateSubCategoryAndFit();
             updateTempDescription();
-        });
+        };
+
+        function openSaveModal() {
+            const name = document.getElementById('cloth-name').value;
+            if (!name) {
+                alert("이름은 꼭 입력해 줘!");
+                return;
+            }
+            document.getElementById('saveConfirmModal').style.display = 'flex';
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveConfirmModal').style.display = 'none';
+        }
+
+        function openDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+        }
+
+        // ★수정 5: 에러 방지를 위한 가장 확실한 강제 폼 전송 방식 적용
+        function executeSave() {
+            try {
+                closeSaveModal();
+                // 전송 직전에 선택된 태그들을 묶어서 hidden input에 넣어줍니다.
+                const selectedTags = Array.from(document.querySelectorAll('.tpo-tag.selected'))
+                    .map(tag => tag.textContent.replace('#', ''));
+                document.getElementById('selected-tags').value = selectedTags.join(',');
+
+                const form = document.getElementById('clothes-form');
+                HTMLFormElement.prototype.submit.call(form);
+            } catch (e) {
+                console.error(e);
+                alert("저장 중 문제가 발생했습니다.");
+            }
+        }
+
+        function executeDelete() {
+            try {
+                closeDeleteModal();
+                const form = document.getElementById('delete-form');
+                HTMLFormElement.prototype.submit.call(form);
+            } catch (e) {
+                console.error(e);
+                alert("삭제 폼을 찾을 수 없습니다.");
+            }
+        }
     </script>
 </body>
 
