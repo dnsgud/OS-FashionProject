@@ -590,14 +590,24 @@ def my_closet():
 
 # app.py 의 수정된 라우트
 @app.route('/clothes_detail/<int:cloth_id>', methods=['GET'])
-def clothes_detail(cloth_id=None):
-    cloth = None
-    if cloth_id:
-        # Supabase에서 데이터 가져오기
+def clothes_detail(cloth_id):
+    try:
+        # Supabase에서 데이터 조회
         response = supabase.table("clothes").select("*").eq("id", cloth_id).execute()
-        if response.data: cloth = response.data[0]
-    
-    return render_template('clothes_detail.html', cloth=cloth)
+        
+        # 데이터가 없는 경우
+        if not response.data:
+            return "해당 옷 정보를 찾을 수 없습니다.", 404
+            
+        cloth = response.data[0]
+        
+        # 템플릿에 데이터 전달
+        return render_template('clothes_detail.html', cloth=cloth)
+        
+    except Exception as e:
+        # 서버 오류 발생 시 처리
+        print(f"Error: {e}")
+        return "데이터를 불러오는 중 오류가 발생했습니다.", 500
 
 @app.route('/api/clothes/update/<int:cloth_id>', methods=['POST'])
 def update_cloth_api(cloth_id):
