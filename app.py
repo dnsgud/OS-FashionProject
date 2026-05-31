@@ -9,8 +9,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from services.userprofile import update_account_password, change_profile_password
-from auth_service import sign_up_user, login_user, get_email_by_login_id
-
+from auth_service import sign_up_user, login_user, get_email_by_login_id, fetch_user_profile
 # 경로 설정을 최상단에서 진행
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
@@ -273,6 +272,7 @@ def register():
 @app.route('/api/update_password', methods=['POST'])
 def update_password_api():
     login_id = session.get('login_id')
+    access_token = session.get('access_token')  # 🔥 세션에서 Auth 토큰 추출
     data = request.json
     
     print("\n==================================")
@@ -280,7 +280,8 @@ def update_password_api():
     print(f" - 세션 login_id: {login_id}")
     print("==================================\n")
     
-    if not login_id:
+    # 토큰 검증 추가
+    if not login_id or not access_token:
         return jsonify({"status": "fail", "message": "로그인 세션이 만료되었습니다. 다시 로그인해주세요."}), 401
         
     current_pw = data.get('currentPw')
@@ -293,29 +294,43 @@ def update_password_api():
         if not user_data.data:
             return jsonify({"status": "fail", "message": "회원 정보를 찾을 수 없습니다."}), 404
             
-        # DB에서 가져온 기존 비밀번호 추출
         db_password = user_data.data[0].get("pw")
         
-        # 2. 사용자가 입력한 '기존 비밀번호'가 실제 DB와 일치하는지 확인
+        # 2. 기존 비밀번호 대조
         if db_password != current_pw:
             return jsonify({"status": "fail", "message": "기존 비밀번호가 올바르지 않습니다."}), 400
+
+        # 3. 🔥 [핵심 추가] Supabase Auth 서버의 실제 비밀번호 갱신 요청
+        import requests
+        auth_url = f"{os.getenv('SUPABASE_URL')}/auth/v1/user"
+        headers = {
+            "apikey": os.getenv("SUPABASE_KEY"),
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        auth_response = requests.put(auth_url, headers=headers, json={"password": new_pw})
+
+        # 인증 서버 갱신 실패 시 즉시 차단
+        if auth_response.status_code not in [200, 204]:
+            print(f"❌ [디버그] Auth 서버 갱신 실패: {auth_response.text}")
+            return jsonify({"status": "fail", "message": "인증 서버 비밀번호 변경 권한이 없습니다."}), 500
             
-        # 3. 새 비밀번호(pw)로 업데이트 실행
+        # 4. Auth 갱신 성공 시, DB users 테이블 pw 컬럼 동기화
         update_response = supabase.table("users").update({
-            "pw": new_pw  # 🔥 실제 DB 컬럼명인 pw로 완벽히 일치시킴
+            "pw": new_pw 
         }).eq("login_id", login_id).execute()
         
         if not update_response.data:
-            return jsonify({"status": "fail", "message": "비밀번호 업데이트에 실패했습니다."}), 400
+            return jsonify({"status": "fail", "message": "비밀번호 DB 업데이트에 실패했습니다."}), 400
             
-        print(f"✅ [디버그] 비밀번호 변경 성공")
+        print(f"✅ [디버그] Auth 서버 및 DB 비밀번호 동시 변경 성공")
         return jsonify({"status": "success", "message": "비밀번호가 성공적으로 변경되었습니다."}), 200
         
     except Exception as e:
         print("\n❌ [디버그] 비밀번호 변경 중 에러 발생!")
         traceback.print_exc()
-        return jsonify({"status": "fail", "message": "서버 DB 통신 중 오류가 발생했습니다."}), 500
-    
+        return jsonify({"status": "fail", "message": "서버 시스템 통신 중 오류가 발생했습니다."}), 500
+        
 @app.route('/logout')
 def logout():
     session.clear() 
@@ -693,9 +708,20 @@ def my_scrap():
 @app.route('/my_profile')
 def my_profile():
     user_email = session.get('user_email')
-    if not user_email: return redirect(url_for('login'))
-    is_logged_in = 'user_email' in session or 'login_id' in session
-    return render_template('my_profile.html', logged_in=is_logged_in, user_email=user_email)
+    login_id = session.get('login_id')
+    
+    if not user_email: 
+        return redirect(url_for('login'))
+    
+    # 데이터를 가져옵니다. 
+    user_info = fetch_user_profile(login_id)
+
+    # user_info가 None일 경우를 대비해 빈 딕셔너리로 처리 (안정성 강화)
+    # 이렇게 하면 템플릿에서 users.nickname 호출 시 NoneType 에러를 방지합니다.
+    return render_template('my_profile.html', 
+                           logged_in=True, 
+                           user_email=user_email, 
+                           users=user_info or {}) # 값이 없으면 빈 딕셔너리 전달
 
 @app.route('/api/update_user_info', methods=['POST'])
 def update_user_info_api():
@@ -726,22 +752,6 @@ def update_user_info_api():
         traceback.print_exc() # 에러가 발생한 정확한 원인을 터미널에 붉은 글로 띄워줍니다.
         return jsonify({"status": "fail", "message": "DB 통신 중 오류가 발생했습니다."}), 500
     
-@app.route('/api/check-nickname', methods=['POST'])
-def check_nickname():
-    data = request.get_json()
-    nickname = data.get('nickname')
-    
-    if not nickname:
-        return jsonify({"error": "닉네임을 입력해주세요."}), 400
-        
-    try:
-        query = supabase.table('users').select('nickname').eq('nickname', nickname).execute()
-        if query.data:
-            return jsonify({"error": "이미 사용 중인 닉네임입니다."}), 400
-            
-        return jsonify({"message": "사용 가능한 닉네임입니다."}), 200
-    except Exception as e:
-        return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
 
 @app.route('/api/check-email', methods=['POST'])
 def check_email():
