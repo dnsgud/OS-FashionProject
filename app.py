@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import traceback
+import uuid
 import random
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session, make_response
 from flask_cors import CORS
@@ -301,48 +302,87 @@ def logout():
     return redirect(url_for('home')) 
 
 
-# =============================================================
-# ⭐ [의류 등록 파이프라인 엔진 통합 레이어]
-# =============================================================
-
 # 1) 직접 입력 방식 등록 처리 라우트
 @app.route('/add_clothes', methods=['GET', 'POST'])
 def add_clothes():
-    if 'user_email' not in session and 'login_id' not in session: return redirect(url_for('login'))
+    if 'user_email' not in session and 'login_id' not in session: 
+        return redirect(url_for('login'))
+        
     if request.method == 'POST':
         user_email = session.get('user_email')
         cloth_name = request.form.get('cloth_name')
-        main_category = request.form.get('main_category')
-        sub_category = request.form.get('sub_category')
-        fit = request.form.get('fit')
+        main_category = request.form.get('main_category') 
+        sub_category = request.form.get('sub_category')   
+        fit = request.form.get('fit') 
         cloth_color = request.form.get('cloth_color')
         styles = request.form.get('styles')
         temp_level = request.form.get('temp_level', 5)
-        file = request.files.get('cloth_image')
-        storage_url = ""
         
+        file = request.files.get('cloth_image')
+        storage_url = "" 
+        
+        # --- 스토리지 업로드 로직 (이전과 동일) ---
         if file and file.filename != '':
             filename = secure_filename(file.filename)
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(file_path)
-            if process_user_upload:
-                upload_res = process_user_upload(file_path, user_email)
-                if upload_res and 'image_path' in upload_res:
-                    storage_url = upload_res['image_path']
-            if os.path.exists(file_path): os.remove(file_path)
+            ext = os.path.splitext(filename)[1]
+            unique_filename = f"{uuid.uuid4()}{ext}"
+            file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+            
+            file.save(file_path)    
+            
+            try:
+                bucket_name = 'test-clothes-imgaes' 
+                with open(file_path, 'rb') as f:
+                    supabase.storage.from_(bucket_name).upload(
+                        path=unique_filename, file=f, file_options={"content-type": file.content_type}
+                    )
+                storage_url = supabase.storage.from_(bucket_name).get_public_url(unique_filename)
+            except Exception as e:
+                print(f"❌ Storage 업로드 에러: {e}")
+            finally:
+                if os.path.exists(file_path): 
+                    os.remove(file_path)
 
+        ai_tags_list = []
+        
+        if main_category:
+            ai_tags_list.append(main_category)
+        if sub_category:
+            ai_tags_list.append(sub_category) 
+            
+        if main_category == "상의":
+            ai_tags_list.append("top")
+        elif main_category == "하의":
+            ai_tags_list.append("bottom")
+            
+        if sub_category == "아우터":
+            ai_tags_list.append("outerwear")
+        elif sub_category == "이너":
+            ai_tags_list.append("t-shirt") 
+        elif sub_category == "바지":
+            ai_tags_list.append("pants")
+
+        # --- DB 삽입 로직 ---
         insert_payload = {
             "user_email": user_email,
             "name": cloth_name,
             "main_category": main_category,
             "sub_category": sub_category,
+            "fit": fit,  
             "color": cloth_color,
             "style": styles.split(',') if styles else [],
             "temp_level": int(temp_level),
             "image_url": storage_url,
+            "ai_tags": ai_tags_list,
             "is_verified": True
         }
-        if supabase: supabase.table("clothes").insert(insert_payload).execute()
+        
+        if supabase: 
+            try:
+                supabase.table("clothes").insert(insert_payload).execute()
+            except Exception as e:
+                print(f"❌ DB 저장 에러: {e}")
+                
         return redirect(url_for('my_closet'))
 
     return render_template('add_clothes.html')

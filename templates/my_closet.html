@@ -245,7 +245,9 @@
             <div class="category-title"><i class="fas fa-coat"></i> 아우터</div>
             <div class="horizontal-scroll-box">
                 {% set outer_count = namespace(value=0) %}
-                {% for item in clothes if item.get('main_category') == '상의' and item.get('sub_category') == '아우터' %}
+                {% for item in clothes if (item.get('main_category') in ['상의', 'top'] and item.get('sub_category') in
+                ['아우터',
+                'outerwear']) %}
                 {% set outer_count.value = outer_count.value + 1 %}
                 <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item"
                     data-date="{{ item.get('created_at', '') }}" data-views="{{ item.get('total_wear_count', 0) }}">
@@ -264,7 +266,9 @@
             <div class="category-title"><i class="fas fa-shirt"></i> 상의</div>
             <div class="horizontal-scroll-box">
                 {% set top_count = namespace(value=0) %}
-                {% for item in clothes if item.get('main_category') == '상의' and item.get('sub_category') != '아우터' %}
+                {% for item in clothes if (item.get('main_category') in ['상의', 'top'] and item.get('sub_category') not
+                in
+                ['아우터', 'outerwear']) %}
                 {% set top_count.value = top_count.value + 1 %}
                 <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item"
                     data-date="{{ item.get('created_at', '') }}" data-views="{{ item.get('total_wear_count', 0) }}">
@@ -283,7 +287,7 @@
             <div class="category-title"><i class="fas fa-socks"></i> 하의</div>
             <div class="horizontal-scroll-box">
                 {% set bottom_count = namespace(value=0) %}
-                {% for item in clothes if item.get('main_category') == '하의' %}
+                {% for item in clothes if (item.get('main_category') in ['하의', 'bottom']) %}
                 {% set bottom_count.value = bottom_count.value + 1 %}
                 <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item"
                     data-date="{{ item.get('created_at', '') }}" data-views="{{ item.get('total_wear_count', 0) }}">
@@ -297,6 +301,8 @@
                 {% endif %}
             </div>
         </section>
+
+
     </main>
 
     <div class="fab-container">
@@ -311,7 +317,6 @@
     </div>
 
     <script>
-        // my_closet.html 맨 아래 <script> 태그 내부를 이걸로 교체해 주시면 완벽합니다.
         function toggleDropdown(event) {
             event.preventDefault();
             document.getElementById("my-dropdown").classList.toggle("show");
@@ -348,7 +353,7 @@
             }
         }
 
-        // [정렬 기능 교정 완료] Rachel 오타를 지우고 순수 함수로 깔끔하게 정리했습니다.
+        // Rachel 오타를 지우고 순수 함수로 깔끔하게 정리했습니다.
         function sortItems(type, event) {
             const buttons = document.querySelectorAll('.sort-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
