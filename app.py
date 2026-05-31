@@ -219,10 +219,13 @@ def login():
         data = request.get_json()
         login_id = data.get('login_id')
         password = data.get('password')
-        is_success = login_user(login_id, password) if login_user else False
-        if is_success:
+        
+        access_token = login_user(login_id, password) if login_user else None
+        
+        if access_token:
             session['login_id'] = login_id
             session['user_email'] = get_email_by_login_id(login_id)
+            session['access_token'] = access_token
             return jsonify({"message": "로그인 성공"}), 200
         else:
             return jsonify({"error": "아이디 또는 비밀번호가 틀렸습니다."}), 401
@@ -235,13 +238,30 @@ def register_page():
 def register():
     data = request.get_json()
     if not data: return jsonify({"error": "데이터가 없습니다."}), 400
+    
     email = data.get('email')
     password = data.get('password')
     nickname = data.get('nickname')
     username = data.get('username')
     name = data.get('name')
     gender = data.get('gender', '미선택')
-    if not email or not password or not username: return jsonify({"error": "필수 정보를 모두 입력해주세요."}), 400
+    
+    if not email or not password or not username: 
+        return jsonify({"error": "필수 정보를 모두 입력해주세요."}), 400
+        
+    try:
+        # [핵심 수정] services.auth 로 명확하게 폴더 경로 지정
+        from services.auth import _validate_login_id, _validate_email_format, check_login_id_duplicate, check_email_duplicate
+        
+        if not _validate_email_format(email) or not check_email_duplicate(email):
+            return jsonify({"error": "유효하지 않거나 이미 사용 중인 이메일입니다."}), 400
+            
+        if not _validate_login_id(username) or not check_login_id_duplicate(username):
+            return jsonify({"error": "아이디는 영문/숫자 4~15자여야 하며, 이미 사용 중일 수 없습니다."}), 400
+            
+    except Exception as e:
+        print(f"⚠️ 검증 모듈 로드 오류 (기존 가입 프로세스로 우회 진행): {e}")
+
     try:
         success = sign_up_user(email, password, nickname, username, name, gender)
         if success: return jsonify({"message": "회원가입 성공!"}), 201
@@ -249,7 +269,7 @@ def register():
     except Exception as e:
         print(f"서버 에러: {e}")
         return jsonify({"error": str(e)}), 500
-
+            
 @app.route('/api/update_password', methods=['POST'])
 def update_password_api():
     login_id = session.get('login_id')
@@ -568,16 +588,16 @@ def my_closet():
     current_weather = raw_weather[0] if raw_weather and isinstance(raw_weather, list) and len(raw_weather) > 0 else None
     return render_template('my_closet.html', clothes=clothes_list, weather=current_weather, user_email=user_email, logged_in=is_logged_in)
 
-@app.route('/clothes_detail/<int:cloth_id>')
-def clothes_detail(cloth_id):
-    if 'user_email' not in session and 'login_id' not in session: return redirect(url_for('login'))
-    cloth_data = None
-    try:
-        if supabase:
-            response = supabase.table("clothes").select("*").eq("id", cloth_id).execute()
-            cloth_data = response.data[0] if response.data else None
-    except Exception as e: print(f"❌ 옷 상세 데이터 조회 실패: {e}")
-    return render_template('clothes_detail.html', cloth=cloth_data)
+# app.py 의 수정된 라우트
+@app.route('/clothes_detail/<int:cloth_id>', methods=['GET'])
+def clothes_detail(cloth_id=None):
+    cloth = None
+    if cloth_id:
+        # Supabase에서 데이터 가져오기
+        response = supabase.table("clothes").select("*").eq("id", cloth_id).execute()
+        if response.data: cloth = response.data[0]
+    
+    return render_template('clothes_detail.html', cloth=cloth)
 
 @app.route('/api/clothes/update/<int:cloth_id>', methods=['POST'])
 def update_cloth_api(cloth_id):
@@ -700,15 +720,38 @@ def update_user_info_api():
 def check_nickname():
     data = request.get_json()
     nickname = data.get('nickname')
-  
-    return jsonify({"message": "사용 가능한 닉네임입니다."}) 
+    
+    if not nickname:
+        return jsonify({"error": "닉네임을 입력해주세요."}), 400
+        
+    try:
+        query = supabase.table('users').select('nickname').eq('nickname', nickname).execute()
+        if query.data:
+            return jsonify({"error": "이미 사용 중인 닉네임입니다."}), 400
+            
+        return jsonify({"message": "사용 가능한 닉네임입니다."}), 200
+    except Exception as e:
+        return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
 
 @app.route('/api/check-email', methods=['POST'])
 def check_email():
     data = request.get_json()
     email = data.get('email')
-
-    return jsonify({"message": f"'{email}'은 사용 가능한 이메일입니다."})
+    
+    if not email:
+        return jsonify({"error": "이메일을 입력해주세요."}), 400
+        
+    try:
+        # [핵심 수정] services.auth 로 명확하게 폴더 경로 지정
+        from services.auth import check_email_duplicate
+        if check_email_duplicate(email):
+            return jsonify({"message": f"'{email}'은 사용 가능한 이메일입니다."}), 200
+        else:
+            return jsonify({"error": "이미 사용 중이거나 유효하지 않은 이메일입니다."}), 400
+    except Exception as e:
+        print(f"이메일 중복 확인 에러: {e}")
+        return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
+    
 @app.route('/api/update-user-info', methods=['POST'])
 def update_user_info():
     data = request.get_json()
@@ -762,13 +805,41 @@ def update_body_info_api():
     
 @app.route('/api/verify_password', methods=['POST'])
 def verify_password_api():
-    """비밀번호 검증 API"""
     data = request.json
     input_pw = data.get('password')
-    user_email = session.get('user_email')
+    login_id = session.get('login_id')
+    
+    if not login_id:
+        return jsonify({"status": "fail", "message": "로그인 세션이 만료되었습니다."}), 401
 
-    return jsonify({"status": "success"}), 200
-
+    try:
+        from services.userprofile import _verify_current_password
+        if _verify_current_password(login_id, input_pw):
+            return jsonify({"status": "success"}), 200
+        else:
+            return jsonify({"status": "fail", "message": "비밀번호가 일치하지 않습니다."}), 400
+    except Exception as e:
+        return jsonify({"status": "fail", "message": "서버 검증 중 오류가 발생했습니다."}), 500
+    
+@app.route('/api/check-id', methods=['POST'])
+def check_id():
+    data = request.get_json()
+    # 프론트엔드에서 넘어오는 키값이 login_id인지 username인지 몰라 둘 다 대응하도록함
+    login_id = data.get('login_id') or data.get('username')
+    
+    if not login_id:
+        return jsonify({"error": "아이디를 입력해주세요."}), 400
+        
+    try:
+        from services.auth import check_login_id_duplicate
+        if check_login_id_duplicate(login_id):
+            return jsonify({"message": "사용 가능한 아이디입니다."}), 200
+        else:
+            return jsonify({"error": "이미 사용 중이거나 유효하지 않은 아이디입니다."}), 400
+    except Exception as e:
+        print(f"아이디 중복 확인 에러: {e}")
+        return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
+    
 if __name__ == '__main__':
     print("\n🚀 패션 앱 서버 웹 서비스 구동 중...")
     app.run(host='0.0.0.0', port=5000, debug=True)

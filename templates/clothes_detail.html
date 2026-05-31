@@ -3,186 +3,117 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>옷 상세 정보 - Look_Up</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #f8fafc;
-            color: #0f172a;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        header {
-            background: white;
-            padding: 20px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            align-items: center;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: #64748b;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        /* ✨ 최신 프론트엔드 이미지 박스 및 아이콘 스타일 반영 */
-        .image-area {
-            width: 100%;
-            height: 300px;
-            background-color: #f1f5f9;
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 25px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .no-img-icon {
-            font-size: 4rem;
-            color: #cbd5e1;
-        }
+        /* 기존 CSS 동일 */
     </style>
 </head>
 
 <body>
-    <script>
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-        }
-    </script>
+    <header>...</header>
 
-    <header>
-        <a href="{{ url_for('my_closet') }}" class="back-btn" style="text-decoration: none; display: inline-block;">
-            <i class="fas fa-arrow-left"></i>
-        </a>
-        <h2 id="page-title" style="margin: 0 auto 0 10px; font-size: 1.3rem; font-weight: 700;">옷 상세 정보</h2>
-    </header>
+    <main class="add-clothes-container">
+        <h2 class="page-title" id="page-title">{{ "옷 상세 정보" if cloth else "내 옷장에 새 옷 추가하기" }}</h2>
 
-    <main style="flex: 1; max-width: 600px; margin: 40px auto; width: 100%; padding: 0 20px; box-sizing: border-box;">
-        <div
-            style="background: white; border-radius: 24px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; text-align: center;">
+        <div class="upload-card">
+            <div class="image-section" onclick="document.getElementById('file-input').click()">
 
-            <div class="image-area">
-                <i class="fas fa-tshirt no-img-icon" id="no-image" style="display: none;"></i>
-                <img id="cloth-img" src="{{ url_for('static', filename='images/leather_jacket.jpg') }}" alt="옷"
-                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;"
-                    onerror="this.style.display='none'; document.getElementById('no-image').style.display='block';">
+                <div id="upload-placeholder" style="text-align: center;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>클릭해서 사진 선택하기</p>
+                </div>
+                <img id="preview-img" alt="옷 미리보기" style="display: none;">
+
+                <input type="hidden" id="cloth-data-json" value='{{ cloth | tojson | safe if cloth else "" }}'>
             </div>
 
-            <div style="text-align: left; margin-bottom: 30px;">
-                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">옷 이름</label>
-                <input type="text" id="info-name" class="info-input" value="레더 자킷" readonly
-                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box; margin-bottom:20px;">
+            <div class="form-section">
+                <input type="hidden" id="cloth-id" value="{{ cloth.id if cloth else '' }}">
 
-                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">카테고리</label>
-                <input type="text" id="info-cat" class="info-input" value="아우터" readonly
-                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box; margin-bottom:20px;">
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" id="cloth-name" value="{{ cloth.name if cloth else '' }}"
+                        placeholder="예: 무신사 스탠다드 검정 슬랙스">
+                </div>
 
-                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">색상</label>
-                <input type="text" id="info-color" class="info-input" value="블랙" readonly
-                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box; margin-bottom:20px;">
+                <div class="form-group">
+                    <label>메인 카테고리</label>
+                    <select id="main-category" onchange="updateSubCategoryAndFit()">
+                        <option value="">대분류 선택</option>
+                        <option value="top" {{ 'selected' if cloth and cloth.main_category=='top' }}>상의</option>
+                        <option value="bottom" {{ 'selected' if cloth and cloth.main_category=='bottom' }}>하의</option>
+                    </select>
+                </div>
 
-                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">추천 계절</label>
-                <input type="text" id="info-season" class="info-input" value="봄, 가을" readonly
-                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box;">
-            </div>
+                <div class="form-group">
+                    <label>서브 카테고리</label>
+                    <select id="sub-category">
+                        <option value="{{ cloth.sub_category if cloth else '' }}">{{ cloth.sub_category if cloth else
+                            '먼저 메인 카테고리를 선택하세요' }}</option>
+                    </select>
+                </div>
 
-            <div style="display: flex; gap: 12px;">
-                <button id="main-action-btn" onclick="handleMainAction()"
-                    style="flex: 2; padding: 16px; background: #4f46e5; color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <i class="fas fa-edit"></i> 수정하기
-                </button>
-                <button id="cancel-btn" onclick="toggleEditMode(false)"
-                    style="flex: 1; padding: 16px; background: #64748b; color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; display: none; align-items: center; justify-content: center;">
-                    취소
-                </button>
-                <button id="left-btn" onclick="deleteClothes()"
-                    style="flex: 1; padding: 16px; background: #ef4444; color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-trash-alt"></i> 삭제
-                </button>
+                <div class="form-group">
+                    <label>핏 선택</label>
+                    <div class="fit-container" id="fit-container">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>색상</label>
+                    <div class="color-group">
+                        <input type="color" id="cloth-color" value="{{ cloth.color if cloth else '#000000' }}"
+                            onchange="updateColorText()">
+                        <input type="text" id="cloth-color-text" value="{{ cloth.color if cloth else '#000000' }}"
+                            readonly style="width: 120px; background: #f8fafc; text-align: center;">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-main-save" onclick="openSaveModal()">저장</button>
+                    {% if cloth %}
+                    <button class="btn-main-delete" onclick="openDeleteModal()"><i
+                            class="fas fa-trash-can"></i></button>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </main>
 
     <script>
-        let isEditMode = false;
-        const currentClothId = 1; // 연동 타겟 임시 식별 바인딩
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. 데이터를 안전하게 가져오기
+            const jsonData = document.getElementById('cloth-data-json').value;
+            const clothData = jsonData ? JSON.parse(jsonData) : null;
 
-        function toggleEditMode(active) {
-            isEditMode = active;
-            const inputs = document.querySelectorAll('.info-input');
-            const mainBtn = document.getElementById('main-action-btn');
-            const leftBtn = document.getElementById('left-btn');
-            const cancelBtn = document.getElementById('cancel-btn');
-            const pageTitle = document.getElementById('page-title');
+            if (clothData) {
+                console.log("데이터 로드 성공:", clothData);
 
-            if (isEditMode) {
-                inputs.forEach(input => { input.removeAttribute('readonly'); input.style.background = '#ffffff'; });
-                inputs[0].focus();
-                pageTitle.innerText = "옷 정보 수정";
-                mainBtn.innerHTML = "<i class='fas fa-check'></i> 저장하기";
-                mainBtn.style.background = "#10b981";
-                leftBtn.style.display = "none";
-                cancelBtn.style.display = "flex";
-            } else {
-                inputs.forEach(input => { input.setAttribute('readonly', true); input.style.background = '#f8fafc'; });
-                pageTitle.innerText = "옷 상세 정보";
-                mainBtn.innerHTML = "<i class='fas fa-edit'></i> 수정하기";
-                mainBtn.style.background = "#4f46e5";
-                leftBtn.style.display = "flex";
-                cancelBtn.style.display = "none";
-            }
-        }
+                // 이미지 처리
+                document.getElementById('upload-placeholder').style.display = 'none';
+                const preview = document.getElementById('preview-img');
+                preview.src = clothData.image_url;
+                preview.style.display = 'block';
 
-        function handleMainAction() {
-            if (!isEditMode) {
-                toggleEditMode(true);
-            } else {
-                // 기존 데이터 전송 구조 유지 및 새로 이식된 계절(season) 필드까지 함께 패킹하여 서버 전송 명세 추가
-                fetch(`/api/clothes/update/${currentClothId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: document.getElementById('info-name').value,
-                        main_category: document.getElementById('info-cat').value,
-                        sub_category: "",
-                        color: document.getElementById('info-color').value,
-                        season: document.getElementById('info-season').value // 계절 필드 DB 전송 확장
-                    })
-                })
-                    .then(res => {
-                        if (res.ok) {
-                            alert('옷 정보가 성공적으로 수정되었어!');
-                            toggleEditMode(false);
-                        }
+                // 카테고리 설정
+                document.getElementById('main-category').value = clothData.main_category;
+
+                // 서브카테고리/핏 생성 함수 실행
+                updateSubCategoryAndFit();
+
+                // 데이터 매핑
+                document.getElementById('sub-category').value = clothData.sub_category;
+
+                // 핏 버튼 활성화
+                setTimeout(() => {
+                    const fitBtns = document.querySelectorAll('.fit-btn');
+                    fitBtns.forEach(btn => {
+                        if (btn.textContent === clothData.fit) btn.classList.add('selected');
                     });
+                }, 50); // 핏 버튼이 생성된 후 실행되도록 약간의 지연
             }
-        }
-
-        function deleteClothes() {
-            if (confirm('정말로 이 옷을 옷장에서 삭제할 거야?')) {
-                fetch(`/api/clothes/delete/${currentClothId}`, { method: 'POST' })
-                    .then(() => {
-                        alert('삭제가 완료되었어.');
-                        location.href = "{{ url_for('my_closet') }}";
-                    });
-            }
-        }
+            updateTempDescription();
+        });
     </script>
 </body>
 

@@ -360,15 +360,70 @@
                 });
         }
 
-        // 중복확인 및 모달 이벤트 관련 복구 스크립트 단축 이식
-        function checkEmailDuplicate() {
-            if (!document.getElementById('user-email').value) { alert('이메일을 먼저 적어줘!'); return; }
-            alert('사용 가능한 이메일입니다.');
+        // 이메일 중복 확인 함수
+        async function checkEmailDuplicate() {
+            const emailInput = document.getElementById('user-email').value;
+
+            if (!emailInput) {
+                alert('이메일을 먼저 적어줘!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/check-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: emailInput })
+                });
+
+                // 백엔드에서 보낸 JSON 데이터(message 또는 error) 파싱
+                const data = await response.json();
+
+                // HTTP 상태 코드가 200번대(성공)일 경우
+                if (response.ok) {
+                    alert(data.message); // 예: "'test@test.com'은 사용 가능한 이메일입니다."
+                } else {
+                    // HTTP 상태 코드가 400 등(실패)일 경우
+                    alert(data.error);   // 예: "이미 사용 중이거나 유효하지 않은 이메일입니다."
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('서버와 통신 중 문제가 발생했습니다.');
+            }
         }
 
-        function checkIdDuplicate() {
-            if (!document.getElementById('user-id').value) { alert('아이디를 먼저 입력해줘!'); return; }
-            alert('사용 가능한 아이디입니다.');
+        // 아이디 중복 확인 함수
+        async function checkIdDuplicate() {
+            const idInput = document.getElementById('user-id').value;
+
+            if (!idInput) {
+                alert('아이디를 먼저 입력해줘!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/check-id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    // 백엔드가 기대하는 키값 'login_id'에 맞춰서 전송
+                    body: JSON.stringify({ login_id: idInput })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message); // 예: "사용 가능한 아이디입니다."
+                } else {
+                    alert(data.error);   // 예: "이미 사용 중인 아이디입니다."
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('서버와 통신 중 문제가 발생했습니다.');
+            }
         }
 
         const policyData = {

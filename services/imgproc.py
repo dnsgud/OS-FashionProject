@@ -266,6 +266,28 @@ def delete_unverified_cloth(cloth_id, user_email):
         print(f"[DB 에러] 미승인 데이터 삭제 파이프라인 실패: {e}")
         return False
 
+def _execute_closet_delete_query(cloth_id, user_email):
+    """[DB] 옷장에 정식 등록된 데이터를 영구 삭제하는 내부 쿼리 실행기이다."""
+    query = supabase.table('clothes').delete()
+    # 타인의 옷을 삭제하지 못하도록 user_email 조건을 반드시 포함하여 쿼리를 실행한다.
+    response = query.eq('id', cloth_id).eq('user_email', user_email).execute()
+    return response.data
+
+def delete_closet_cloth(cloth_id, user_email):
+    """프론트엔드의 옷장 삭제 버튼 클릭 시 호출되어 데이터를 완전히 삭제하는 메인 컨트롤러이다."""
+    try:
+        deleted_data = _execute_closet_delete_query(cloth_id, user_email)
+        
+        if deleted_data:
+            print(f"[DB 로그] 옷장 의류 데이터 영구 삭제 완료: {cloth_id}")
+            return True
+            
+        print(f"[DB 경고] 삭제할 의류 데이터가 없거나 본인 소유가 아니다: {cloth_id}")
+        return False
+        
+    except Exception as e:
+        print(f"[DB 에러] 옷장 의류 삭제 파이프라인 붕괴: {e}")
+        return False
 
 # [수정 2] 로컬 테스트 블록 보호
 if __name__ == "__main__": 
