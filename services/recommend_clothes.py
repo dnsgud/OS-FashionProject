@@ -3,6 +3,7 @@ from utils.weather_utils import calculate_sensory_temp
 
 # 설정값
 BOTTOM_TOLERANCE = 1
+TOP_TOLERANCE = 1
 NEUTRAL_CHROMA = 15
 NEUTRAL_LIGHTNESS_LOW = 15
 NEUTRAL_LIGHTNESS_HIGH = 90
@@ -168,10 +169,10 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
     
     valid_top_combos = []
     for inner in inners:
-        if inner['temp_level'] == target_lv:
+        if abs(inner['temp_level'] - target_lv) <= TOP_TOLERANCE:
             valid_top_combos.append([inner])
         for outer in outers:
-            if inner['temp_level'] + outer['temp_level'] == target_lv:
+            if abs((inner['temp_level'] + outer['temp_level']) - target_lv) <= TOP_TOLERANCE:
                 valid_top_combos.append([inner, outer])
 
     # 3. 조합 및 4가지 점수 계산
