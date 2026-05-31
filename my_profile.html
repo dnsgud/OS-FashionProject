@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - 내 프로필</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f6f8fa;
+            color: #24292f;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            display: flex;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        /* 왼쪽 메뉴 */
+        .sidebar {
+            width: 250px;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .profile-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: none;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .menu-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .menu-btn.active {
+            background: #0969da;
+            color: white;
+        }
+
+        /* 오른쪽 콘텐츠 영역 */
+        .content {
+            flex: 1;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 10px;
+            padding: 40px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #d0d7de;
+            padding-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row input {
+            flex: 1;
+        }
+
+        .check-btn {
+            width: 120px;
+            border: none;
+            border-radius: 6px;
+            background: #238636;
+            color: white;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            background: #0969da;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .info-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f6f8fa;
+            border-radius: 8px;
+            border: 1px solid #d0d7de;
+        }
+
+        .description {
+            color: #57606a;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* 단계별 화면 전환용 스타일 (회원정보 수정에서 사용) */
+        .step-container {
+            display: none;
+        }
+
+        .step-container.active {
+            display: block;
+        }
+
+        /* 다크모드 대응 통합 가드 스타일 */
+        body.dark-mode {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .sidebar,
+        body.dark-mode .content,
+        body.dark-mode .info-box {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .menu-btn {
+            background: #1e293b;
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .menu-btn:hover {
+            background: #334155;
+        }
+
+        body.dark-mode .menu-btn.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select {
+            background: #0f172a;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .section-title {
+            border-color: #334155;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        // 전역 다크모드 테마 상태 가드 적용
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <div class="container">
+
+        <div class="sidebar">
+
+            <div class="profile-title">
+                👤 내 프로필
+            </div>
+
+            <button class="menu-btn active" onclick="showTab('profile', this)">
+                회원정보 수정
+            </button>
+
+            <button class="menu-btn" onclick="showTab('password', this)">
+                비밀번호 변경
+            </button>
+
+            <button class="menu-btn" onclick="showTab('body', this)">
+                체형정보 수정
+            </button>
+
+            <hr style="border: 0; height: 1px; background: #d0d7de; margin: 15px 0;">
+
+            <a href="{{ url_for('home_page') }}" class="menu-btn"
+                style="color: #57606a; display: inline-block; text-decoration: none; width: 100%;">
+                🏠 홈으로 가기
+            </a>
+
+        </div>
+
+        <div class="content">
+
+            <div id="profile" class="tab-content active">
+
+                <div class="section-title">
+                    회원정보 수정
+                </div>
+
+                <div id="infoStep1" class="step-container active">
+                    <div class="form-group">
+                        <label>안전을 위해 현재 비밀번호를 입력해주세요.</label>
+                        <input type="password" id="infoCurrentPw" placeholder="현재 비밀번호 입력">
+                    </div>
+                    <button class="save-btn" onclick="verifyInfoPassword()">
+                        확인
+                    </button>
+                </div>
+
+                <div id="infoStep2" class="step-container">
+                    <div class="form-group">
+                        <label>닉네임</label>
+                        <div class="row">
+                            <input type="text" id="userNickname" value="">
+                            <button class="check-btn" onclick="checkNickname()">중복확인</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>이메일</label>
+                        <div class="row">
+                            <input type="email" id="userEmail" value="">
+                            <button class="check-btn" onclick="checkEmail()">중복확인</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>이름</label>
+                        <input type="text" id="userName" value="">
+                    </div>
+
+                    <button class="save-btn" onclick="updateUserInfo()">수정하기</button>
+                </div>
+
+            </div>
+
+            <div id="password" class="tab-content">
+
+                <div class="section-title">
+                    비밀번호 변경
+                </div>
+
+                <div class="form-group">
+                    <label>기존 비밀번호</label>
+                    <input type="password" id="pwCurrentPw" placeholder="기존 비밀번호를 입력하세요">
+                </div>
+
+                <div class="form-group">
+                    <label>새 비밀번호</label>
+                    <input type="password" id="newPw" placeholder="새 비밀번호를 입력하세요 (6자 이상)">
+                </div>
+
+                <div class="form-group">
+                    <label>새 비밀번호 확인</label>
+                    <input type="password" id="confirmPw" placeholder="새 비밀번호를 한번 더 입력하세요">
+                </div>
+
+                <button class="save-btn" onclick="changePassword()">
+                    비밀번호 변경 완료
+                </button>
+
+            </div>
+
+            <div id="body" class="tab-content">
+
+                <div class="section-title">
+                    체형정보 수정
+                </div>
+
+                <div class="form-group">
+                    <label>키(cm)</label>
+                    <input type="number" id="bodyHeight" value="">
+                </div>
+
+                <div class="form-group">
+                    <label>몸무게(kg)</label>
+                    <input type="number" id="bodyWeight" value="">
+                </div>
+
+                <div class="form-group">
+                    <label>체형</label>
+                    <select id="bodyType" onchange="updateDescription()">
+                        <option value="reverse">역삼각형</option>
+                        <option value="triangle">삼각형</option>
+                        <option value="straight">일자형</option>
+                    </select>
+                </div>
+
+                <div class="info-box" id="bodyDescription">
+                    넓은 어깨와 좁은 허리를 가진 체형입니다.
+                </div>
+
+                <br>
+
+                <button class="save-btn" onclick="saveBodyInfo()">
+                    저장하기
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // 회원정보 수정 API 연동
+        async function updateUserInfo() {
+            const nickname = document.getElementById('userNickname').value;
+            const email = document.getElementById('userEmail').value;
+            const name = document.getElementById('userName').value;
+
+            try {
+                const response = await fetch('/api/update_user_info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nickname, email, name })
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    alert("회원 정보가 수정되었습니다.");
+                    // [추가] 성공 시 페이지 새로고침
+                    location.reload();
+                } else {
+                    alert(result.message || "수정 실패");
+                }
+            } catch (error) {
+                console.error("통신 에러:", error);
+                alert("서버 연결 중 오류가 발생했습니다.");
+            }
+        }
+        async function saveBodyInfo() {
+            const height = document.getElementById('bodyHeight').value;
+            const weight = document.getElementById('bodyWeight').value;
+            const bodyType = document.getElementById('bodyType').value;
+
+            // 1. 전송할 데이터 확인 (F12 개발자 도구의 '콘솔' 탭에서 확인)
+            console.log("전송하는 체형 데이터:", { height, weight, bodyType });
+
+            try {
+                const response = await fetch('/api/update_body_info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // 2. 서버가 세션을 사용 중이므로 login_id는 제외하고 전송합니다.
+                    // (만약 서버 백엔드에서 body_type으로 받길 원한다면 키 값을 body_type: bodyType 으로 변경하세요)
+                    body: JSON.stringify({
+                        height: height,
+                        weight: weight,
+                        bodyType: bodyType
+                    })
+                });
+
+                const result = await response.json();
+                // 3. 서버 응답 결과 확인
+                console.log("서버 응답:", result);
+
+                if (result.status === "success") {
+                    alert("체형 정보가 저장되었습니다.");
+                    location.reload();
+                } else {
+                    alert(result.message || "저장 실패");
+                }
+            } catch (error) {
+                console.error("통신 에러 상세:", error);
+                alert("서버 연결 오류");
+            }
+        }
+        function showTab(tabId, btn) {
+            // 1. 모든 탭 숨기기
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+            // 2. 모든 버튼의 active 클래스 제거
+            document.querySelectorAll('.sidebar .menu-btn').forEach(button => button.classList.remove('active'));
+
+            // 3. 선택한 탭과 버튼 활성화
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+
+            if (tabId === 'profile') {
+                resetAllTabs();
+            }
+        }
+
+        // 수정된 비밀번호 검증 함수
+        async function verifyInfoPassword() {
+            const inputPw = document.getElementById('infoCurrentPw').value;
+
+            try {
+                // 서버에 현재 비밀번호가 맞는지 확인하는 API 요청
+                const response = await fetch('/api/verify_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: inputPw })
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    // 서버에서 맞다고 하면 다음 단계로 이동
+                    document.getElementById('infoStep1').classList.remove('active');
+                    document.getElementById('infoStep2').classList.add('active');
+                } else {
+                    alert("현재 비밀번호가 올바르지 않습니다.");
+                }
+            } catch (error) {
+                alert("서버 오류가 발생했습니다.");
+            }
+        }
+        // 닉네임 중복 확인
+        async function checkNickname() {
+            const nickname = document.getElementById('userNickname').value;
+            const response = await fetch('/api/check-nickname', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nickname })
+            });
+            const result = await response.json();
+            alert(result.message);
+        }
+
+        // 이메일 중복 확인
+        async function checkEmail() {
+            const email = document.getElementById('userEmail').value;
+
+            if (!email || email.trim() === "") {
+                alert("이메일을 입력해주세요!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/check-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error("통신 에러:", error);
+                alert("서버와 통신하는 도중 오류가 발생했습니다.");
+            }
+        }
+
+
+        // 모든 탭의 입력 폼과 단계를 초기 상태로 되돌리는 함수
+        function resetAllTabs() {
+            const infoPw = document.getElementById('infoCurrentPw');
+            const curPw = document.getElementById('pwCurrentPw');
+            const nPw = document.getElementById('newPw');
+            const cPw = document.getElementById('confirmPw');
+
+            if (infoPw) infoPw.value = "";
+            if (curPw) curPw.value = "";
+            if (nPw) nPw.value = "";
+            if (cPw) cPw.value = "";
+
+            // 회원정보 수정 단계를 다시 1단계(비밀번호 검증)로 원복
+            const step1 = document.getElementById('infoStep1');
+            const step2 = document.getElementById('infoStep2');
+            if (step1 && step2) {
+                step1.classList.add('active');
+                step2.classList.remove('active');
+            }
+        }
+
+        function updateDescription() {
+            const value = document.getElementById('bodyType').value;
+            const box = document.getElementById('bodyDescription');
+
+            if (value === 'reverse') {
+                box.innerHTML = '넓은 어깨와 좁은 허리를 가진 체형입니다.';
+            } else if (value === 'triangle') {
+                box.innerHTML = '하체 비율이 상대적으로 큰 체형입니다.';
+            } else {
+                box.innerHTML = '상체와 하체 비율이 비슷한 체형입니다.';
+            }
+        }
+
+
+        async function changePassword() {
+            const currentPw = document.getElementById('pwCurrentPw').value;
+            const newPw = document.getElementById('newPw').value;
+            const confirmPw = document.getElementById('confirmPw').value;
+
+            // 1. 빈칸 입력 방지
+            if (!currentPw || !newPw || !confirmPw) {
+                alert("모든 항목을 입력해주세요.");
+                return;
+            }
+
+            // 2. 새 비밀번호 길이 확인
+            if (newPw.length < 6) {
+                alert("새 비밀번호는 6자 이상이어야 합니다.");
+                return;
+            }
+
+            // 3. 새 비밀번호 일치 여부 확인
+            if (newPw !== confirmPw) {
+                alert("새 비밀번호가 서로 일치하지 않습니다.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/update_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPw, newPw }) // 프론트에서 일치 여부를 검증했으므로 newPw만 보냅니다.
+                });
+
+                const result = await response.json();
+
+                // 🚨 핵심 수정: 반드시 "success"일 때만 성공 처리하도록 변경
+                if (result.status === "success") {
+                    alert("비밀번호 변경 완료!");
+                    location.reload();
+                } else {
+                    alert(result.message || "비밀번호 변경에 실패했습니다.");
+                }
+            } catch (error) {
+                alert("서버 연결 중 오류가 발생했습니다.");
+            }
+        }
+    </script>
+
+</body>
+
+</html>
