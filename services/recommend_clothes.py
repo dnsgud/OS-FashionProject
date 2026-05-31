@@ -153,7 +153,7 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
             
     return silhouette_score + body_score
     
-def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user_body_shape, clothes_db):
+def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user_body_shape, clothes_db, weights=None):
     """웹 서버용 추천 메인 로직 (체형 및 핏 반영 100점 만점 버전)"""
     sensory_temp = calculate_sensory_temp(current_temp, humidity, wind_speed)
     target_lv = get_target_level(sensory_temp)
@@ -185,8 +185,17 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
             temp_score = calculate_temperature_score(top_combo, bottom, target_lv)
             fit_score = calculate_fit_score(top_combo, bottom, user_body_shape)
             
-            # 최종 패션 점수 (최대 100점 만점: 스타일 30 + 색상 30 + 온도 20 + 핏 20)
-            fashion_score = style_score + color_score + temp_score + fit_score
+            # 만약 가중치 설정값이 안 넘어왔을 경우 기본 가중치(1.0배) 세팅
+            if not weights:
+                weights = {"style": 1.0, "color": 1.0, "temp": 1.0, "fit": 1.0}
+            
+            # 최종 패션 점수 계산 시 각 요소에 유저 커스텀 가중치 배율을 곱함.
+            fashion_score = (
+                (style_score * weights.get("style", 1.0)) +
+                (color_score * weights.get("color", 1.0)) +
+                (temp_score * weights.get("temp", 1.0)) +
+                (fit_score * weights.get("fit", 1.0))
+            )
             total_wear_count = sum([c.get('monthly_wear_count', 0) for c in full_outfit])
             
             outfits.append({
