@@ -73,16 +73,49 @@
             margin-bottom: 20px;
         }
 
-        /* 스타일 선택 그룹 */
+        /* 변경된 스타일 선택 그룹: 좌우 스크롤바 복원 및 커스텀 스타일링 */
         .style-group {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start; 
+            white-space: nowrap;         
+            overflow-x: auto;            
             gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
+            margin: 0 auto 25px auto;
+            padding: 5px 10px 15px 10px; /* 스크롤바가 버튼을 가리지 않도록 하단 하딩 확보 */
+            max-width: 460px;            
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch; 
         }
 
+        /* 크롬, 사파리 브라우저 스크롤바 스타일 디자인 */
+        .style-group::-webkit-scrollbar {
+            height: 6px; /* 스크롤바 두께 */
+        }
+        
+        .style-group::-webkit-scrollbar-track {
+            background: #f1f5f9; /* 스크롤바 뒷배경 */
+            border-radius: 10px;
+        }
+        
+        .style-group::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* 스크롤바 바 색상 */
+            border-radius: 10px;
+        }
+        
+        .style-group::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* 스크롤바 바 마우스 오버시 색상 */
+        }
+
+        /* 파이어폭스, IE 브라우저 스크롤바 복원 */
+        .style-group {
+            -ms-overflow-style: auto;  
+            scrollbar-width: thin;  
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        /* 스타일 버튼: 찌그러짐 방지 */
         .style-btn {
+            flex: 0 0 auto;               
             background: white;
             color: var(--text-light);
             border: 1px solid var(--border);
@@ -179,7 +212,6 @@
             color: #4f46e5;
         }
 
-        /* 1순위 강조 */
         .rank-others {
             background: #f1f5f9;
             color: #475569;
@@ -290,9 +322,7 @@
             font-weight: 600;
         }
 
-        /* ==========================================================================
-            모달창 공통 애니메이션 및 스타일 레이아웃 구축
-        ========================================================================== */
+        /* 모달창 스타일 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -416,7 +446,6 @@
             font-weight: 500;
         }
 
-        /* 이름 입력 전용 커스텀 모달 스타일 */
         .input-modal-content {
             max-width: 420px;
             padding: 30px;
@@ -464,37 +493,18 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         @keyframes scaleUp {
-            from {
-                transform: scale(0.95);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 600px) {
@@ -521,8 +531,11 @@
             <div class="style-group">
                 <button class="style-btn" onclick="selectStyle('데이트')">데이트</button>
                 <button class="style-btn active" onclick="selectStyle('캐주얼')">캐주얼</button>
-                <button class="style-btn" onclick="selectStyle('비즈니스')">비즈니스</button>
+                <button class="style-btn" onclick="selectStyle('포멀')">포멀</button>
                 <button class="style-btn" onclick="selectStyle('스트릿')">스트릿</button>
+                <button class="style-btn" onclick="selectStyle('밀리터리룩')">밀리터리룩</button>
+                <button class="style-btn" onclick="selectStyle('애슬레저')">애슬레저</button>
+                <button class="style-btn" onclick="selectStyle('고프코어')">고프코어</button>
             </div>
 
             <div class="btn-group">
@@ -593,16 +606,14 @@
 
     <script>
         let selectedStyle = '캐주얼';
-        let currentRecommendations = []; // 실시간 파싱을 위한 전역 버퍼 배열
+        let currentRecommendations = [];
 
-        // 커스텀 알림 모달 출력 함수
         function showAlertModal(title, message) {
             document.getElementById('alertModalTitle').innerText = title;
             document.getElementById('alertModalMessage').innerText = message;
             document.getElementById('alertModal').style.display = 'flex';
         }
 
-        // 커스텀 알림 모달 닫기
         function closeAlertModal(event) {
             if (event && event.target !== document.getElementById('alertModal')) return;
             document.getElementById('alertModal').style.display = 'none';
@@ -638,7 +649,7 @@
 
                     container.innerHTML = '';
                     const recs = data.recommendations;
-                    currentRecommendations = recs || []; // 전역 저장소에 매핑
+                    currentRecommendations = recs || [];
 
                     if (!recs || recs.length === 0) {
                         container.innerHTML = '<div class="empty-msg">👗 현재 추천 조건 범위에 부합하는 상/하의 조합 데이터가 옷장에 부족합니다.</div>';
@@ -690,15 +701,13 @@
                     });
 
                     window.scrollTo({ top: container.offsetTop - 20, behavior: 'smooth' });
-                }
-                )
+                })
                 .catch(err => {
                     console.error("추천 처리 통신 에러 발생:", err);
                     container.innerHTML = '<div class="empty-msg">❌ 데이터를 불러오는 중 웹 서비스 라우터 연동 오류가 발생했습니다.</div>';
                 });
         }
 
-        // 추천 카드 클릭 시 호출되는 모달 바인딩 함수
         function openCodiModalFromIndex(index, defaultTitle) {
             const outfit = currentRecommendations[index];
             if (!outfit) return;
@@ -741,7 +750,6 @@
             document.getElementById('detailModal').style.display = 'none';
         }
 
-        // 커스텀 입력 모달 제어 핸들러 함수
         function prepareScrap(index, defaultRankText, btn) {
             if (btn.classList.contains('active')) return;
             const outfit = currentRecommendations[index];
