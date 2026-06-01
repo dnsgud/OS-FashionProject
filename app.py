@@ -19,9 +19,6 @@ verify_and_get_login_id = None
 request_find_password = None
 verify_password_reset_code = None
 reset_password_and_auto_login = None
-add_scrap_to_db = None
-delete_scrap_from_db = None
-get_user_scraps_with_details = None
 
 try:
     # 환경 설정
@@ -34,9 +31,6 @@ try:
     from services.recommend_clothes import recommend_clothes_logic
     from services.userprofile import update_account_password, change_profile_password, _filter_body_profile_data
     from services.auth import _validate_password_match
-    
-    # 신규 추가 스크랩 서비스
-    from services.scrap_service import add_scrap_to_db, delete_scrap_from_db, get_user_scraps_with_details
     
     # 계정 복구 서비스
     from services.account_recovery import (
@@ -125,10 +119,8 @@ def api_reset_pw():
     new_pw_confirm = data.get('new_pw_confirm')
 
     success = reset_password_and_auto_login(login_id, new_pw, new_pw_confirm)
-    
     if success:
         return jsonify({"success": True, "message": "비밀번호가 성공적으로 변경되었습니다."}), 200
-        
     return jsonify({"success": False, "error": "비밀번호 변경 중 오류가 발생했습니다."}), 400
 
 @app.route('/api/find-pw/request', methods=['POST'])
@@ -144,6 +136,7 @@ def api_request_find_pw():
         return jsonify({"success": True, "message": "인증번호가 발송되었습니다."}), 200
     return jsonify({"success": False, "error": "입력 정보와 일치하는 계정을 찾을 수 없습니다."}), 400
 
+# 비밀번호 찾기 인증번호 유효성을 검증하는 API 라우터
 @app.route('/api/find-pw/verify', methods=['POST'])
 def api_verify_find_pw():
     data = request.get_json()
@@ -155,6 +148,7 @@ def api_verify_find_pw():
         return jsonify({"success": True, "message": "본인 인증이 완료되었습니다. 새 비밀번호를 설정해 주세요."}), 200
     return jsonify({"success": False, "error": "인증번호가 일치하지 않습니다."}), 400
 
+# 웹 서비스 인트로 메인 화면을 렌더링하는 라우터
 @app.route('/')
 def home():
     try:
@@ -168,6 +162,7 @@ def home():
         logging.error(f"Home route error: {e}")
         return render_template('index.html', weather=None)
 
+# 로그인 성공 회원용 대시보드 홈 화면을 렌더링하는 라우터
 @app.route('/home')
 def home_page(): 
     is_logged_in = 'user_email' in session or 'login_id' in session
@@ -177,6 +172,7 @@ def home_page():
     current_weather = raw_weather[0] if raw_weather and isinstance(raw_weather, list) and len(raw_weather) > 0 else None
     return render_template('home.html', weather=current_weather, user_email=user_email, logged_in=is_logged_in)
 
+# 3시간 단위 정밀 기상 정보 상세 페이지를 렌더링하는 라우터
 @app.route('/weather_detail')
 def weather_detail():
     is_logged_in = 'user_email' in session or 'login_id' in session
@@ -186,6 +182,8 @@ def weather_detail():
         raw_data = None
     hourly_data = []
     start_time = datetime.now()
+    
+    # 예보 데이터 배열을 순회하며 정해진 시간 포맷 가이드라인에 맞춰 재가공하는 반복문
     if raw_data and isinstance(raw_data, list) and len(raw_data) > 0:
         for idx, data in enumerate(raw_data):
             if not isinstance(data, dict): continue
@@ -201,6 +199,7 @@ def weather_detail():
             })
     return render_template('weather_detail.html', hourly_data=hourly_data, logged_in=is_logged_in)
 
+# 회원 자격 검증 및 로그인 세션을 생성 처리하는 라우터
 @app.route('/login', methods=['GET', 'POST']) 
 def login():
     if request.method == 'GET': 
@@ -212,18 +211,20 @@ def login():
         password = data.get('password')    
         user_data = login_user(login_id, password) 
         
+        # 인증 토큰 및 회원 정보 유효 유무를 가려 세션을 세팅하는 조건문
         if user_data:
             session['login_id'] = user_data.get('login_id')
-
             session['user_email'] = user_data.get('email') 
             return jsonify({"message": "로그인 성공"}), 200
         else:
             return jsonify({"error": "아이디 또는 비밀번호가 틀렸습니다."}), 401
         
+# 회원가입 입력 폼 인터페이스를 렌더링하는 라우터
 @app.route('/register') 
 def register_page():
     return render_template('sign_up.html')
 
+# 입력 명세 유효성 대조 후 신규 회원 레코드를 삽입하는 API 라우터
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -252,6 +253,7 @@ def register():
         print(f"서버 에러: {e}")
         return jsonify({"error": str(e)}), 500
             
+# 마이페이지 내 패스워드 테이블 정보 변경을 대행하는 API 라우터
 @app.route('/api/update_password', methods=['POST'])
 def update_password_api():
     login_id = session.get('login_id')
@@ -286,16 +288,18 @@ def update_password_api():
             
         print(f"✅ [디버그] DB 비밀번호 갱신 성공: {login_id}")
         return jsonify({"status": "success", "message": "비밀번호가 성공적으로 변경되었습니다."}), 200
-    
     except Exception as e:
         print("\n❌ [디버그] 비밀번호 변경 중 에러 발생!")
         traceback.print_exc()
         return jsonify({"status": "fail", "message": "서버 시스템 통신 중 오류가 발생했습니다."}), 500        
+
+# 유저 로그인 쿠키 및 세션 저장소를 비우는 로그아웃 라우터
 @app.route('/logout')
 def logout():
     session.clear() 
     return redirect(url_for('home')) 
 
+# 수동 등록 양식 기반 신규 의류 품목을 옷장에 추가하는 라우터
 @app.route('/add_clothes', methods=['GET', 'POST'])
 def add_clothes():
     if 'user_email' not in session and 'login_id' not in session: 
@@ -318,7 +322,7 @@ def add_clothes():
             ext = os.path.splitext(filename)[1]
             unique_filename = f"{uuid.uuid4()}{ext}"
             file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-            file.save(file_path)    
+            file.save(file_path) 
             try:
                 bucket_name = 'test-clothes-imgaes' 
                 with open(file_path, 'rb') as f:
@@ -366,14 +370,15 @@ def add_clothes():
             except Exception as e:
                 print(f"❌ DB 저장 에러: {e}")
         return redirect(url_for('my_closet'))
-
     return render_template('add_clothes.html')
 
+# AI 자동 의상 사진 분석 대기 인터페이스를 호출하는 라우터
 @app.route('/add_clothes_photo')
 def add_clothes_photo():
     if 'user_email' not in session and 'login_id' not in session: return redirect(url_for('login'))
     return render_template('add_clothes_photo.html')
 
+# 미디어 파일의 카테고리/컬러 정보를 컴퓨터 비전 분석 요청하는 API 라우터
 @app.route('/ai_analysis', methods=['POST'])
 def ai_analysis():
     user_email = session.get('user_email')
@@ -406,6 +411,7 @@ def ai_analysis():
             
     return "AI 의상 인프라 분석 오류 발생", 500
 
+# 가의류 임시 분석 리스트 보정 완료 후 정식 의류로 승인 인서트하는 라우터
 @app.route('/save-closet-item', methods=['POST'])
 def save_clothes():
     if 'user_email' not in session and 'login_id' not in session: 
@@ -428,6 +434,7 @@ def save_clothes():
         supabase.table("clothes").update(update_payload).eq("id", cloth_id).execute()
     return redirect(url_for('my_closet'))
 
+# 날씨 및 개별 패션 평점 가중치를 집계하여 세트 리스트를 뿌려주는 API 라우터
 @app.route('/api/recommend')
 def recommend():
     try:
@@ -457,6 +464,7 @@ def recommend():
             response = supabase.table("clothes").select("*").eq("user_email", user_email).execute()
             user_clothes = response.data
 
+            # 유저 옷 가방 루프 내에서 temp_level 사양을 정수 가공 처리하는 반복문
             for item in user_clothes:
                 item['temp_level'] = int(item.get('temp_level', 5))
         if recommend_clothes_logic:
@@ -502,16 +510,19 @@ def recommend():
             "is_tpo_fallback": False
         })
 
+# 종합 패션 스타일 큐레이션 허브 안내창 렌더링 라우터
 @app.route('/guide')
 def guide_main(): 
     user_email = session.get('user_email')
     return render_template('guide.html', user_email=user_email)
 
+# 의류 인프라 백과사전 사전 도감 명세 조회 라우터
 @app.route('/guide/dictionary')
 def guide_dictionary():
     try: return render_template('guide_dictionary.html')
     except Exception: return "<h3>기본 패션 아이템 도감 페이지 준비 중입니다!</h3><br><a href='/guide'>가이드로 돌아가기</a>"
 
+# 삼각형/역삼각형 3대 체형별 가이드 명세 조회 라우터
 @app.route('/body_guide')
 def body_guide():
     try:
@@ -521,12 +532,14 @@ def body_guide():
     except Exception as e:
         return "<h3>체형별 가이드 페이지 준비 중입니다!</h3><br><a href='/guide'>가이드로 돌아가기</a>"
 
+# 보유 아이템 기온별 조합 연산 렌더링 라우터
 @app.route('/codi')
 def codi_page():
     is_logged_in = 'user_email' in session or 'login_id' in session
     user_email = session.get('user_email')
     return render_template('codi.html', logged_in=is_logged_in, user_email=user_email)
 
+# 데이트/비즈니스 등 특수 상황 목적별 복장 명세 조회 라우터
 @app.route('/tpo_guide')
 def tpo_guide():
     try:
@@ -536,6 +549,7 @@ def tpo_guide():
     except Exception:
         return "<h3>TPO 가이드 페이지 준비 중입니다!</h3><br><a href='/guide'>가이드로 돌아가기</a>"
         
+# 톤온톤 매칭 가이드 정보 페이지 렌더링 라우터
 @app.route('/color_guide')
 def color_guide():
     try:
@@ -545,6 +559,7 @@ def color_guide():
     except Exception as e:
         return "<h3>컬러 매칭 가이드 페이지 준비 중입니다!</h3><br><a href='/guide'>가이드로 돌아가기</a>"
 
+# 보관 등록 완료된 내 의류 격자 앨범 조회 라우터
 @app.route('/my_closet')
 def my_closet():
     user_email = session.get('user_email')
@@ -561,6 +576,7 @@ def my_closet():
     current_weather = raw_weather[0] if raw_weather and isinstance(raw_weather, list) and len(raw_weather) > 0 else None
     return render_template('my_closet.html', clothes=clothes_list, weather=current_weather, user_email=user_email, logged_in=is_logged_in)
 
+# 단일 의류 카드의 디테일 스펙(핏, 고유ID) 명세 렌더링 라우터
 @app.route('/clothes_detail/<int:cloth_id>', methods=['GET'])
 def clothes_detail(cloth_id):
     try:
@@ -573,6 +589,7 @@ def clothes_detail(cloth_id):
         print(f"Error: {e}")
         return "데이터를 불러오는 중 오류가 발생했습니다.", 500
 
+# 모바일 웹 앱 컴포넌트 호출용 단일 의류 메타 갱신 API 라우터
 @app.route('/api/clothes/update/<int:cloth_id>', methods=['POST'])
 def update_cloth_api(cloth_id):
     if 'user_email' not in session and 'login_id' not in session: return jsonify({"error": "로그인이 필요합니다."}), 401
@@ -588,6 +605,7 @@ def update_cloth_api(cloth_id):
         return jsonify({"message": "수정 성공", "data": response.data}), 200
     except Exception as e: return jsonify({"error": f"수정 실패: {str(e)}"}), 500
 
+# 의류 영구 파기 소멸 처리 가동 API 라우터
 @app.route('/api/clothes/delete/<int:cloth_id>', methods=['POST'])
 def delete_cloth_api(cloth_id):
     if 'user_email' not in session and 'login_id' not in session: return jsonify({"error": "로그인이 필요합니다."}), 401
@@ -595,8 +613,8 @@ def delete_cloth_api(cloth_id):
         if supabase: supabase.table("clothes").delete().eq("id", cloth_id).execute()
         return jsonify({"message": "삭제 성공"}), 200
     except Exception as e: return jsonify({"error": f"삭제 실패: {str(e)}"}), 500
-from flask import request, redirect, url_for, session, flash
 
+# 동기 웹 폼 양식 스펙 변경 요청 수신 대응 라우터
 @app.route('/update_clothes', methods=['POST'])
 def update_clothes():
     user_email = session.get('user_email')
@@ -609,14 +627,14 @@ def update_clothes():
         return redirect(url_for('my_closet'))
     styles_str = request.form.get('styles', '')
     edit_data = {
-    'name': request.form.get('cloth_name'),
-    'main_category': request.form.get('main_category'),
-    'sub_category': request.form.get('sub_category'),
-    'fit': request.form.get('fit'),
-    'color': request.form.get('cloth_color'),
-    'temp_level': int(request.form.get('temp_level', 5)),
-    'style': styles_str.split(',') if styles_str else [] 
-}
+        'name': request.form.get('cloth_name'),
+        'main_category': request.form.get('main_category'),
+        'sub_category': request.form.get('sub_category'),
+        'fit': request.form.get('fit'),
+        'color': request.form.get('cloth_color'),
+        'temp_level': int(request.form.get('temp_level', 5)),
+        'style': styles_str.split(',') if styles_str else [] 
+    }
     result = update_closet_cloth(cloth_id, user_email, edit_data)
     if result:
         flash("옷 정보가 성공적으로 수정되었습니다.")
@@ -625,6 +643,7 @@ def update_clothes():
         flash("옷 정보 수정에 실패했습니다.")
         return redirect(url_for('my_closet')) 
 
+# 동기 웹 폼 버튼 트리거 대응 의류 영구 삭제 라우터
 @app.route('/delete_clothes', methods=['POST'])
 def delete_clothes():
     user_email = session.get('user_email')
@@ -642,6 +661,7 @@ def delete_clothes():
         flash("삭제에 실패했거나 권한이 없습니다.")
     return redirect(url_for('my_closet'))
 
+# 비정식 가의류 분석 정보 보정 내용 확인 및 검증 승인 API 라우터
 @app.route('/api/clothes/confirm', methods=['POST'])
 def confirm_clothes():
     data = request.json
@@ -653,7 +673,6 @@ def confirm_clothes():
         return jsonify({"error": "데이터 누락"}), 400
     
     style_data = modified_data.get('style')
-
     if isinstance(style_data, str):
         modified_data['style'] = [s.strip() for s in style_data.split(',')] if style_data else []
 
@@ -666,6 +685,7 @@ def confirm_clothes():
         return jsonify({"error": "DB 업데이트 대상 없음"}), 500
     
 
+# 미승인 가의류 보관 레코드를 전면 취소 및 데이터 파기 처리하는 API 라우터
 @app.route('/api/clothes/cancel', methods=['POST'])
 def cancel_clothes():
     try:
@@ -677,76 +697,27 @@ def cancel_clothes():
             return jsonify({"error": "데이터가 부족합니다."}), 400
             
         result = delete_unverified_cloth(cloth_id, user_email)
-        
         if result is not None:
             print(f"[서버 로그] 의류 삭제 성공: {cloth_id}")
             return jsonify({"message": "미승인 의류 데이터 삭제 완료"}), 200
         else:
             return jsonify({"error": "삭제 실패: 해당 ID의 데이터가 없거나 이미 승인되었습니다."}), 404
-            
     except Exception as e:
         print(f"[서버 에러] cancel_clothes 내부 오류: {str(e)}")
         return jsonify({"error": f"서버 오류 발생: {str(e)}"}), 500
     
-@app.route('/my_scrap')
-def my_scrap():
-    user_email = session.get('user_email')
-    if not user_email: return redirect(url_for('login'))
-    
-    result = get_user_scraps_with_details(user_email) if get_user_scraps_with_details else {"scraps": []}
-    scraps_list = result.get("scraps", []) if result.get("success") else []
-    
-    return render_template('my_scrap.html', user_email=user_email, scraps=scraps_list)
-
-@app.route('/api/scraps/delete/<int:scrap_id>', methods=['POST'])
-def api_delete_scrap(scrap_id):
-    user_email = session.get('user_email')
-    if not user_email:
-        return jsonify({"error": "로그인이 필요합니다."}), 401
-    
-    result = delete_scrap_from_db(scrap_id, user_email)
-    
-    if result.get("success"):
-        return jsonify({"message": result.get("message")}), 200
-    else:
-        return jsonify({"error": result.get("error")}), 400
-    
-@app.route('/api/scraps', methods=['POST'])
-def add_scrap_api():
-    user_email = session.get('user_email')
-    if not user_email: 
-        return jsonify({"error": "로그인이 필요합니다."}), 401
-        
-    data = request.get_json()
-    top_ids = data.get('top_ids')
-    bottom_id = data.get('bottom_id')
-    custom_title = data.get('custom_title', '나의 코디')
-
-    if not top_ids or not bottom_id:
-        return jsonify({"error": "코디 정보가 누락되었습니다."}), 400
-
-    result = add_scrap_to_db(user_email, top_ids, bottom_id, custom_title)
-    
-    if result and result.get("success"):
-        return jsonify({"message": "스크랩 완료!", "data": result.get("data")}), 201
-    else:
-        return jsonify({"error": f"스크랩 실패: {result.get('error', '알 수 없는 오류')}"}), 500
-
+# 회원 마이페이지 프로필 메인 대시보드 조회 라우터
 @app.route('/my_profile')
 def my_profile():
     user_email = session.get('user_email')
     login_id = session.get('login_id')
-    
     if not user_email: 
         return redirect(url_for('login'))
     
     user_info = fetch_user_profile(login_id)
+    return render_template('my_profile.html', logged_in=True, user_email=user_email, users=user_info or {}) 
 
-    return render_template('my_profile.html', 
-                           logged_in=True, 
-                           user_email=user_email, 
-                           users=user_info or {}) 
-
+# 사용자 지정 닉네임 및 기본 세부 이메일 정보 변경 보정 API 라우터
 @app.route('/api/update_user_info', methods=['POST'])
 def update_user_info_api():
     login_id = session.get('login_id')
@@ -763,25 +734,21 @@ def update_user_info_api():
     
     try:
         response = supabase.table("users").update({
-            "nickname": data.get('nickname'),
-            "email": data.get('email'),
-            "name": data.get('name')
+            "nickname": data.get('nickname'), "email": data.get('email'), "name": data.get('name')
         }).eq("login_id", login_id).execute()
         
         print(f"✅ [디버그] DB 업데이트 성공 결과: {response}")
         return jsonify({"status": "success", "message": "수정 완료"}), 200
-        
     except Exception as e:
         print("\n❌ [디버그] 치명적 에러 발생!")
-        traceback.print_exc() # 에러가 발생한 정확한 원인을 터미널에 붉은 글로 띄워줍니다.
+        traceback.print_exc() 
         return jsonify({"status": "fail", "message": "DB 통신 중 오류가 발생했습니다."}), 500
-    
 
+# 이메일 주소의 가입 중복 및 무결성 패턴 검증 API 라우터
 @app.route('/api/check-email', methods=['POST'])
 def check_email():
     data = request.get_json()
     email = data.get('email')
-    
     if not email:
         return jsonify({"error": "이메일을 입력해주세요."}), 400
         
@@ -795,11 +762,11 @@ def check_email():
         print(f"이메일 중복 확인 에러: {e}")
         return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
 
+# 서비스 내부 닉네임 수동 변경 시 중복 검사 API 라우터
 @app.route('/api/check-nickname', methods=['POST'])
 def check_nickname():
     data = request.get_json()
     nickname = data.get('nickname')
-    
     if not nickname:
         return jsonify({"error": "닉네임을 입력해주세요."}), 400
         
@@ -813,12 +780,13 @@ def check_nickname():
         print(f"닉네임 중복 확인 에러: {e}")
         return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
         
+# 구버전 전용 연동 갱신 우회 지원 API 라우터
 @app.route('/api/update-user-info', methods=['POST'])
 def update_user_info():
     data = request.get_json()
     return jsonify({"message": "수정이 완료되었습니다."})
 
-
+# 유저 신장, 체중, 3대 체형 정보를 계정에 연동 및 갱신하는 API 라우터
 @app.route('/api/update_body_info', methods=['POST'])
 def update_body_info():
     login_id = session.get('login_id')
@@ -826,32 +794,27 @@ def update_body_info():
         return jsonify({"status": "error", "message": "로그인이 필요합니다."}), 401
 
     data = request.get_json()
-
     input_data = {
-        "height": data.get('height'),
-        "weight": data.get('weight'),
-        "body_shape": data.get('bodyType') 
+        "height": data.get('height'), "weight": data.get('weight'), "body_shape": data.get('bodyType') 
     }
 
     clean_data = _filter_body_profile_data(input_data)
-    
     if not clean_data:
         return jsonify({"status": "error", "message": "입력한 데이터가 유효한 형식이 아닙니다."}), 400
 
     try:
         response = supabase.table('users').update(clean_data).eq('login_id', login_id).execute()
         return jsonify({"status": "success", "message": "체형 정보가 성공적으로 저장되었습니다."})
-        
     except Exception as e:
         print(f"[DB 에러] 체형 정보 업데이트 실패: {e}")
         return jsonify({"status": "error", "message": "서버 오류로 저장에 실패했습니다."}), 500
 
+# 프로필 민감정보 수정 진입 전 기존 패스워드 일치 유무를 검증하는 API 라우터
 @app.route('/api/verify_password', methods=['POST'])
 def verify_password_api():
     data = request.json
     input_pw = data.get('password')
     login_id = session.get('login_id')
-    
     if not login_id:
         return jsonify({"status": "fail", "message": "로그인 세션이 만료되었습니다."}), 401
 
@@ -862,13 +825,13 @@ def verify_password_api():
         else:
             return jsonify({"status": "fail", "message": "비밀번호가 일치하지 않습니다."}), 400
     except Exception as e:
-        return jsonify({"status": "fail", "message": "서버 검증 중 오류가 발생했습니다."}), 500
-    
+        return jsonify({"status": "fail", "message": "서버 검증 중 오류가 발생했습니다."}), 500Prefix
+
+# 회원가입 진행 시 아이디 사용 가능 유무 실시간 중복 체크 API 라우터
 @app.route('/api/check-id', methods=['POST'])
 def check_id():
     data = request.get_json()
     login_id = data.get('login_id') or data.get('username')
-    
     if not login_id:
         return jsonify({"error": "아이디를 입력해주세요."}), 400
         
@@ -882,6 +845,7 @@ def check_id():
         print(f"아이디 중복 확인 에러: {e}")
         return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
     
+# 로컬 개발 환경용 단독 스크립트 실행 여부를 판별하는 조건문
 if __name__ == '__main__':
     print("\n🚀 패션 앱 서버 웹 서비스 구동 중...")
     app.run(host='0.0.0.0', port=5000, debug=True)
