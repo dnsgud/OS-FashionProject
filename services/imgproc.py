@@ -196,8 +196,7 @@ def handle_cloth_registration(register_type, user_email, payload, file_path=None
 # ==========================================
 def _filter_closet_keys(edit_data):
     """[알고리즘] 허용된 컬럼만 통과시키는 내부 필터링 함수이다."""
-    # [추가] 수정 허용 목록에 'fit' 추가
-    allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style', 'fit'] 
+    allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style', 'fit', 'is_verified'] 
     filtered = {k: v for k, v in edit_data.items() if k in allowed}
     return filtered
 
@@ -208,7 +207,6 @@ def _validate_closet_types(filtered_data):
         
     if 'temp_level' in filtered_data:
         filtered_data['temp_level'] = int(filtered_data['temp_level'])
-        
     if 'color' in filtered_data:
         original_color = filtered_data['color']
         safe_color = _sanitize_color_input(original_color)
@@ -217,9 +215,18 @@ def _validate_closet_types(filtered_data):
     return filtered_data
 
 def _execute_closet_update_query(cloth_id, user_email, clean_data):
-    """[DB] Supabase에 접근하여 실제 업데이트 쿼리를 수행"""
-    query = supabase.table('clothes').update(clean_data)
-    response = query.eq('id', cloth_id).eq('user_email', user_email).execute()
+    print(f"DEBUG: 조회 시도 -> ID: {cloth_id} ({type(cloth_id)}), Email: '{user_email}'")
+    
+    # 1. 실제 DB에 데이터가 있는지 확인하는 쿼리
+    check = supabase.table('clothes').select('id').eq('id', cloth_id).eq('user_email', user_email).execute()
+    print(f"DEBUG: DB에서 찾은 데이터 개수: {len(check.data)}")
+    
+    if len(check.data) == 0:
+        print("DEBUG: 실패! DB에 해당 조건의 데이터가 없습니다.")
+        return None
+
+    # 2. 업데이트 수행
+    response = supabase.table('clothes').update(clean_data).eq('id', cloth_id).eq('user_email', user_email).execute()
     return response.data
 
 def update_closet_cloth(cloth_id, user_email, edit_data):
@@ -258,6 +265,28 @@ def delete_unverified_cloth(cloth_id, user_email):
         print(f"[DB 에러] 미승인 데이터 삭제 파이프라인 실패: {e}")
         return False
 
+def _execute_closet_delete_query(cloth_id, user_email):
+    """[DB] 옷장에 정식 등록된 데이터를 영구 삭제하는 내부 쿼리 실행기"""
+    query = supabase.table('clothes').delete()
+    # 타인의 옷을 삭제하지 못하도록 user_email 조건을 반드시 포함하여 쿼리를 실행
+    response = query.eq('id', cloth_id).eq('user_email', user_email).execute()
+    return response.data
+
+def delete_closet_cloth(cloth_id, user_email):
+    """프론트엔드의 옷장 삭제 버튼 클릭 시 호출되어 데이터를 완전히 삭제하는 메인 컨트롤러"""
+    try:
+        deleted_data = _execute_closet_delete_query(cloth_id, user_email)
+        
+        if deleted_data:
+            print(f"[DB 로그] 옷장 의류 데이터 영구 삭제 완료: {cloth_id}")
+            return True
+            
+        print(f"[DB 경고] 삭제할 의류 데이터가 없거나 본인 소유가 아니다: {cloth_id}")
+        return False
+        
+    except Exception as e:
+        print(f"[DB 에러] 옷장 의류 삭제 파이프라인 붕괴: {e}")
+        return False
 
 # [수정 2] 로컬 테스트 블록 보호
 if __name__ == "__main__": 
