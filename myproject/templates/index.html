@@ -41,6 +41,55 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
+        .recommend-action-box {
+            background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
+            border: 1px solid #cbd5e1;
+        }
+
+        .recommend-action-box:hover {
+            border-color: #4f46e5;
+        }
+
+        .action-badge {
+            position: absolute;
+            top: 15px;
+            background: #4f46e5;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .action-icons {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            margin-top: 15px;
+            animation: floating 2s infinite ease-in-out;
+        }
+
+        .recommend-title {
+            margin: 5px 0 5px 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #4f46e5;
+        }
+
+        .recommend-desc {
+            font-size: 0.85rem;
+            color: #4f46e5;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .click-notice {
+            margin-top: auto;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
         .tip-box {
             background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
             color: white;
@@ -48,8 +97,8 @@
         }
 
         .closet-box {
-            border: 2px solid #4f46e5;
-            background: #f5f7ff;
+            border: 2px solid #e2e8f0;
+            background: #ffffff;
         }
 
         @media (max-width: 850px) {
@@ -64,7 +113,7 @@
             }
         }
 
-        /* 🌙 다크모드 적용 시 스타일 변경 레이어 */
+        /* 🌙 다크모드 */
         body.dark-mode {
             background-color: #0f172a;
             color: #f8fafc;
@@ -81,6 +130,25 @@
             color: #f8fafc;
             border-color: #334155;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .recommend-action-box {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-color: #334155;
+        }
+
+        body.dark-mode .recommend-action-box:hover {
+            border-color: #6366f1;
+        }
+
+        body.dark-mode .action-badge {
+            background: #6366f1;
+        }
+
+        body.dark-mode .recommend-title,
+        body.dark-mode .recommend-desc,
+        body.dark-mode .click-notice {
+            color: #818cf8;
         }
 
         body.dark-mode #temp-desc,
@@ -101,6 +169,20 @@
         body.dark-mode #dark-mode-toggle {
             color: #f59e0b;
         }
+
+        @keyframes floating {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -111,41 +193,22 @@
                 <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
-                <li>
-                    <a href="{{ url_for('guide_page') }}" class="nav-link"
-                        style="color: inherit; text-decoration: none;">
-                        <i class="fas fa-book"></i> Guide
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('codi_page') }}" class="nav-link"
-                        style="color: inherit; text-decoration: none;">
-                        <i class="fas fa-tshirt"></i> Codi
-                    </a>
-                </li>
+                <li><a href="{{ url_for('guide_main') }}" class="nav-link"
+                        style="color: inherit; text-decoration: none;"><i class="fas fa-book"></i> Guide</a></li>
+                <li><a href="#" class="nav-link" onclick="requireLogin(event)"
+                        style="color: inherit; text-decoration: none;"><i class="fas fa-tshirt"></i> Codi</a></li>
                 <li class="dropdown-wrapper">
                     <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;"
-                        onclick="toggleDropdown(event)">
-                        <i class="fas fa-user"></i> My
-                    </a>
+                        onclick="toggleDropdown(event)"><i class="fas fa-user"></i> My</a>
                     <div class="dropdown-menu" id="my-dropdown">
-                        <a href="{{ url_for('my_closet') }}">👗 내 옷장</a>
-                        <a href="{{ url_for('my_scrap') }}">🔖 스크랩북</a>
-                        <a href="{{ url_for('my_profile') }}">⚙️ 스타일 설정</a>
+                        <a href="{{ url_for('login') }}">🔑 로그인하기</a>
+                        <a href="{{ url_for('register_page') }}">👋 회원가입하기</a>
                     </div>
                 </li>
                 <li>
-                    {% if logged_in %}
-                    <a href="{{ url_for('logout') }}" class="login-btn"
-                        style="background-color: #ef4444; text-decoration: none; display: inline-block;">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
-                    {% else %}
                     <a href="{{ url_for('login') }}" class="login-btn"
-                        style="text-decoration: none; display: inline-block;">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                    {% endif %}
+                        style="text-decoration: none; display: inline-block;"><i class="fas fa-sign-in-alt"></i>
+                        Login</a>
                 </li>
                 <li>
                     <button id="dark-mode-toggle"
@@ -179,17 +242,12 @@
                 </div>
             </a>
 
-            <a href="{{ url_for('codi_page') }}" class="grid-box">
-                <span
-                    style="position: absolute; top: 15px; background: #e0e7ff; color: #4f46e5; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">Editor's
-                    Pick</span>
-                <img src="{{ url_for('static', filename='images/arsenal_uniform.jpg') }}" alt="Item" class="pick-image"
-                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; margin-top: 15px;"
-                    onerror="this.src='https://placehold.co/80'">
-                <h4 class="pick-title" style="margin: 0 0 5px 0; font-size: 1.1rem; word-break: keep-all;">아이템 이름</h4>
-                <p class="pick-desc"
-                    style="font-size: 0.85rem; color: #64748b; margin: 0; padding: 0 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                    아이템 설명이 여기에 들어갑니다.</p>
+            <a href="#" onclick="requireLogin(event)" class="grid-box recommend-action-box">
+                <span class="action-badge">RECOMMEND</span>
+                <div class="action-icons">🧥✨👕</div>
+                <h4 class="recommend-title">오늘 날씨 맞춤 코디</h4>
+                <p class="recommend-desc">기온에 맞는 최적의 코디를 조합해 줄게</p>
+                <div class="click-notice">지금 추천 받기 →</div>
             </a>
 
             <div class="grid-box tip-box">
@@ -205,30 +263,30 @@
                     낮에는 따뜻하지만 저녁엔 쌀쌀해져요.</p>
             </div>
 
-            <a href="{{ url_for('guide_page') }}" class="grid-box">
+            <a href="{{ url_for('guide_main') }}" class="grid-box">
                 <i class="fas fa-book" style="font-size: 2.5rem; color: #8b5cf6; margin-bottom: 15px;"></i>
                 <h3 style="font-size: 1.2rem; margin: 0 0 5px 0;">패션 가이드</h3>
                 <p style="font-size: 0.85rem; color: #64748b; margin: 0;">초보자를 위한 코디 꿀팁</p>
             </a>
 
-            <a href="{{ url_for('my_closet') }}" class="grid-box closet-box">
+            <a href="#" onclick="requireLogin(event)" class="grid-box closet-box">
                 <span
-                    style="position: absolute; top: -10px; background: #ef4444; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);">나만의
+                    style="position: absolute; top: -10px; background: #94a3b8; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 4px 6px rgba(148, 163, 184, 0.3);">나만의
                     코디</span>
-                <i class="fas fa-door-open" style="font-size: 3rem; color: #4f46e5; margin-bottom: 15px;"></i>
-                <h3 style="font-size: 1.3rem; color: #4f46e5; margin: 0 0 8px 0; font-weight: 800;">내 옷장</h3>
-                <p style="font-size: 0.9rem; color: #4f46e5; margin: 0; opacity: 0.8;">내 옷으로 코디 추천받기</p>
+                <i class="fas fa-door-open" style="font-size: 3rem; color: #94a3b8; margin-bottom: 15px;"></i>
+                <h3 style="font-size: 1.3rem; color: #94a3b8; margin: 0 0 8px 0; font-weight: 800;">내 옷장</h3>
+                <p style="font-size: 0.9rem; color: #94a3b8; margin: 0; opacity: 0.8;">내 옷으로 코디 추천받기</p>
             </a>
 
-            <a href="{{ url_for('my_scrap') }}" class="grid-box">
-                <i class="fas fa-bookmark" style="font-size: 2.5rem; color: #ec4899; margin-bottom: 15px;"></i>
-                <h3 style="font-size: 1.2rem; margin: 0 0 5px 0;">스크랩북</h3>
-                <p style="font-size: 0.85rem; color: #64748b; margin: 0;">마음에 든 코디 모아보기</p>
+            <a href="#" onclick="requireLogin(event)" class="grid-box">
+                <i class="fas fa-bookmark" style="font-size: 2.5rem; color: #94a3b8; margin-bottom: 15px;"></i>
+                <h3 style="font-size: 1.2rem; margin: 0 0 5px 0; color: #94a3b8;">스크랩북</h3>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">마음에 든 코디 모아보기</p>
             </a>
         </div>
 
         <section class="trend-section" style="margin-top: 60px; text-align: center;">
-            <h3 class="section-title">패션 키워드 추천</h3>
+            <h3 class="section-title">패션 키워드</h3>
             <div class="hashtag-box" style="justify-content: center;"></div>
         </section>
     </main>
@@ -241,9 +299,9 @@
                 <a href="#" onclick="event.preventDefault(); openPolicyModal('privacy')">개인정보 처리방침</a>
             </div>
             <p class="footer-info">
-                주식회사 코디픽 | 대표: 김코디 | 사업자등록번호: 123-45-67890<br>
+                주식회사 look_Up | 대표: 곽예찬 | 사업자등록번호: 241-1234-612490<br>
                 충청북도 청주시 서원구 충대로 1 (충북대학교)<br>
-                이메일: contact@codipick.com | 통신판매업신고: 2026-청주-1234
+                이메일: hahahah1212@gmail.com | 통신판매업신고: 22213-청주-14134
             </p>
             <p class="footer-copyright">
                 &copy; 2026 CODI PICK. All rights reserved.
@@ -286,21 +344,13 @@
     <script>
         const keywordDetails = {
             "#고프코어": { img: "{{ url_for('static', filename='images/gorpcore.jpg') }}", desc: "아웃도어 의류를 일상복과 매치하여 스타일리시하게 입는 패션이에요. 바람막이나 기능성 카고팬츠 등을 활용해 편안하면서도 힙한 무드를 낼 수 있어요." },
-            "#블록코어룩": { img: "{{ url_for('static', filename='images/blockcore.jpg') }}", desc: "스포츠 유니폼 상의를 일상적인 청바지나 스니커즈와 조합해서 입는 스타일이에요. 스포티하면서도 레트로한 길거리 감성을 연출하기에 아주 좋아요." },
+            "#블록코어": { img: "{{ url_for('static', filename='images/blockcore.jpg') }}", desc: "스포츠 유니폼 상의를 일상적인 청바지나 스니커즈와 조합해서 입는 스타일이에요. 스포티하면서도 레트로한 길거리 감성을 연출하기에 아주 좋아요." },
             "#워크웨어": { img: "{{ url_for('static', filename='images/workwear.jpg') }}", desc: "과거 작업복에서 유래한 스타일로, 두꺼운 캔버스 재킷이나 데님을 활용해요. 투박하지만 깊이감 있는 아메카지 특유의 멋스러운 분위기를 줍니다." },
             "#미니멀룩": { img: "{{ url_for('static', filename='images/minimal.jpg') }}", desc: "화려한 로고나 패턴을 걷어내고 극도의 깔끔함을 추구하는 패션이에요. 모노톤 위주의 색감과 정돈된 실루엣으로 세련된 인상을 남길 수 있어요." },
             "#시티보이룩": { img: "{{ url_for('static', filename='images/cityboy.jpg') }}", desc: "도시 속 소년들의 자유로운 감성을 넉넉한 오버핏으로 표현한 스타일이에요. 단정하면서도 캐주얼한 셔츠와 레이어드를 활용하는 게 특징이에요." },
             "#Y2K패션": { img: "{{ url_for('static', filename='images/y2k.jpg') }}", desc: "1990년대 말부터 2000년대 초반의 세기말 감성을 그대로 가져온 패션이에요. 크롭티나 로우라이즈 팬츠처럼 과감하고 개성 넘치는 연출이 가능해요." },
             "#올드머니룩": { img: "{{ url_for('static', filename='images/oldmoney.jpg') }}", desc: "대대손손 내려오는 상류층의 고급스러움을 담아낸 패션이에요. 브랜드 로고를 드러내지 않는 대신 캐시미어나 실크 같은 고급 소재로 은은한 우아함을 드러내요." },
-            "#그랜파코어": { img: "{{ url_for('static', filename='images/grandpa.jpg') }}", desc: "할아버지의 옷장에서 꺼낸 듯한 아늑하고 빈티지한 스타일이에요. 오버사이즈 니트 가디건이나 코듀로이 팬츠, 따뜻한 체크 패턴을 활용해 포근한 매력을 줘요." },
-            "#페스티벌룩": { img: "{{ url_for('static', filename='images/festival.jpg') }}", desc: "콘서트나 축제에서 주인공이 될 수 있는 화려하고 자유로운 패션이에요. 평소에 시도하기 어려웠던 과감한 컬러나 액세서리로 나만의 개성을 마음껏 뽐낼 수 있어요." },
-            "#긱시크룩": { img: "{{ url_for('static', filename='images/geekchic.jpg') }}", desc: "괴짜를 뜻하는 'Geek'과 세련됨을 뜻하는 'Chic'이 합쳐진 스타일이에요. 단정한 셔츠나 정장에 독특한 안경을 매치하여 지적이면서도 반전 있는 무드를 완성해요." },
-            "#발레코어": { img: "{{ url_for('static', filename='images/balletcore.jpg') }}", desc: "발레무용수의 연습복이나 무대의상에서 영감을 받은 스타일이에요. 시폰 스커트, 리본 장식, 워머 등을 활용해 우아하고 사랑스러운 분위기를 연출할 수 있어요." },
-            "#아메카지": { img: "{{ url_for('static', filename='images/amekaji.jpg') }}", desc: "미국식 캐주얼 의류를 일본 특유의 감성으로 재해석한 패션이에요. 통이 넓은 바지나 셔츠, 베스트 등을 활용해 편안하면서도 빈티지한 아웃도어 무드를 보여줘요." },
-            "#페어리코어": { img: "{{ url_for('static', filename='images/fairycore.jpg') }}", desc: "숲속 요정을 연상시키는 몽환적이고 자연 친화적인 룩이에요. 레이스나 자수 장식, 빛바랜 파스텔톤 컬러의 셔링 의상들을 겹쳐 입어 부드러운 느낌을 줘요." },
-            "#웨스턴룩": { img: "{{ url_for('static', filename='images/western.jpg') }}", desc: "미국 서부 개척 시대의 카우보이 스타일을 현대적으로 풀어낸 패션이에요. 가죽 재킷, 웨스턴 부츠, 수저 장식 벨트 등을 포인트로 사용해 거칠고 멋스러운 느낌을 내요." },
-            "#프레피룩": { img: "{{ url_for('static', filename='images/preppy.jpg') }}", desc: "미국 명문 사립고등학교 학생들의 교복 스타일에서 유래한 단정한 룩이에요. 셔츠와 니트 베스트, 넥타이, 체크무늬 스커트 등을 활용해 클래식하고 지적인 인상을 줘요." },
-            "#테크웨어": { img: "{{ url_for('static', filename='images/techwear.jpg') }}", desc: "첨단 기능성 소재와 밀리터리 디자인이 결합한 미래지향적인 패션이에요. 주머니가 많이 달린 카고팬츠나 스트랩, 버클 등을 활용해 어둡고 강렬한 도시적인 무드를 냅니다." }
+            "#그랜파코어": { img: "{{ url_for('static', filename='images/grandpa.jpg') }}", desc: "할아버지의 옷장에서 꺼낸 듯한 아늑하고 빈티지한 스타일이에요. 오버사이즈 니트 가디건이나 코듀로이 팬츠, 따뜻한 체크 패턴을 활용해 포근한 매력을 줘요." }
         };
 
         function openModal(tagName) {
@@ -330,7 +380,7 @@
             rainy: { title: "비가 오는 오늘,<br>쾌적함이 중요해!", desc: "습도가 높으니 통기성 좋은 옷을 추천해.<br>비에 젖어도 금방 마르는 소재를 입어봐.", icon: "fas fa-umbrella" },
             cloudy: { title: "구름 낀 흐린 날,<br>바람막이 챙겼어?", desc: "바람이 불거나 쌀쌀해질 수 있으니<br>가볍게 걸칠 수 있는 얇은 아우터가 필요해.", icon: "fas fa-cloud" },
             snowy: { title: "눈 내리는 오늘,<br>따뜻함이 최고!", desc: "보온성 좋은 아우터와 목도리는 필수야.<br>미끄러지지 않는 안전한 신발도 잊지마.", icon: "fas fa-snowflake" },
-            hot: { title: "무더운 오늘,<br>시원함이 제일 중요해!", desc: "땀이 잘 마르는 소재의 반팔과 반바지!<br>더위를 피할 수 있는 밝은 색상을 추천해.", icon: "fas fa-temperature-high" },
+            hot: { title: "무더운 오늘,<br>시원함이 제일 중요해!", desc: "땀이 잘 마르는 소재의 반팔 and 반바지!<br>더위를 피할 수 있는 밝은 색상을 추천해.", icon: "fas fa-temperature-high" },
             cold: { title: "체감온도 뚝!<br>단단히 껴입어!", desc: "얇은 옷을 여러 겹 겹쳐 입는 게 중요해.<br>두꺼운 코트나 패딩으로 체온을 유지해줘.", icon: "fas fa-temperature-low" }
         };
 
@@ -370,9 +420,7 @@
             }
         }
 
-        // [수정] 외부 가짜 API 호출 스크립트 제거 및 백엔드 바인딩 데이터 연동
         function loadServerWeatherData() {
-            // Flask template 태그가 백엔드 가동 시점에 실제 텍스트 값으로 치환됨
             const tempStr = "{{ weather.get('temp', 18) if weather else 18 }}";
             const statusStr = "{{ weather.get('status', '맑음') if weather else '맑음' }}";
 
@@ -380,29 +428,16 @@
             updateKeywords(temp, statusStr);
         }
 
-        function setRandomPick() {
-            // [수정] static 하위 경로에 맞는 이미지 배열 매핑
-            const items = [
-                { image: "{{ url_for('static', filename='images/arsenal.jpg') }}", title: "아스널 홈 유니폼", desc: "스포티한 매력으로 포인트 주기 딱 좋은 트렌디한 아이템" },
-                { image: "{{ url_for('static', filename='images/madrid.jpg') }}", title: "레알 마드리드 홈 유니폼", desc: "클래식한 멋을 내는 코디 꿀템" },
-                { image: "{{ url_for('static', filename='images/barselona.jpg') }}", title: "바르셀로나 홈 유니폼", desc: "유니크한 블록코어 룩" },
-                { image: "{{ url_for('static', filename='images/munchen.jpg') }}", title: "바이에른 뮌헨 홈 유니폼", desc: "강렬한 레드 컬러 포인트" }
-            ];
-            const randomIndex = Math.floor(Math.random() * items.length);
-            const selectedItem = items[randomIndex];
-
-            const pickImg = document.querySelector('.pick-image');
-            if (pickImg) {
-                pickImg.src = selectedItem.image;
-                pickImg.onerror = function () { this.src = 'https://placehold.co/80'; };
-            }
-            document.querySelector('.pick-title').innerText = selectedItem.title;
-            document.querySelector('.pick-desc').innerText = selectedItem.desc;
-        }
-
         function toggleDropdown(event) {
             event.preventDefault();
             document.getElementById("my-dropdown").classList.toggle("show");
+        }
+
+        /* 💡 [신규 보안 스크립트] 로그인이 필요한 메뉴 클릭 시 알림창 띄우고 로그인 창으로 가이딩 */
+        function requireLogin(event) {
+            event.preventDefault();
+            alert('🔒 로그인이 필요한 메뉴입니다! 로그인 페이지로 이동합니다.');
+            location.href = "{{ url_for('login') }}";
         }
 
         window.onclick = function (event) {
@@ -411,14 +446,6 @@
                 for (let i = 0; i < dropdowns.length; i++) {
                     let openDropdown = dropdowns[i];
                     if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); }
-                }
-            }
-            if (!event.target.closest('.fab-container')) {
-                const fabMenu = document.getElementById('fab-menu');
-                const fabBtn = document.querySelector('.fab-button');
-                if (fabMenu && fabMenu.classList.contains('show')) {
-                    fabMenu.classList.remove('show');
-                    fabBtn.classList.remove('active');
                 }
             }
         }
@@ -445,8 +472,7 @@
         }
 
         window.onload = () => {
-            loadServerWeatherData(); // 수정된 날씨 데이터 맵핑 함수 호출
-            setRandomPick();
+            loadServerWeatherData();
             initDarkMode();
         };
 
@@ -462,25 +488,7 @@
         }
 
         function closePolicyModal() { document.getElementById('policy-modal').style.display = 'none'; }
-
-        function toggleFab(event) {
-            event.preventDefault();
-            const menu = document.getElementById('fab-menu');
-            const btn = document.querySelector('.fab-button');
-            menu.classList.toggle('show');
-            btn.classList.toggle('active');
-        }
     </script>
-
-    <div class="fab-container">
-        <div class="fab-menu" id="fab-menu">
-            <a href="{{ url_for('add_clothes_photo') }}" class="fab-item">📸 사진으로 등록</a>
-            <a href="{{ url_for('add_clothes') }}" class="fab-item">✏️ 직접 등록</a>
-        </div>
-        <button class="fab-button" onclick="toggleFab(event)" title="옷 등록하기">
-            <i class="fas fa-plus" id="fab-icon"></i>
-        </button>
-    </div>
 </body>
 
 </html>
