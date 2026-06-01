@@ -728,6 +728,27 @@ def api_delete_scrap(scrap_id):
     else:
         return jsonify({"error": result.get("error")}), 400
 
+# 수동 커스텀 명칭을 바인딩하여 룩북 스크랩 테이블에 행을 추가하는 API 라우터
+@app.route('/api/scraps', methods=['POST'])
+def add_scrap_api():
+    user_email = session.get('user_email')
+    if not user_email: 
+        return jsonify({"error": "로그인이 필요합니다."}), 401
+
+    data = request.get_json()
+    top_ids = data.get('top_ids')
+    bottom_id = data.get('bottom_id')
+    custom_title = data.get('custom_title', '나의 코디')
+
+    if not top_ids or not bottom_id:
+        return jsonify({"error": "코디 정보가 누락되었습니다."}), 400
+
+    result = add_scrap_to_db(user_email, top_ids, bottom_id, custom_title)
+    if result and result.get("success"):
+        return jsonify({"message": "스크랩 완료!", "data": result.get("data")}), 201
+    else:
+        return jsonify({"error": f"스크랩 실패: {result.get('error', '알 수 없는 오류')}"}), 500
+
 # 회원 본인의 기본 인적 사항 마이페이지 룩북 프로필 조회 라우터
 @app.route('/my_profile')
 def my_profile():
