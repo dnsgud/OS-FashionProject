@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - TPO 가이드</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f6f8fa;
+            color: #24292f;
+            padding: 50px 20px;
+        }
+
+        /* 다크모드 스타일 */
+        body.dark-mode {
+            background: #1c1c1e;
+            color: #f2f2f7;
+        }
+
+        body.dark-mode .select-btn,
+        body.dark-mode .result-section,
+        body.dark-mode .back-btn {
+            background: #2c2c2e;
+            color: #f2f2f7;
+            border-color: #48484a;
+        }
+
+        body.dark-mode .guide-header h1,
+        body.dark-mode .selector-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .guide-header p,
+        body.dark-mode .select-btn {
+            color: #aeaeb2;
+        }
+
+        body.dark-mode .select-btn.active {
+            background: #0969da;
+            color: white;
+            border-color: #0969da;
+        }
+
+        body.dark-mode .card-box.do {
+            background: #1c3d25;
+            border-color: #2da44e;
+        }
+
+        body.dark-mode .card-box.do h4 {
+            color: #56d364;
+        }
+
+        body.dark-mode .card-box.dont {
+            background: #4c1d1a;
+            border-color: #cf222e;
+        }
+
+        body.dark-mode .card-box.dont h4 {
+            color: #ff7b72;
+        }
+
+        body.dark-mode .info-block p,
+        body.dark-mode .card-box p {
+            color: #e5e5ea;
+        }
+
+        .guide-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 상단 헤더 영역 */
+        .guide-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .guide-header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1a1f36;
+        }
+
+        .guide-header p {
+            color: #57606a;
+            font-size: 16px;
+        }
+
+        .selector-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #24292f;
+        }
+
+        .body-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        @media (min-width: 768px) {
+            .body-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .select-btn {
+            padding: 20px 15px;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #57606a;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-btn .icon {
+            font-size: 24px;
+        }
+
+        .select-btn:hover {
+            background: #f3f4f6;
+            color: #24292f;
+            border-color: #8c959f;
+        }
+
+        .select-btn.active {
+            background: #0969da;
+            color: white;
+            border-color: #0969da;
+            box-shadow: 0 4px 12px rgba(9, 105, 218, 0.3);
+        }
+
+        .result-section {
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f2f4;
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-block {
+            margin-bottom: 20px;
+        }
+
+        .info-block h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0969da;
+            margin-bottom: 8px;
+        }
+
+        body.dark-mode .info-block h3 {
+            color: #2f81f7;
+        }
+
+        .info-block p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #24292f;
+        }
+
+        .do-dont-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .do-dont-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card-box {
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .card-box.do {
+            background: #dafbe1;
+            border: 1px solid #4ac26b;
+        }
+
+        .card-box.dont {
+            background: #ffebe9;
+            border: 1px solid #ff8181;
+        }
+
+        .card-box h4 {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-box.do h4 {
+            color: #1a7f37;
+        }
+
+        .card-box.dont h4 {
+            color: #cf222e;
+        }
+
+        /* 하단 네비게이션 */
+        .back-footer {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .back-btn {
+            padding: 12px 25px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background: white;
+            color: #24292f;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <div class="guide-container">
+
+        <div class="guide-header">
+            <h1>📅 TPO별 상황 맞춤 가이드</h1>
+            <p>시간(Time), 장소(Place), 상황(Occasion)에 맞는 실패 없는 룩을 완성해 보세요.</p>
+        </div>
+
+        <div class="selector-title">확인하고 싶은 코디 상황을 선택해 주세요</div>
+        <div class="body-selector">
+            <button class="select-btn active" onclick="showTpoResult('campus', this)">
+                <span class="icon">🏫</span>
+                <span>캠퍼스 룩</span>
+            </button>
+            <button class="select-btn" onclick="showTpoResult('date', this)">
+                <span class="icon">❤️</span>
+                <span>데이트 룩</span>
+            </button>
+            <button class="select-btn" onclick="showTpoResult('interview', this)">
+                <span class="icon">💼</span>
+                <span>면접 룩</span>
+            </button>
+            <button class="select-btn" onclick="showTpoResult('funeral', this)">
+                <span class="icon">🖤</span>
+                <span>장례식장 룩</span>
+            </button>
+            <button class="select-btn" onclick="showTpoResult('blinddate', this)">
+                <span class="icon">✨</span>
+                <span>소개팅 룩</span>
+            </button>
+            <button class="select-btn" onclick="showTpoResult('onemile', this)">
+                <span class="icon">🏃</span>
+                <span>동네 마실 룩</span>
+            </button>
+        </div>
+
+        <div id="campus" class="result-section active">
+            <div class="result-title">🏫 꾸안꾸의 정석, 캠퍼스 룩 솔루션</div>
+            <div class="info-block">
+                <h3>핵심 스타일링 전략</h3>
+                <p>지나치게 격식을 차리기보다는 활동성을 챙기면서도 단정한 인상을 주는 '꾸안꾸' 밸런스가 핵심입니다.</p>
+            </div>
+            <div class="do-dont-container">
+                <div class="card-box do">
+                    <h4>추천해요 (DO)</h4>
+                    <p>깔끔한 핏의 데님 팬츠나 치노 팬츠에 맨투맨, 후드티를 매치하세요. 셔츠나 옥스퍼드 남방을 겹쳐 입어 포인트를 주거나 바시티 자켓, 카디건을 걸치면 훈훈한 대학생 느낌을
+                        연출할 수 있습니다.</p>
+                </div>
+                <div class="card-box dont">
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>과도하게 화려한 스트릿 패션, 프린팅이 너무 무거운 상의, 혹은 슬리퍼나 과도한 트레이닝 세트는 캠퍼스 강의실 분위기를 깨뜨릴 수 있으니 자제하는 것이 좋습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="date" class="result-section">
+            <div class="result-title">❤️ 호감도를 높이는 데이트 룩 솔루션</div>
+            <div class="info-block">
+                <h3>핵심 스타일링 전략</h3>
+                <p>상대방에게 깔끔하고 신뢰감 있는 인상을 주는 것이 최우선입니다. 부드러운 컬러감과 프레시한 핏감을 유지해 보세요.</p>
+            </div>
+            <div class="do-dont-container">
+                <div class="card-box do">
+                    <h4>추천해요 (DO)</h4>
+                    <p>핏이 딱 떨어지는 슬랙스에 단정한 니트나 셔츠 조합을 추천합니다. 봄·가을에는 깔끔한 자켓이나 미니멀한 블루종을 매치해 한층 더 정돈된 무드를 완성해 보세요.</p>
+                </div>
+                <div class="card-box dont">
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>목이 늘어난 티셔츠, 무릎이 튀어나온 바지는 성의 없는 인상을 줍니다. 반대로 온몸에 명품 로고가 도배된 옷이나 너무 튀는 형광색 계열도 부담스러울 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="interview" class="result-section">
+            <div class="result-title">💼 신뢰감을 주는 면접 룩 솔루션</div>
+            <div class="info-block">
+                <h3>핵심 스타일링 전략</h3>
+                <p>단정함, 깔끔함, 그리고 진중함이 묻어나야 합니다. 지원하는 직무의 성격에 맞춰 격식을 갖추는 것이 핵심 공식입니다.</p>
+            </div>
+            <div class="do-dont-container">
+                <div class="card-box do">
+                    <h4>추천해요 (DO)</h4>
+                    <p>가장 기본이 되는 네이비나 차콜(다크 그레이) 색상의 정장을 고르세요. 셔츠는 화이트나 은은한 블루 톤이 기본이며, 구두와 벨트 색상은 블랙이나 다크 브라운으로 통일하는 것이
+                        정석입니다.</p>
+                </div>
+                <div class="card-box dont">
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>현란한 패턴의 넥타이, 발목이 다 드러나는 짧은 양말, 꽉 끼는 타이트한 핏의 바지는 가벼운 인상을 줄 수 있으므로 반드시 피해야 합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="funeral" class="result-section">
+            <div class="result-title">🖤 격식과 예의를 갖춘 장례식장 조문 룩</div>
+            <div class="info-block">
+                <h3>핵심 스타일링 전략</h3>
+                <p>슬픔을 위로하는 자리인 만큼 무조건 단정하고 차분하며, 시선을 끌지 않는 무채색 계열의 옷을 선택하는 것이 최고의 예의입니다.</p>
+            </div>
+            <div class="do-dont-container">
+                <div class="card-box do">
+                    <h4>추천해요 (DO)</h4>
+                    <p>블랙, 다크 네이비, 짙은 차콜 색상의 정장이나 깔끔한 슬랙스에 단정한 셔츠를 매치하세요. 양말도 반드시 발목을 덮는 긴 검은색 양말을 착용해야 슬리퍼를 벗고 들어갈 때
+                        결례가 되지 않습니다.</p>
+                </div>
+                <div class="card-box dont">
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>화려한 액세서리나 원색 옷은 절대 피해야 합니다. 맨발에 로퍼를 신거나 흰색 양말을 신는 것, 그리고 반바지나 디스트로이드 진(찢어진 청바지)은 예의에 어긋나므로 주의해야
+                        합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="blinddate" class="result-section">
+            <div class="result-title">✨ 첫인상을 결정짓는 매력적인 소개팅 룩</div>
+            <div class="info-block">
+                <h3>핵심 스타일링 전략</h3>
+                <p>첫 만남에서 과한 개성을 드러내기보다, 깔끔하고 호불호가 갈리지 않으면서 은근한 센스를 보여줄 수 있는 미니멀 룩이 가장 안전합니다.</p>
+            </div>
+            <div class="do-dont-container">
+                <div class="card-box do">
+                    <h4>추천해요 (DO)</h4>
+                    <p>화사하고 깔끔한 인상을 주는 아이보리, 베이지, 라이트 그레이 계열의 상의에 세미 와이드 슬랙스를 매치해 보세요. 깔끔하게 다려진 블루 셔츠나 단정한 미니멀 자켓도 지적인
+                        무드를 줍니다.</p>
+                </div>
+                <div class="card-box dont">
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>지나치게 편해 보이는 트레이닝 바지나 프린팅이 거대하게 박힌 힙합 의류는 신뢰감을 떨어뜨릴 수 있어요. 핏이 안 맞는 너무 벙벙한 아저씨 같은 정장 핏도 올드해 보이니 피하는
+                        게 좋습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="onemile" class="result-section">
+            <div class="result-title">🏃 편안함과 스타일을 다 잡은 동네 마실 룩</div>
+            <div class="info-block">
+                <h3>핵심 스타일링 전략</h3>
+                <p>집 반경 1마일(1.6km) 내에서 입기 좋은 옷이라는 뜻의 '원마일웨어' 전략입니다. 후줄근해 보이지 않으면서도 극강의 편안함을 챙기는 스타일입니다.</p>
+            </div>
+            <div class="do-dont-container">
+                <div class="card-box do">
+                    <h4>추천해요 (DO)</h4>
+                    <p>원단이 탄탄해서 무릎이 잘 늘어나지 않는 스웨트 팬츠(조거 팬츠) 셋업이나 카고 와이드 팬츠를 매치해 보세요. 그 위에 볼캡(모자)을 가볍게 쓰고 러닝화나 깔끔한 슬라이드를
+                        신으면 후줄근함이 힙함으로 바뀝니다.</p>
+                </div>
+                <div class="card-box dont">
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>목이 다 늘어난 중고등학교 반티, 무릎이 한껏 발사된 늘어난 회색 추리닝 바지는 동네에서도 자칫 관리 안 된 인상을 줄 수 있으니 외출용 마실 룩으로는 살짝 넣어두세요.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-footer">
+            <a href="{{ url_for('guide_main') }}" class="back-btn"
+                style="text-decoration: none; display: inline-block;">
+                ← 가이드 메인으로 돌아가기
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        function showTpoResult(tpoId, btn) {
+            document.querySelectorAll('.result-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            document.querySelectorAll('.select-btn').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(tpoId).classList.add('active');
+            btn.classList.add('active');
+        }
+    </script>
+
+</body>
+
+</html>
