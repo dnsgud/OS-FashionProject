@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>옷 상세 정보 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 5px id="back-link";
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="{{ url_for('my_closet') }}" class="back-btn" style="text-decoration: none; display: inline-block;">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2 id="page-title" style="margin: 0 auto 0 10px; font-size: 1.3rem; font-weight: 700;">옷 상세 정보</h2>
+    </header>
+
+    <main style="flex: 1; max-width: 600px; margin: 40px auto; width: 100%; padding: 0 20px; box-sizing: border-box;">
+        <div
+            style="background: white; border-radius: 24px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; text-align: center;">
+            <img id="cloth-img" src="{{ url_for('static', filename='images/leather_jacket.jpg') }}" alt="옷"
+                style="width: 100%; max-width: 300px; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 25px;"
+                onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
+
+            <div style="text-align: left; margin-bottom: 30px;">
+                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">옷 이름</label>
+                <input type="text" id="info-name" class="info-input" value="레더 자킷" readonly
+                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box; margin-bottom:20px;">
+
+                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">카테고리</label>
+                <input type="text" id="info-cat" class="info-input" value="아우터" readonly
+                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box; margin-bottom:20px;">
+
+                <label style="font-weight: 700; color: #475569; display: block; margin-bottom: 8px;">색상</label>
+                <input type="text" id="info-color" class="info-input" value="블랙" readonly
+                    style="width:100%; padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; font-size:1rem; box-sizing:border-box;">
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button id="main-action-btn" onclick="handleMainAction()"
+                    style="flex: 2; padding: 16px; background: #4f46e5; color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fas fa-edit"></i> 수정하기
+                </button>
+                <button id="cancel-btn" onclick="toggleEditMode(false)"
+                    style="flex: 1; padding: 16px; background: #64748b; color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; display: none; align-items: center; justify-content: center;">
+                    취소
+                </button>
+                <button id="left-btn" onclick="deleteClothes()"
+                    style="flex: 1; padding: 16px; background: #ef4444; color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-trash-alt"></i> 삭제
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let isEditMode = false;
+        const currentClothId = 1; // 연동 타겟 임시 식별 바인딩
+
+        function toggleEditMode(active) {
+            isEditMode = active;
+            const inputs = document.querySelectorAll('.info-input');
+            const mainBtn = document.getElementById('main-action-btn');
+            const leftBtn = document.getElementById('left-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const pageTitle = document.getElementById('page-title');
+
+            if (isEditMode) {
+                inputs.forEach(input => { input.removeAttribute('readonly'); input.style.background = '#ffffff'; });
+                inputs[0].focus();
+                pageTitle.innerText = "옷 정보 수정";
+                mainBtn.innerHTML = "<i class='fas fa-check'></i> 저장하기";
+                mainBtn.style.background = "#10b981";
+                leftBtn.style.display = "none";
+                cancelBtn.style.display = "flex";
+            } else {
+                inputs.forEach(input => { input.setAttribute('readonly', true); input.style.background = '#f8fafc'; });
+                pageTitle.innerText = "옷 상세 정보";
+                mainBtn.innerHTML = "<i class='fas fa-edit'></i> 수정하기";
+                mainBtn.style.background = "#4f46e5";
+                leftBtn.style.display = "flex";
+                cancelBtn.style.display = "none";
+            }
+        }
+
+        function handleMainAction() {
+            if (!isEditMode) {
+                toggleEditMode(true);
+            } else {
+                // [교정] 오타 주소(/api/clothes/edit/) 대신 본래 app.py의 명세 수신 주소(/api/clothes/update/)로 정상 매핑 완료
+                fetch(`/api/clothes/update/${currentClothId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('info-name').value,
+                        main_category: document.getElementById('info-cat').value,
+                        sub_category: "",
+                        color: document.getElementById('info-color').value
+                    })
+                })
+                    .then(res => {
+                        if (res.ok) {
+                            alert('옷 정보가 성공적으로 수정되었어!');
+                            toggleEditMode(false);
+                        }
+                    });
+            }
+        }
+
+        function deleteClothes() {
+            if (confirm('정말로 이 옷을 옷장에서 삭제할 거야?')) {
+                fetch(`/api/clothes/delete/${currentClothId}`, { method: 'POST' })
+                    .then(() => {
+                        alert('삭제가 완료되었어.');
+                        location.href = "{{ url_for('my_closet') }}";
+                    });
+            }
+        }
+    </script>
+</body>
+
+</html>
