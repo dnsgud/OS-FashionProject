@@ -49,10 +49,10 @@ def process_user_upload(file_path, user_email):
             "main_category": ai_result["main_category"],     
             "sub_category": ai_result["sub_category"],       
             "name": ai_result["name"],                       
-            "temp_level": 5,                                 # [유지] AI 분석 불가 항목: 임의의 기본값 5 부여
+            "temp_level": 5,                                 # AI 분석 불가 항목: 임의의 기본값 5 부여
             "color": ai_result["color"],                     
             "style": ai_result["style"],                     
-            "fit": "레귤러핏",                                 # [추가] AI 분석 불가 항목: 임시 기본 핏 부여
+            "fit": "레귤러핏",                                 #  AI 분석 불가 항목: 임시 기본 핏 부여
             "image_url": image_url,                          
             "ai_tags": ai_result.get("ai_tags", []),         
             "is_verified": False
@@ -152,8 +152,8 @@ def build_manual_cloth_data(user_email, input_data, image_url=None):
         "temp_level": int(input_data.get("temp_level", 5)),
         "color": input_data["color"], 
         "style": input_data.get("style", []),
-        "fit": input_data.get("fit", "레귤러핏"),    # [추가] 프론트엔드에서 선택한 핏 매핑
-        "image_url": image_url,                   # [수정] Storage에서 발급받은 URL 삽입
+        "fit": input_data.get("fit", "레귤러핏"),    # 프론트엔드에서 선택한 핏 매핑
+        "image_url": image_url,                   #  Storage에서 발급받은 URL 삽입
         "is_verified": True  
     }
 
@@ -188,7 +188,7 @@ def handle_cloth_registration(register_type, user_email, payload, file_path=None
         return insert_manual_cloth_to_db(user_email, payload, file_path)
         
     else:
-        print(f"[알고리즘 에러] 알 수 없는 등록 방식이다: {register_type}")
+        print(f"[알고리즘 에러] 알 수 없는 등록 방식: {register_type}")
         return None
 
 # ==========================================

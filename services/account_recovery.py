@@ -33,8 +33,8 @@ def _generate_and_send_code(email):
         return False
 
     try:
-        # 이메일 제목과 본문 세팅
-        mail_content = f"요청하신 계정 복구 인증번호는 [{code}] 이다.\n타인에게 절대 공유하지 않도록 주의한다."
+        # 이메일 제목과 본문 세팅이다
+        mail_content = f"요청하신 계정 복구 인증번호는 [{code}] 이다.\n타인에게 절대 공유하지 않도록 주의"
         msg = MIMEText(mail_content)
         msg['Subject'] = "[Smart Climate Fashion] 계정 인증번호 안내"
         msg['From'] = sender_email
@@ -118,7 +118,7 @@ def verify_password_reset_code(email, input_code):
     return False
 
 def reset_password_and_auto_login(login_id, new_pw, new_pw_confirm):
-    # 1. DB의 비밀번호를 안전하게 덮어쓴다
+ 
     is_updated = update_account_password(login_id, new_pw, new_pw_confirm)
     
     if not is_updated:
@@ -126,6 +126,5 @@ def reset_password_and_auto_login(login_id, new_pw, new_pw_confirm):
         return False
         
     print("[DB 로그] 비밀번호 초기화 완료. 세션 발급은 클라이언트에서 수행")
-    
     
     return True

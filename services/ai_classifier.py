@@ -3,7 +3,7 @@ from PIL import Image
 import collections
 
 # 1. AI 모델 초기화: 서버가 켜질 때 딱 한 번만 로드되도록 함 (서버 속도 최적화)
-print("🚀 패션 분석 AI 엔진 시동 중 (정확도 강화 버전 3-네 모서리 픽셀 분석)")
+print(" 패션 분석 AI 엔진 시동 중 (정확도 강화 버전 3-네 모서리 픽셀 분석)")
 detector = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
 
 # AI가 분석한 영어 결과를 DB 테이블 규격에 맞는 한글 데이터로 치환함
@@ -85,7 +85,7 @@ def analyze_cloth(image_path):
         # 3. 픽셀 기반 헥사 코드 직접 추출
         hex_color = get_hex_color(image)
 
-        #  상세 명칭 결과에 따라 상위 카테고리를 강제 교정
+        # [보정 로직 복구 완료] 상세 명칭 결과에 따라 상위 카테고리를 강제 교정
         if name_eng == "hooded sweatshirt":
             main_eng, sub_eng = "top", "innerwear"
         elif name_eng in ["heavy coat", "knit cardigan"]:

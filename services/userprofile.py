@@ -26,7 +26,7 @@ def fetch_user_profile(login_id):
         print(f"[DB 에러] 프로필 데이터 조회 쿼리 실행 실패: {e}")
         return None
     
-# 기존 auth.py에 훌륭하게 구현된 검증 모듈들을 재사용
+# 기존 auth.py에 구현된 검증 모듈들을 재사용
 try:
     from auth import (
         _validate_login_id, _validate_email_format, _validate_name, _validate_nickname,
@@ -39,11 +39,11 @@ def _filter_modified_profile_data(input_data, current_profile):
     # 프론트엔드 전송 데이터 중 실질적 변경이 발생한 항목만 이중 필터링하는 내부 로직
     clean_data = {}
     
-    # 1. 이름 데이터 (중복 검사 없이 형식 무결성만 확인 후 그대로 갱신한다)
+    # 1. 이름 데이터 (중복 검사 없이 형식 무결성만 확인 후 그대로 갱신)
     if "name" in input_data and _validate_name(input_data["name"]):
         clean_data["name"] = input_data["name"].strip()
         
-    # 2. 닉네임 데이터 변경 시 형식 검사 및 DB 중복 검증을 동시에 수행한다
+    # 2. 닉네임 데이터 변경 시 형식 검사 및 DB 중복 검증을 동시에 수행
     if "nickname" in input_data:
         new_nickname = input_data["nickname"].strip()
         if new_nickname != current_profile.get("nickname"):
@@ -51,10 +51,8 @@ def _filter_modified_profile_data(input_data, current_profile):
                 clean_data["nickname"] = new_nickname
             else:
                 raise ValueError("닉네임 이중 검증 실패 (형식 오류 또는 중복)")
-                
-    
-                
-    # 3. 이메일 데이터 변경 시 무결성 및 중복 검증을 수행
+                  
+    # 3. 이메일 데이터 변경 시 무결성 및 중복 검증을 수행한다
     if "email" in input_data:
         new_email = input_data["email"].strip()
         if new_email != current_profile.get("email"):
@@ -68,7 +66,7 @@ def _filter_modified_profile_data(input_data, current_profile):
 def update_member_profile(current_login_id, input_data):
     # 최종 확인 버튼 클릭 시 변경된 유효 데이터를 일괄적으로 갱신하는 제어 로직
     try:
-        # 기존 프로필 상태를 로드하여 변경 기준점
+        # 기존 프로필 상태를 로드하여 변경 기준점으로 삼는다
         current_profile = fetch_user_profile(current_login_id)
         if not current_profile:
             return False
@@ -114,7 +112,23 @@ def update_account_password(login_id, new_pw, new_pw_confirm):
     except Exception as e:
         print(f"[DB 에러] 비밀번호 다이렉트 업데이트 쿼리 실행 실패: {e}")
         return False
-    
+
+def update_account_password(login_id, new_pw, new_pw_confirm):
+   
+    if not _validate_password_match(new_pw, new_pw_confirm):
+        print("[알고리즘 에러] 새 비밀번호 규격 미달 또는 확인 데이터 불일치 감지")
+        return False
+        
+    try:
+        response = supabase.table('users').update({'pw': new_pw}).eq('login_id', login_id).execute()
+        
+        print(f"[DB 로그] 신규 비밀번호 갱신 처리 완료: {login_id}")
+        return bool(response.data)
+        
+    except Exception as e:
+        print(f"[DB 에러] 비밀번호 업데이트 쿼리 실행 실패: {e}")
+        return False
+        
 def fetch_user_body_profile(login_id):
     # 화면 진입 시 빈칸 또는 기존 데이터를 채워주기 위한 체형 정보 단일 조회 로직
     if not login_id:
@@ -147,7 +161,7 @@ def _filter_body_profile_data(input_data):
             if 100.0 <= height <= 250.0:
                 clean_data["height"] = round(height, 1)
         except ValueError:
-            pass # 숫자가 아닌 값이 들어오면 무시하고 필터링
+            pass # 숫자가 아닌 값이 들어오면 무시하고 필터링한다
             
     # 2. 몸무게 데이터 검증 (문자열 방어 및 30.0kg ~ 200.0kg 허용)
     if "weight" in input_data and input_data["weight"]:
@@ -177,7 +191,7 @@ def update_user_body_profile(current_login_id, input_data):
             print(f"[DB 로그] 체형 정보 갱신 처리 완료: {clean_data}")
             return bool(response.data)
             
-        print("[알고리즘 로그] 유효한 체형 변경 데이터가 없어 업데이트가 생략")
+        print("[알고리즘 로그] 유효한 체형 변경 데이터가 없어 업데이트가 생략되었다")
         return True
         
     except Exception as e:
@@ -190,7 +204,7 @@ def _verify_current_password(login_id, current_pw):
         return False
         
     try:
-        # DB에서 사용자의 기존 암호(pw)만 단일 조회
+        # DB에서 사용자의 기존 암호(pw)만 단일 조회한다
         query = supabase.table('users').select('pw').eq('login_id', login_id).execute()
         
         # 조회된 데이터가 존재하고 입력값과 완전히 일치할 경우 승인(True)을 반환
