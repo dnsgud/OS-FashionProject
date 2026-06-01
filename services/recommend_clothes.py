@@ -93,15 +93,13 @@ def calculate_temperature_score(top_combo, bottom, target_lv):
 
 # 사용자 신체 실루엣과 의류 핏 간의 조화도 점수를 계산하는 함수
 def calculate_fit_score(top_combo, bottom, user_body_shape):
-    top_fit = top_combo[-1].get('fit', '스탠다드').strip()
-    bottom_fit = bottom.get('fit', '스탠다드').strip()
+    top_fit = top_combo[-1].get('fit', '레귤러').strip()
+    bottom_fit = bottom.get('fit', '레귤러').strip()
     
     fit_map = {
-        '슬림': 1, '슬림핏': 1,
-        '스탠다드': 2, '스탠다드핏': 2,
-        '세미와이드': 3, '세미와이드핏': 3,
-        '와이드': 4, '와이드핏': 4,
-        '오버': 5, '오버핏': 5
+        '슬림': 1,
+        '레귤러': 2,
+        '오버': 3
     }
     
     top_lv = fit_map.get(top_fit, 2) 
@@ -109,19 +107,16 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
     
     silhouette_score = 10
     
-    # 상의가 레이어드(이너+아우터) 상태일 때 두 아이템의 핏 충돌을 검사하는 조건문
     if len(top_combo) == 2:
-        inner_fit_str = top_combo[0].get('fit', '스탠다드').strip()
+        inner_fit_str = top_combo[0].get('fit', '레귤러').strip()
         inner_lv = fit_map.get(inner_fit_str, 2)
-        
-        if (inner_lv - top_lv) >= 2:
+        if inner_lv > top_lv:
             silhouette_score -= 4
 
     fit_diff = abs(top_lv - bottom_lv)
-    if fit_diff >= 3:
-        silhouette_score -= 7
-    elif fit_diff == 2:
-        silhouette_score -= 3
+    
+    if fit_diff == 2:
+        silhouette_score -= 5
         
     silhouette_score = max(0, silhouette_score)
 
@@ -133,15 +128,15 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
     body_score = 10
     
     # 유저의 세부 체형 유형별 기피 조건에 걸리는지 검사하는 조건문
-    if '근육' in body_shape or '역삼각형' in body_shape:
-        if top_lv == 5:
+    if '역삼각형' in body_shape:
+        if top_lv == 3:
             body_score = 7
-    elif '마름' in body_shape or '슬림' in body_shape or '왜소' in body_shape:
-        if top_fit in ['슬림', '슬림핏'] or bottom_lv in [4, 5]:
-            body_score = 4
-    elif '통통' in body_shape or '큰' in body_shape:
+    elif '삼각형' in body_shape:
+        if bottom_lv == 1:
+            body_score = 5
+    elif '직사각형' in body_shape:
         if top_lv == 1 or bottom_lv == 1:
-            body_score = 3
+            body_score = 5
             
     return silhouette_score + body_score
     
@@ -230,5 +225,4 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
     return {
         "recommendations": final_recommendations,
         "is_tpo_fallback": tpo_fallback_triggered,
-        "message": "요청하신 TPO에 맞는 옷이 부족해, 날씨와 색상 조화가 가장 좋은 코디를 추천해드립니다." if tpo_fallback_triggered else "추천이 완료되었습니다."
     }
