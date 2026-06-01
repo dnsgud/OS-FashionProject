@@ -1,5 +1,5 @@
 import colorsys
-from utils.weather_utils import calculate_sensory_temp
+from services.utils.weather_utils import calculate_sensory_temp
 
 # 설정값
 BOTTOM_TOLERANCE = 1
