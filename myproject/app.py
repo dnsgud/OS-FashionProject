@@ -715,6 +715,19 @@ def my_scrap():
     scraps_list = result.get("scraps", []) if result.get("success") else []
     return render_template('my_scrap.html', user_email=user_email, scraps=scraps_list)
 
+# 마이 룩북 그리드 리스트 내 보관 코디 제거 파기 API 라우터
+@app.route('/api/scraps/delete/<int:scrap_id>', methods=['POST'])
+def api_delete_scrap(scrap_id):
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({"error": "로그인이 필요합니다."}), 401
+
+    result = delete_scrap_from_db(scrap_id, user_email)
+    if result.get("success"):
+        return jsonify({"message": result.get("message")}), 200
+    else:
+        return jsonify({"error": result.get("error")}), 400
+
 # 회원 본인의 기본 인적 사항 마이페이지 룩북 프로필 조회 라우터
 @app.route('/my_profile')
 def my_profile():
