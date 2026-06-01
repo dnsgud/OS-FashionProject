@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Look_Up - 컬러 매칭 가이드</title>
+    <title>Look_Up - 체형별 가이드</title>
 
     <style>
         * {
@@ -18,9 +18,10 @@
             background: #f6f8fa;
             color: #24292f;
             padding: 50px 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* 다크모드 스타일 */
+        /* 다크모드 스타일 대비 */
         body.dark-mode {
             background: #1c1c1e;
             color: #f2f2f7;
@@ -96,7 +97,7 @@
             font-size: 16px;
         }
 
-        /* 카테고리 선택 영역 */
+        /* 체형 선택 영역 */
         .selector-title {
             font-size: 18px;
             font-weight: 600;
@@ -107,9 +108,15 @@
 
         .body-selector {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 40px;
+        }
+
+        @media (min-width: 768px) {
+            .body-selector {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
         .select-btn {
@@ -238,6 +245,12 @@
             color: #cf222e;
         }
 
+        .card-box ul {
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
         /* 하단 네비게이션 공통화 레이어 */
         .back-footer {
             margin-top: 50px;
@@ -246,9 +259,9 @@
 
         .back-btn {
             display: inline-block;
-            /* a 태그의 레이아웃 크기 보존 */
+            /* a 태그의 레이아웃 영역 및 크기 보존 */
             text-decoration: none;
-            /* 기본 하이퍼링크 밑줄 강제 제거 */
+            /* 하이퍼링크 기본 밑줄 강제 제거 */
             padding: 12px 25px;
             border: 1px solid #d0d7de;
             border-radius: 6px;
@@ -269,6 +282,7 @@
 <body>
 
     <script>
+        // 페이지가 열리자마자 저장된 테마가 다크모드인지 확인하고 적용하기
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
@@ -277,95 +291,103 @@
     <div class="guide-container">
 
         <div class="guide-header">
-            <h1>🎨 실패 없는 컬러 매칭 가이드</h1>
-            <p>색 조합만 잘 맞춰도 스타일의 절반은 성공입니다. 기본 컬러 공식을 확인해 보세요.</p>
+            <h1>👤 체형별 맞춤 가이드</h1>
+            <p>내 체형의 장점은 살리고 단점은 가려주는 최적의 스타일링 공식을 확인해 보세요.</p>
         </div>
 
-        <div class="selector-title">궁금한 컬러 매칭 공식을 선택해 주세요</div>
+        <div class="selector-title">가장 고민이 되는 체형을 선택해 주세요</div>
         <div class="body-selector">
-            <button class="select-btn active" onclick="showColorResult('tone-on-tone', this)">
-                <span class="icon">👕</span>
-                <span>톤온톤 매칭</span>
+            <button class="select-btn active" onclick="showBodyResult('slim', this)">
+                <span class="icon">🏃</span>
+                <span>왜소한 체형</span>
             </button>
-            <button class="select-btn" onclick="showColorResult('tone-and-tone', this)">
-                <span class="icon">👔</span>
-                <span>톤앤톤 매칭</span>
+            <button class="select-btn" onclick="showBodyResult('big', this)">
+                <span class="icon">🏋️</span>
+                <span>체격이 큰 체형</span>
             </button>
-            <button class="select-btn" onclick="showColorResult('top-bottom', this)">
-                <span class="icon">👖</span>
-                <span>상하의 추천조합</span>
+            <button class="select-btn" onclick="showBodyResult('short', this)">
+                <span class="icon">🧍</span>
+                <span>키가 작은 체형</span>
+            </button>
+            <button class="select-btn" onclick="showBodyResult('legs', this)">
+                <span class="icon">🚶</span>
+                <span>하체 발달 체형</span>
             </button>
         </div>
 
-        <!-- 톤온톤 매칭 -->
-        <div id="tone-on-tone" class="result-section active">
-            <div class="result-title">👕 동일 색상, 다른 명도의 '톤온톤' 법칙</div>
+        <div id="slim" class="result-section active">
+            <div class="result-title">🏃 왜소한 체형을 위한 솔루션</div>
             <div class="info-block">
-                <h3>톤온톤(Tone on Tone)이란?</h3>
-                <p>‘색상’은 똑같이 맞추되, ‘밝기(명도)’에 차이를 두어 결합하는 방법입니다. 쉽게 말해 같은 색상 안에서 진하고 연한 변화를 주는 조합으로, 시각적으로 키가 커 보이고 안정감을
-                    주는 초보자 최적의 공식입니다.</p>
+                <h3>핵심 스타일링 레이어드 전략</h3>
+                <p>몸의 선을 그대로 드러내기보다는 빳빳한 소재나 겹쳐 입는 기술(레이어드)을 활용해 볼륨감을 불어넣는 것이 핵심입니다.</p>
             </div>
             <div class="do-dont-container">
                 <div class="card-box do">
                     <h4>추천해요 (DO)</h4>
-                    <p>가장 부드러운 인상을 주는 '베이지 셔츠 + 브라운 슬랙스' 조합이나, 호불호 없는 '스카이 블루 셔츠 + 네이비 데님 팬츠' 조합을 시도해 보세요. 전체적으로 세련되고
-                        정돈된 무드를 풍길 수 있습니다.</p>
+                    <p>오버핏 맨투맨, 빳빳한 옥스퍼드 셔츠를 흰 티셔츠와 겹쳐 입어 상체 프레임을 키우세요. 가로 스트라이프 패턴이나 밝은 계열의 상의도 시각적으로 확장 효과를 줍니다.</p>
                 </div>
                 <div class="card-box dont">
                     <h4>피해 주세요 (DON'T)</h4>
-                    <p>상하의 밝기가 너무 완벽하게 똑같은 정직한 깔맞춤(예: 새파란 맨투맨 + 새파란 트레이닝 바지)은 자칫 무대 의상이나 유니폼처럼 보일 수 있으니 반드시 밝기 차이를 두어야
-                        합니다.</p>
+                    <p>얇고 흐물거리는 정핏 티셔츠나 몸에 달라붙는 스키니 팬츠는 마른 체형의 실루엣을 부각하므로 피하는 것이 좋습니다.</p>
                 </div>
             </div>
         </div>
 
-        <!-- 톤앤톤 매칭 -->
-        <div id="tone-and-tone" class="result-section">
-            <div class="result-title">👔 다른 색상, 유사한 톤의 '톤앤톤' 법칙</div>
+        <div id="big" class="result-section">
+            <div class="result-title">🏋️ 체격이 큰 체형을 위한 솔루션</div>
             <div class="info-block">
-                <h3>톤앤톤(Tone and Tone / 톤인톤)이란?</h3>
-                <p>‘색상’은 서로 완전히 다르지만, ‘톤(채도와 명도의 분위기)’을 비슷하게 맞춰 결합하는 방법입니다. 색이 다양하게 들어가기 때문에 톤온톤보다 훨씬 다채롭고 스타일리시한 무드를 낼
-                    수 있습니다.</p>
+                <h3>핵심 스타일링 핏 단정화 전략</h3>
+                <p>몸을 가리기 위해 너무 큰 옷을 입으면 오히려 부해 보일 수 있습니다. 하체로 시선을 차분하게 눌러주는 연출이 필요합니다.</p>
             </div>
             <div class="do-dont-container">
                 <div class="card-box do">
                     <h4>추천해요 (DO)</h4>
-                    <p>물 빠진 듯한 파스텔톤끼리 묶어주는 연출(예: 연한 민트 니트 + 연한 베이지 치노팬츠)이나, 톤이 다운되어 차분한 느낌을 주는 묵직한 가을 컬러끼리의 조합(예: 카키 자켓
-                        + 버건디 가방)을 활용하면 분위기 있는 룩이 완성됩니다.</p>
+                    <p>탄탄하고 두께감 있는 원단의 세미오버핏 상의를 매치하세요. 네이비, 블랙, 차콜 등 어두운 톤의 슬랙스를 매치하면 전체적으로 핏이 깔끔하게 정돈됩니다.</p>
                 </div>
                 <div class="card-box dont">
                     <h4>피해 주세요 (DON'T)</h4>
-                    <p>채도가 높은 쨍한 원색 비비드 컬러들을 서로 다르게 매치하는 것(예: 새빨간 상의 + 새파란 하의)은 시선이 너무 분산되고 난해한 느낌을 주기 쉬우므로 초보 단계에서는 피해
-                        주는 것이 좋습니다.</p>
+                    <p>가슴 핏이 꽉 끼는 타이트한 옷이나, 화려한 대형 로고 및 가로 패턴은 체격을 더 넓어 보이게 하니 피해 주세요.</p>
                 </div>
             </div>
         </div>
 
-        <!-- 상하의 추천조합 -->
-        <div id="top-bottom" class="result-section">
-            <div class="result-title">👖 실전에서 바로 쓰는 상하의 황금 조합</div>
+        <div id="short" class="result-section">
+            <div class="result-title">🧍 키가 작은 체형을 위한 솔루션</div>
             <div class="info-block">
-                <h3>실패 확률 0%에 수렴하는 매칭 공식</h3>
-                <p>어떤 색의 바지에 어떤 색의 상의를 입어야 할지 매번 고민된다면 아래의 검증된 기본 조합법 패턴만 기억해도 아침 옷 고르는 시간이 절반으로 줄어듭니다.</p>
+                <h3>핵심 스타일링 시선 상향 전략</h3>
+                <p>시선을 상체 위쪽으로 끌어올리고 다리 라인의 시작점을 높여 착시 효과를 만드는 것이 핵심 공식입니다.</p>
             </div>
             <div class="do-dont-container">
                 <div class="card-box do">
-                    <h4>검증된 황금 조합 (MATCH)</h4>
-                    <p>• 네이비 상의 + 베이지 치노팬츠 (단정함의 정석)<br>
-                        • 화이트 상의 + 올리브/카키 카고팬츠 (캐주얼하고 트렌디함)<br>
-                        • 블랙 상의 + 중청/연청 데님팬츠 (실패 없는 데일리 룩)<br>
-                        • 그레이 맨투맨 + 차콜/블랙 슬랙스 (도시적이고 깔끔함)</p>
+                    <h4>추천해요 (DO)</h4>
+                    <p>골반 라인에 걸치는 숏자켓이나 블루종을 활용하고, 상하의 컬러를 유사하게 맞추는 톤온톤 매칭으로 세로선을 길어 보이게 연출하세요. 캡모자 등으로 포인트를 주는 것도 좋습니다.
+                    </p>
                 </div>
                 <div class="card-box dont">
-                    <h4>피해야 할 조합 (WORST)</h4>
-                    <p>• 상의와 하의 모두 애매한 톤의 원색 형광 계열 매치<br>
-                        • 하의가 상의보다 지나치게 밝고 팽창하는 원색 매치 (시선이 다리로만 쏠려 비율이 나빠 보일 수 있음)<br>
-                        • 상하의 패턴 무늬가 둘 다 지나치게 화려한 매치</p>
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>애매한 허벅지 기장의 롱코트나 엉덩이를 다 덮는 긴 상의는 상체를 길어 보이게 만들어 비율을 깨뜨립니다.</p>
                 </div>
             </div>
         </div>
 
-        <!-- 📌 패치 완료: button을 a 태그로 변경하고, Flask 내비게이션 라우팅 연동 -->
+        <div id="legs" class="result-section">
+            <div class="result-title">🚶 하체 발달 체형을 위한 솔루션</div>
+            <div class="info-block">
+                <h3>핵심 스타일링 체형 커버 전략</h3>
+                <p>허벅지와 종아리 굴곡을 자연스럽게 일자로 툭 떨어트리는 바지 실루엣을 고르는 것이 핵심입니다.</p>
+            </div>
+            <div class="do-dont-container">
+                <div class="card-box do">
+                    <h4>추천해요 (DO)</h4>
+                    <p>허벅지 공간이 여유롭고 밑단으로 갈수록 좁아지는 테이퍼드 핏 진이나, 턱(Tuck)이 잡혀 엉덩이 볼륨을 가려주는 와이드 슬랙스를 매치해 하체 라인을 가려주세요.</p>
+                </div>
+                <div class="card-box dont">
+                    <h4>피해 주세요 (DON'T)</h4>
+                    <p>허벅지와 종아리가 그대로 드러나는 스키니 팬츠나 슬림핏 진, 혹은 너무 두꺼운 카고 주머니가 달린 바지는 하체를 강조하므로 피하는 게 좋습니다.</p>
+                </div>
+            </div>
+        </div>
+
         <div class="back-footer">
             <a href="{{ url_for('guide_main') }}" class="back-btn">
                 ← 가이드 메인으로 돌아가기
@@ -375,7 +397,7 @@
     </div>
 
     <script>
-        function showColorResult(colorId, btn) {
+        function showBodyResult(bodyId, btn) {
             document.querySelectorAll('.result-section').forEach(section => {
                 section.classList.remove('active');
             });
@@ -384,7 +406,7 @@
                 button.classList.remove('active');
             });
 
-            document.getElementById(colorId).classList.add('active');
+            document.getElementById(bodyId).classList.add('active');
             btn.classList.add('active');
         }
     </script>
