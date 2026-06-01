@@ -28,19 +28,24 @@
 
         body.dark-mode .select-btn,
         body.dark-mode .result-section,
-        body.dark-mode .back-btn {
+        body.dark-mode .back-btn,
+        body.dark-mode .analysis-section,
+        body.dark-mode .upload-box,
+        body.dark-mode .personal-result {
             background: #2c2c2e;
             color: #f2f2f7;
             border-color: #48484a;
         }
 
         body.dark-mode .guide-header h1,
-        body.dark-mode .selector-title {
+        body.dark-mode .selector-title,
+        body.dark-mode .analysis-title {
             color: #ffffff;
         }
 
         body.dark-mode .guide-header p,
-        body.dark-mode .select-btn {
+        body.dark-mode .select-btn,
+        body.dark-mode .upload-text {
             color: #aeaeb2;
         }
 
@@ -69,7 +74,8 @@
         }
 
         body.dark-mode .info-block p,
-        body.dark-mode .card-box p {
+        body.dark-mode .card-box p,
+        body.dark-mode #result-tone-desc {
             color: #e5e5ea;
         }
 
@@ -94,6 +100,185 @@
         .guide-header p {
             color: #57606a;
             font-size: 16px;
+        }
+
+        /* AI 퍼스널 컬러 진단 영역 */
+        .analysis-section {
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .analysis-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1a1f36;
+        }
+
+        .upload-box {
+            border: 2px dashed #cfd6dd;
+            border-radius: 12px;
+            padding: 50px 20px;
+            cursor: pointer;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
+            max-width: 500px;
+            margin: 25px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .upload-box:hover {
+            border-color: #5c60f5;
+            background: #f3f2ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #8c959f;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+
+        .upload-box:hover .upload-icon {
+            transform: translateY(-5px);
+            color: #5c60f5;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #57606a;
+            font-weight: 500;
+        }
+
+        #image-preview {
+            max-width: 100%;
+            max-height: 280px;
+            border-radius: 8px;
+            display: none;
+            object-fit: cover;
+        }
+
+        .submit-btn {
+            background: #5c60f5;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 500px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 12px rgba(92, 96, 245, 0.2);
+        }
+
+        .submit-btn:hover {
+            background: #4a4ed4;
+        }
+
+        /* 로딩 상태창 */
+        .loading-box {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #5c60f5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 진단 결과 카드 디자인 */
+        .personal-result {
+            display: none;
+            background: #fafafa;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: left;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .result-tone-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .color-chip-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.02);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark-mode .color-chip-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .color-chip {
+            width: 45px;
+            height: 45px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .color-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .color-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .color-hex {
+            font-size: 11px;
+            color: #8c959f;
         }
 
         /* 카테고리 선택 영역 */
@@ -246,9 +431,7 @@
 
         .back-btn {
             display: inline-block;
-            /* a 태그의 레이아웃 크기 보존 */
             text-decoration: none;
-            /* 기본 하이퍼링크 밑줄 강제 제거 */
             padding: 12px 25px;
             border: 1px solid #d0d7de;
             border-radius: 6px;
@@ -281,6 +464,36 @@
             <p>색 조합만 잘 맞춰도 스타일의 절반은 성공입니다. 기본 컬러 공식을 확인해 보세요.</p>
         </div>
 
+        <div class="analysis-section">
+            <div class="analysis-title">퍼스널 컬러 분석하기</div>
+            <p style="color: #57606a; font-size: 14px; margin-top: 5px;">정면 얼굴 사진을 등록하면 퍼스널 컬러를 분석해서 어울리는 색상을 추천해 줄게.
+            </p>
+
+            <div class="upload-box" onclick="document.getElementById('file-input').click()">
+                <div id="upload-placeholder">
+                    <div class="upload-icon">↑</div>
+                    <div class="upload-text">클릭해서 사진 선택하기</div>
+                </div>
+                <img id="image-preview" alt="미리보기 화면">
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="previewImage(this)">
+
+            <button class="submit-btn" onclick="uploadAndAnalyzeColor()">등록하기</button>
+
+            <div class="loading-box" id="loading-box">
+                <div class="spinner"></div>
+                <p style="color: #5c60f5; font-weight: 600; font-size: 15px;">얼굴과 어울리는 톤 분석 중...</p>
+            </div>
+
+            <div class="personal-result" id="personal-result">
+                <div class="result-tone-title" id="result-tone-title"></div>
+                <p id="result-tone-desc"
+                    style="font-size: 14px; line-height: 1.6; color: #24292f; margin-bottom: 15px;"></p>
+                <div style="font-weight: bold; font-size: 14px; margin-top: 10px;">💡 추천 컬러 팔레트:</div>
+                <div class="color-palette" id="color-palette"></div>
+            </div>
+        </div>
+
         <div class="selector-title">궁금한 컬러 매칭 공식을 선택해 주세요</div>
         <div class="body-selector">
             <button class="select-btn active" onclick="showColorResult('tone-on-tone', this)">
@@ -297,11 +510,10 @@
             </button>
         </div>
 
-        <!-- 톤온톤 매칭 -->
         <div id="tone-on-tone" class="result-section active">
             <div class="result-title">👕 동일 색상, 다른 명도의 '톤온톤' 법칙</div>
             <div class="info-block">
-                <h3>톤온톤(Tone on Tone)이란?</h3>
+                <h3>톤온톤이란?</h3>
                 <p>‘색상’은 똑같이 맞추되, ‘밝기(명도)’에 차이를 두어 결합하는 방법입니다. 쉽게 말해 같은 색상 안에서 진하고 연한 변화를 주는 조합으로, 시각적으로 키가 커 보이고 안정감을
                     주는 초보자 최적의 공식입니다.</p>
             </div>
@@ -319,11 +531,10 @@
             </div>
         </div>
 
-        <!-- 톤앤톤 매칭 -->
         <div id="tone-and-tone" class="result-section">
             <div class="result-title">👔 다른 색상, 유사한 톤의 '톤앤톤' 법칙</div>
             <div class="info-block">
-                <h3>톤앤톤(Tone and Tone / 톤인톤)이란?</h3>
+                <h3>톤앤톤이란?</h3>
                 <p>‘색상’은 서로 완전히 다르지만, ‘톤(채도와 명도의 분위기)’을 비슷하게 맞춰 결합하는 방법입니다. 색이 다양하게 들어가기 때문에 톤온톤보다 훨씬 다채롭고 스타일리시한 무드를 낼
                     수 있습니다.</p>
             </div>
@@ -341,7 +552,6 @@
             </div>
         </div>
 
-        <!-- 상하의 추천조합 -->
         <div id="top-bottom" class="result-section">
             <div class="result-title">👖 실전에서 바로 쓰는 상하의 황금 조합</div>
             <div class="info-block">
@@ -365,7 +575,6 @@
             </div>
         </div>
 
-        <!-- 📌 패치 완료: button을 a 태그로 변경하고, Flask 내비게이션 라우팅 연동 -->
         <div class="back-footer">
             <a href="{{ url_for('guide_main') }}" class="back-btn">
                 ← 가이드 메인으로 돌아가기
@@ -386,6 +595,139 @@
 
             document.getElementById(colorId).classList.add('active');
             btn.classList.add('active');
+        }
+
+        // 이미지 파일 선택 시 브라우저 내 미리보기 처리
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('image-preview').src = e.target.result;
+                    document.getElementById('image-preview').style.display = 'block';
+                    document.getElementById('upload-placeholder').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadAndAnalyzeColor() {
+            const fileInput = document.getElementById('file-input');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("사진을 먼저 선택해줘!");
+                return;
+            }
+
+            const loadingBox = document.getElementById('loading-box');
+            const resultBox = document.getElementById('personal-result');
+
+            loadingBox.style.display = 'block';
+            resultBox.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('image_file', fileInput.files[0]);
+
+            fetch('/analyze_personal_color', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('서버 통신 상태 오류');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingBox.style.display = 'none';
+
+                    const personalTone = data.tone;
+                    const titleEl = document.getElementById('result-tone-title');
+                    const descEl = document.getElementById('result-tone-desc');
+
+                    if (personalTone === 'spring') {
+                        titleEl.innerHTML = '🌱 생기 가득한 [봄 웜톤]';
+                        descEl.innerText = '너는 따뜻하고 화사한 에너지를 가진 봄 웜톤이야! 밝고 선명하며 노란기가 도는 화사한 컬러가 얼굴빛을 가장 환하게 살려줘.';
+                        createColorChips([
+                            { name: '라이트 피치', hex: '#FFDAB9' },
+                            { name: '파스텔 옐로우', hex: '#FFD700' },
+                            { name: '애플 그린', hex: '#8DB600' },
+                            { name: '코랄 핑크', hex: '#F88379' }
+                        ]);
+                    } else if (personalTone === 'summer') {
+                        titleEl.innerHTML = '🌊 청량하고 은은한 [여름 쿨톤]';
+                        descEl.innerText = '너는 부드러우면서도 시원하고 청량한 무드를 풍기는 여름 쿨톤이야! 회색빛이 한 방울 섞인 파스텔톤이나 맑은 블루 계열이 아주 잘 어울려.';
+                        createColorChips([
+                            { name: '스카이 블루', hex: '#87CEEB' },
+                            { name: '라벤더', hex: '#E6E6FA' },
+                            { name: '베이비 핑크', hex: '#F4C2C2' },
+                            { name: '민트', hex: '#98FF98' }
+                        ]);
+                    } else if (personalTone === 'autumn') {
+                        titleEl.innerHTML = '🍁 깊고 고급스러운 [가을 웜톤]';
+                        descEl.innerText = '너는 차분하고 깊이감 있으며 지적인 분위기를 지닌 가을 웜톤이야! 묵직하고 따뜻한 대지의 색상이나 카키, 머스타드, 브라운 계열이 매력을 극대화해줘.';
+                        createColorChips([
+                            { name: '브릭 레드', hex: '#CB4154' },
+                            { name: '머스타드', hex: '#FFDB58' },
+                            { name: '올리브 그린', hex: '#556B2F' },
+                            { name: '카멜 브라운', hex: '#C19A6B' }
+                        ]);
+                    } else if (personalTone === 'winter') {
+                        titleEl.innerHTML = '❄️ 선명하고 도시적인 [겨울 쿨톤]';
+                        descEl.innerText = '너는 모던하고 시크하며 카리스마 있는 느낌을 주는 겨울 쿨톤이야! 선명한 원색 비비드나 블랙, 화이트, 그리고 아주 차가운 아이시 톤이 이목구비를 또렷하게 해줘.';
+                        createColorChips([
+                            { name: '네이비 블루', hex: '#000080' },
+                            { name: '버건디', hex: '#800020' },
+                            { name: '퓨어 화이트', hex: '#FFFFFF' },
+                            { name: '마젠타', hex: '#FF00FF' }
+                        ]);
+                    } else {
+                        titleEl.innerHTML = '🔍 판정 완료';
+                        descEl.innerText = '분석이 완료되었어! 추천 스타일링 매칭 정보를 참고해봐.';
+                    }
+
+                    resultBox.style.display = 'block';
+                })
+                .catch(error => {
+                    loadingBox.style.display = 'none';
+                    console.error('Error:', error);
+                    alert("분석하는 도중에 문제가 발생했어. 서버 연결을 확인해봐!");
+                });
+        }
+
+        // 고정 이미지 데이터 구조에 맞춘 컬러 칩 동적 생성 함수
+        function createColorChips(colorArray) {
+            const paletteEl = document.getElementById('color-palette');
+            paletteEl.innerHTML = '';
+
+            colorArray.forEach(colorObj => {
+                // 칩 레이아웃 컨테이너 생성
+                const wrapper = document.createElement('div');
+                wrapper.className = 'color-chip-wrapper';
+
+                // 컬러 칩 사각형 영역
+                const chip = document.createElement('div');
+                chip.className = 'color-chip';
+                chip.style.backgroundColor = colorObj.hex;
+
+                // 우측 글자 정보 영역 (이름 + 헥사코드)
+                const info = document.createElement('div');
+                info.className = 'color-info';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'color-name';
+                nameSpan.innerText = colorObj.name;
+
+                const hexSpan = document.createElement('span');
+                hexSpan.className = 'color-hex';
+                hexSpan.innerText = colorObj.hex;
+
+                info.appendChild(nameSpan);
+                info.appendChild(hexSpan);
+
+                wrapper.appendChild(chip);
+                wrapper.appendChild(info);
+                paletteEl.appendChild(wrapper);
+            });
         }
     </script>
 
