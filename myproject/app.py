@@ -549,7 +549,7 @@ def tpo_guide():
     except Exception:
         return "<h3>TPO 가이드 페이지 준비 중입니다!</h3><br><a href='/guide'>가이드로 돌아가기</a>"
         
-# 톤온톤 매칭 가이드 정보 페이지 렌더링 라우터
+# 컬러 매칭 가이드를 화면에 띄워주는 라우터
 @app.route('/color_guide')
 def color_guide():
     try:
@@ -558,6 +558,27 @@ def color_guide():
         return render_template('color_guide.html', logged_in=is_logged_in, user_email=user_email)
     except Exception as e:
         return "<h3>컬러 매칭 가이드 페이지 준비 중입니다!</h3><br><a href='/guide'>가이드로 돌아가기</a>"
+        
+# 톤온톤 매칭 가이드 정보 페이지 렌더링 라우터
+@app.route('/analyze_personal_color', methods=['POST'])
+def analyze_personal_color():
+    try:
+        if 'image_file' not in request.files:
+            return jsonify({'error': '사진이 전송되지 않았어!'}), 400
+        
+        file = request.files['image_file']
+        
+        if file.filename == '':
+            return jsonify({'error': '선택된 파일이 없어!'}), 400
+
+        tones = ['spring', 'summer', 'autumn', 'winter']
+        result_tone = random.choice(tones)
+
+        return jsonify({'tone': result_tone}), 200
+        
+    except Exception as e:
+        print(f"분석 중 에러 발생: {e}")
+        return jsonify({'error': '서버 내부에서 분석 중 오류가 발생했어.'}), 500
 
 # 보관 등록 완료된 내 의류 격자 앨범 조회 라우터
 @app.route('/my_closet')
