@@ -6,182 +6,573 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: #fff;
+        :root {
+            --primary: #1e293b;
+            --bg: #f1f5f9;
+            --text: #0f172a;
+            --border: #e2e8f0;
+            --brand-color: #4f46e5;
+            --brand-color-secondary: #6d28d9;
+            --input-bg: #f8fafc;
+            --modal-bg: rgba(15, 23, 42, 0.3);
+            --modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 카드 디자인 */
+        .login-card {
+            background: white;
+            padding: 40px 30px;
             border-radius: 32px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 400px;
             text-align: center;
             box-sizing: border-box;
         }
 
-        .login-logo {
+        .logo {
             font-size: 2rem;
             font-weight: 800;
+            color: var(--text);
             margin-bottom: 30px;
             letter-spacing: 1px;
         }
 
-        .login-form input {
+        /* 입력 폼 */
+        .form-input {
             width: 100%;
             padding: 16px 20px;
             margin-bottom: 16px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
             border-radius: 16px;
             font-size: 0.95rem;
             box-sizing: border-box;
-            background: #f8fafc;
-            transition: all 0.3s ease;
+            background: var(--input-bg);
         }
 
-        .login-form input:focus {
-            outline: none;
-            border-color: #4f46e5;
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-        }
-
-        .submit-btn {
+        .login-btn {
             width: 100%;
             padding: 16px;
-            background: #4f46e5;
-            color: #fff;
+            background: var(--primary);
+            color: white;
             border: none;
             border-radius: 16px;
-            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.3s ease;
+            font-size: 1rem;
+            transition: background 0.3s;
         }
 
-        .submit-btn:hover {
-            background: #4338ca;
+        .login-btn:hover {
+            background: #111827;
         }
 
-        .social-login {
-            margin-top: 30px;
-            border-top: 1px solid #f1f5f9;
-            padding-top: 25px;
-        }
-
-        .social-btn {
-            width: 100%;
-            padding: 14px;
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
+        /* 체크박스 및 링크 정렬 */
+        .options-container {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-
-        .social-btn:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-        }
-
-        .login-links {
-            margin-top: 20px;
+            margin: 10px 0 20px 0;
             font-size: 0.85rem;
             color: #64748b;
         }
 
-        .login-links a {
-            color: #4f46e5;
+        .keep-login {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .find-links a {
+            color: #64748b;
             text-decoration: none;
-            font-weight: 600;
             margin-left: 5px;
         }
 
-        .flash-messages {
-            background-color: #fef2f2;
-            border: 1px solid #fca5a5;
-            color: #ef4444;
-            padding: 14px;
-            border-radius: 16px;
-            margin-bottom: 20px;
+        /* 구분선 및 회원가입 */
+        .signup-section {
+            margin-top: 30px;
+            border-top: 1px solid var(--border);
+            padding-top: 25px;
             font-size: 0.9rem;
-            list-style: none;
-            padding-left: 0;
-            text-align: left;
+            color: #64748b;
+        }
+
+        .signup-link {
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            margin-left: 5px;
+        }
+
+        /* 모달 공통 스타일 */
+        .modal-overlay {
             display: none;
-            /* 에러 발생 시 JS로 노출 제어 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 500px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            text-align: left;
+            box-sizing: border-box;
+            box-shadow: var(--modal-shadow);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active .modal-card {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 1.5rem;
+            color: #64748b;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal-header h3 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .modal-header p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        /* 모달 전용 입력 폼 */
+        .modal-control {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            background: var(--input-bg);
+            font-size: 0.9rem;
+        }
+
+        /* 이메일 입력 + 버튼 줄 */
+        .modal-email-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .modal-email-row .modal-control {
+            margin-bottom: 0;
+            flex-grow: 1;
+        }
+
+        .modal-sub-btn {
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .modal-sub-btn:hover {
+            background: var(--brand-color-secondary);
+        }
+
+        /* 하단 메인 제출 버튼 */
+        .modal-submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 30px;
+        }
+
+        .modal-submit-btn:hover {
+            background: var(--brand-color-secondary);
+        }
+
+        .error-message {
+            display: none;
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        /* 새로 추가된 커스텀 알림창(Alert) 스타일 */
+        .alert-card {
+            max-width: 380px;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .alert-content {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 25px;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .alert-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .alert-btn:hover {
+            background: var(--brand-color-secondary);
         }
     </style>
 </head>
 
-<body style="background: #f1f5f9; margin: 0; padding: 0 20px;">
-    <div class="login-container">
-        <div class="login-logo">
-            <a href="{{ url_for('home') }}" style="color: #0f172a; text-decoration: none;">Look_Up</a>
+<body>
+    <div class="login-card">
+        <div class="logo"><a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
         </div>
 
-        <ul class="flash-messages" id="error-box">
-            <li id="error-msg"></li>
-        </ul>
+        <form onsubmit="submitLogin(event)">
+            <input type="text" id="login-id" class="form-input" placeholder="아이디" required>
+            <input type="password" id="login-password" class="form-input" placeholder="비밀번호" required>
 
-        <form class="login-form" onsubmit="submitLogin(event)">
-            <input type="email" id="login-email" placeholder="이메일 주소" required>
-            <input type="password" id="login-password" placeholder="비밀번호" required>
-            <button type="submit" class="submit-btn">로그인</button>
+            <div id="error-box" class="error-message">
+                <span id="error-msg"></span>
+            </div>
+
+            <div class="options-container">
+                <label class="keep-login"><input type="checkbox"> 로그인 상태 유지</label>
+                <div class="find-links">
+                    <a href="#" onclick="event.preventDefault(); openModal('id-modal')">아이디 찾기</a>
+                    <span> | </span>
+                    <a href="#" onclick="event.preventDefault(); openModal('pw-modal')">비밀번호 찾기</a>
+                </div>
+            </div>
+            <button type="submit" class="login-btn">로그인</button>
         </form>
 
-        <div class="login-links">
-            아직 회원이 아니신가요?
-            <a href="{{ url_for('register_page') }}">회원가입</a>
+        <div class="signup-section">
+            아직 회원이 아니신가요?<a href="{{ url_for('register_page') }}" class="signup-link">회원가입</a>
         </div>
+    </div>
 
-        <div class="social-login">
-            <button class="social-btn" onclick="signInWithGoogle()">
-                <i class="fab fa-google" style="color: #ea4335;"></i> Google로 시작하기
-            </button>
+    <div id="id-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('id-modal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3>아이디 찾기</h3>
+                <p>가입할 때 등록한 이름과 이메일로 인증을 진행해 줘!</p>
+            </div>
+
+            <div class="modal-step">
+                <input type="text" id="find-id-name" class="modal-control" placeholder="이름 입력">
+
+                <div class="modal-email-row">
+                    <input type="email" id="find-id-email" class="modal-control" placeholder="이메일 주소 입력">
+                    <button class="modal-sub-btn" onclick="sendIdVerificationCode()">이메일 인증</button>
+                </div>
+
+                <input type="text" id="find-id-code" class="modal-control" placeholder="인증번호 입력">
+                <button class="modal-submit-btn" onclick="submitFindId()">아이디 찾기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pw-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('pw-modal')"><i class="fas fa-times"></i></button>
+
+            <div id="pw-step-verify" style="display: block;">
+                <div class="modal-header">
+                    <h3>비밀번호 찾기</h3>
+                    <p>본인 확인을 위해 이름, 아이디, 이메일 인증을 진행해 줘!</p>
+                </div>
+                <div class="modal-step">
+                    <input type="text" id="find-pw-name" class="modal-control" placeholder="이름 입력">
+                    <input type="text" id="find-pw-id" class="modal-control" placeholder="아이디 입력">
+
+                    <div class="modal-email-row">
+                        <input type="email" id="find-pw-email" class="modal-control" placeholder="이메일 주소 입력">
+                        <button class="modal-sub-btn" onclick="sendPwVerificationCode()">이메일 인증</button>
+                    </div>
+
+                    <input type="text" id="find-pw-code" class="modal-control" placeholder="인증번호 입력">
+                    <button class="modal-submit-btn" onclick="submitVerifyPwCode()">인증 확인</button>
+                </div>
+            </div>
+
+            <div id="pw-step-reset" style="display: none;">
+                <div class="modal-header">
+                    <h3>비밀번호 재설정</h3>
+                    <p>새로 사용할 비밀번호를 안전하게 입력해 주세요.</p>
+                </div>
+                <div class="modal-step">
+                    <input type="password" id="new-pw" class="modal-control" placeholder="새 비밀번호 입력">
+                    <input type="password" id="new-pw-confirm" class="modal-control" placeholder="비밀번호 확인 입력">
+                    <button class="modal-submit-btn" onclick="submitPasswordReset()">비밀번호 변경</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-alert-modal" class="modal-overlay">
+        <div class="modal-card alert-card">
+            <div id="alert-modal-content" class="alert-content">알림 메시지</div>
+            <button class="alert-btn" onclick="closeAlertModal()">확인</button>
         </div>
     </div>
 
     <script>
-        // [교정] 기존 Form 전송을 걷어내고 app.py가 수신할 수 있게 JSON 데이터 빌드 송신
-        function submitLogin(event) {
+        // 알림창 닫기 후 실행할 콜백 함수 보관용 변수
+        let alertCallback = null;
+
+        // 커스텀 알림창 열기 함수
+        function openAlertModal(message, callback = null) {
+            document.getElementById('alert-modal-content').innerHTML = message;
+            alertCallback = callback;
+
+            const overlay = document.getElementById('custom-alert-modal');
+            overlay.style.display = 'block';
+            setTimeout(() => overlay.classList.add('active'), 10);
+        }
+
+        // 커스텀 알림창 닫기 함수
+        function closeAlertModal() {
+            const overlay = document.getElementById('custom-alert-modal');
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                if (alertCallback) {
+                    alertCallback();
+                    alertCallback = null;
+                }
+            }, 300);
+        }
+
+        // 로그인 처리 함수
+        async function submitLogin(event) {
             event.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const login_id = document.getElementById('login-id').value;
             const password = document.getElementById('login-password').value;
             const errorBox = document.getElementById('error-box');
             const errorMsg = document.getElementById('error-msg');
 
-            fetch("{{ url_for('login') }}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email, password: password })
-            })
-                .then(async res => {
-                    if (res.ok) {
-                        // 로그인 성공 시 app.py의 대피 화면 라우터 정보로 이동
-                        location.href = "{{ url_for('home_page') }}";
-                    } else {
-                        const errData = await res.json();
-                        errorMsg.innerText = "❌ " + (errData.error || "로그인 정보가 틀렸습니다.");
-                        errorBox.style.display = "block";
-                    }
-                })
-                .catch(() => {
-                    errorMsg.innerText = "❌ 서버와 연결할 수 없습니다.";
-                    errorBox.style.display = "block";
+            try {
+                const res = await fetch("{{ url_for('login') }}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ login_id, password })
                 });
+
+                if (res.ok) {
+                    location.href = "{{ url_for('home_page') }}";
+                } else {
+                    const errData = await res.json();
+                    errorMsg.innerText = "❌ " + (errData.error || "아이디 또는 비밀번호가 틀렸습니다.");
+                    errorBox.style.display = "block";
+                }
+            } catch (e) {
+                errorMsg.innerText = "❌ 서버와 연결할 수 없습니다.";
+                errorBox.style.display = "block";
+            }
         }
 
-        function signInWithGoogle() {
-            alert("구글 소셜 로그인은 준비 중입니다. 이메일 로그인을 이용해 주세요!");
+        // 모달 열기/닫기 제어
+        function openModal(id) {
+            const overlay = document.getElementById(id);
+            overlay.style.display = 'block';
+            setTimeout(() => overlay.classList.add('active'), 10);
+        }
+
+        function closeModal(id) {
+            const overlay = document.getElementById(id);
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.style.display = 'none', 300);
+        }
+
+        // =============================================================
+        // 1. [아이디 찾기] API 라우터 연동 구조식 
+        // =============================================================
+        async function sendIdVerificationCode() {
+            const name = document.getElementById('find-id-name').value;
+            const email = document.getElementById('find-id-email').value;
+
+            if (!name || !email) return openAlertModal("이름과 이메일을 입력해 주세요.");
+
+            const res = await fetch('/api/find-id/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                openAlertModal(data.message);
+            } else {
+                openAlertModal(data.error || "인증번호 발송에 실패했습니다.");
+            }
+        }
+
+        async function submitFindId() {
+            const name = document.getElementById('find-id-name').value;
+            const email = document.getElementById('find-id-email').value;
+            const code = document.getElementById('find-id-code').value;
+
+            if (!code) return openAlertModal("인증번호를 입력해 주세요.");
+
+            const res = await fetch('/api/find-id/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, code })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                closeModal('id-modal');
+                openAlertModal(`🎉 찾으시는 아이디는<br><strong>[ ${data.login_id} ]</strong> 입니다.`);
+            } else {
+                openAlertModal(data.error || "인증번호가 올바르지 않습니다.");
+            }
+        }
+
+        // =============================================================
+        // 2. [비밀번호 찾기] API 라우터 연동 구조식
+        // =============================================================
+        async function sendPwVerificationCode() {
+            const name = document.getElementById('find-pw-name').value;
+            const login_id = document.getElementById('find-pw-id').value;
+            const email = document.getElementById('find-pw-email').value;
+
+            if (!name || !login_id || !email) return openAlertModal("이름, 아이디, 이메일을 모두 입력해 주세요.");
+
+            const res = await fetch('/api/find-pw/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, login_id, email })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                openAlertModal(data.message);
+            } else {
+                openAlertModal(data.error || "가입 정보 조회에 실패했습니다.");
+            }
+        }
+
+        async function submitVerifyPwCode() {
+            const email = document.getElementById('find-pw-email').value;
+            const code = document.getElementById('find-pw-code').value;
+
+            if (!code) return openAlertModal("인증번호를 입력해 주세요.");
+
+            const res = await fetch('/api/find-pw/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, input_code: code })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                openAlertModal(data.message, () => {
+                    document.getElementById('pw-step-verify').style.display = 'none';
+                    document.getElementById('pw-step-reset').style.display = 'block';
+                });
+            } else {
+                openAlertModal(data.error || "인증번호가 일치하지 않습니다.");
+            }
+        }
+
+        async function submitPasswordReset() {
+            // 1. 입력값 가져오기
+            const login_id = document.getElementById('find-pw-id').value;
+            const new_pw = document.getElementById('new-pw').value;
+            const new_pw_confirm = document.getElementById('new-pw-confirm').value;
+
+            // 2. 유효성 검사 (함수 중첩 없앰!)
+            if (!new_pw || !new_pw_confirm) return openAlertModal("비밀번호를 입력해 주세요.");
+            if (new_pw.length < 6) return openAlertModal("보안을 위해 비밀번호는 6자리 이상 입력해 주세요.");
+            if (new_pw !== new_pw_confirm) return openAlertModal("비밀번호가 서로 일치하지 않습니다.");
+
+            // 3. 서버로 비밀번호 변경 요청 보내기
+            try {
+                const res = await fetch('/api/find-pw/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login_id, new_pw, new_pw_confirm })
+                });
+
+                const data = await res.json();
+
+                // 4. 결과 처리 및 로그인 페이지 이동
+                if (res.ok && data.success) {
+                    alert("비밀번호가 변경되었습니다. 다시 로그인해 주세요.");
+                    location.href = "/login"; // 로그인 페이지로 명시적 이동
+                } else {
+                    alert(data.error || "비밀번호 초기화 도중 에러가 발생했습니다.");
+                }
+            } catch (error) {
+                console.error("통신 에러:", error);
+                alert("서버와 통신 중 문제가 발생했습니다.");
+            }
         }
     </script>
 </body>

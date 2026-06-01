@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - 스크랩북</title>
+    <link class="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f6f8fa;
+            color: #24292f;
+            padding: 50px 20px;
+        }
+
+        /* 라이트/다크모드 스타일 */
+        body.dark-mode {
+            background: #1c1c1e;
+            color: #f2f2f7;
+        }
+
+        body.dark-mode .scrap-card,
+        body.dark-mode .back-btn {
+            background: #2c2c2e;
+            color: #f2f2f7;
+            border-color: #48484a;
+        }
+
+        body.dark-mode .scrap-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .scrap-desc,
+        body.dark-mode .temp-tag {
+            color: #aeaeb2;
+        }
+
+        .scrap-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* 상단 헤더 영역 */
+        .scrap-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .scrap-header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .scrap-header p {
+            color: #57606a;
+            font-size: 16px;
+        }
+
+        body.dark-mode .scrap-header p {
+            color: #aeaeb2;
+        }
+
+        /* 스크랩북 그리드 레이아웃 */
+        .scrap-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 20px;
+        }
+
+        @media (min-width: 480px) {
+            .scrap-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .scrap-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .scrap-card {
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .scrap-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 코디 시각화 이미지 박스 */
+        .item-preview-box {
+            width: 100%;
+            height: 180px;
+            background: #eaeef2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            text-align: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        body.dark-mode .item-preview-box {
+            background: #3a3a3c;
+        }
+
+        .item-icons {
+            font-size: 36px;
+            letter-spacing: 5px;
+            color: #cbd5e1;
+        }
+
+        .card-body {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .scrap-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #24292f;
+            margin-bottom: 8px;
+        }
+
+        .scrap-desc {
+            font-size: 14px;
+            color: #57606a;
+            line-height: 1.5;
+        }
+
+        /* 스크랩 취소 하트 버튼 */
+        .heart-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: 0.2s;
+            z-index: 10;
+        }
+
+        body.dark-mode .heart-btn {
+            background: #2c2c2e;
+            border-color: #48484a;
+        }
+
+        .heart-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 텅 빈 상태 디자인 */
+        .empty-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            color: #8c959f;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* 하단 버튼 */
+        .back-footer {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .back-btn {
+            padding: 12px 25px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background: white;
+            color: #24292f;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #f3f4f6;
+        }
+
+        /* ==========================================================================
+           시각적 피드백 제공형 모달 스타일 (상세보기 & 삭제 공통 활용)
+        ========================================================================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-content {
+            background: white;
+            width: 95%;
+            max-width: 680px;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            animation: scaleUp 0.2s ease;
+            text-align: center;
+        }
+
+        body.dark-mode .modal-content {
+            background: #2c2c2e;
+            color: #f2f2f7;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 22px;
+            right: 24px;
+            background: none;
+            border: none;
+            font-size: 26px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            color: #475569;
+        }
+
+        .modal-body-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        body.dark-mode .modal-body-title {
+            border-bottom-color: #48484a;
+        }
+
+        .modal-grid-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 550px) {
+            .modal-grid-wrapper {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
+        .modal-item-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .modal-item-column {
+            background: #3a3a3c;
+            border-color: #48484a;
+        }
+
+        .modal-column-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: #4f46e5;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-mode .modal-column-label {
+            color: #94a3b8;
+        }
+
+        .modal-img-box {
+            width: 100%;
+            aspect-ratio: 1.1/1;
+            background-color: #ffffff;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.8rem;
+            color: #cbd5e1;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .modal-img-box {
+            background-color: #1c1c1e;
+            border-color: #48484a;
+        }
+
+        .modal-img-container {
+            width: 100%;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .modal-img-container .modal-img-box {
+            flex: 1;
+        }
+
+        .modal-item-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #0f172a;
+        }
+
+        body.dark-mode .modal-item-name {
+            color: #ffffff;
+        }
+
+        .modal-item-meta {
+            font-size: 0.88rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        body.dark-mode .modal-item-meta {
+            color: #aeaeb2;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleUp {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <div class="scrap-container">
+
+        <div class="scrap-header">
+            <h1>🔖 마이 코디 스크랩북</h1>
+            <p>💡 카드를 더블클릭(따닥!)하면 실물 이미지 매칭 정보를 확인할 수 있습니다.</p>
+        </div>
+
+        <div id="scrapGrid" class="scrap-grid">
+            {% if scraps %}
+            {% for scrap in scraps %}
+            <div class="scrap-card" id="scrap-card-{{ scrap.scrap_id }}" ondblclick="openCodiModal(this)"
+                data-title="{{ scrap.custom_title or '저장된 추천 코디' }}" data-top='{{ scrap.top_combo | tojson | safe }}'
+                data-bottom='{{ scrap.bottom | tojson | safe }}' style="cursor: pointer;"
+                title="더블클릭하면 상세 정보를 볼 수 있습니다.">
+
+                <button class="heart-btn"
+                    onclick="event.stopPropagation(); unlikeStyleFromServer('{{ scrap.scrap_id }}')"
+                    title="스크랩 취소">❤️</button>
+
+                <div class="item-preview-box" {% if scrap and scrap.top_combo and scrap.top_combo[0] and
+                    scrap.top_combo[0].image_url %} style="background-image:url('{{ scrap.top_combo[0].image_url }}');"
+                    {% endif %}>
+
+                    {% if not (scrap and scrap.top_combo and scrap.top_combo[0] and scrap.top_combo[0].image_url) %}
+                    <div class="item-icons">👕👖</div>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+                    <div class="scrap-title">{{ scrap.custom_title or '저장된 추천 코디' }}</div>
+                    <div class="scrap-desc">
+                        <strong>상의:</strong>
+                        {% for top in scrap.top_combo %}
+                        {{ top.name }}{% if not loop.last %} + {% endif %}
+                        {% endfor %}<br>
+
+                        <strong>하의:</strong> {{ scrap.bottom.name }}<br>
+                        <small style="color: #8c959f;">
+                            저장일: {{ scrap.created_at[:10] if scrap.created_at else '날짜 없음' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-msg">
+                ❤️ 아직 스크랩한 코디가 없습니다.<br>
+                보유한 옷 기반 '온도별 코디 추천'에서 마음에 드는 조합에 하트를 눌러보세요!
+            </div>
+            {% endif %}
+        </div>
+
+        <button class="back-btn" onclick="location.href='/home'">
+            ← 메인으로 돌아가기
+        </button>
+
+    </div>
+
+    <div id="detailModal" class="modal-overlay" onclick="closeCodiModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="closeCodiModal()">&times;</button>
+            <div class="modal-body-title" id="modalTitle">코디 상세보기</div>
+
+            <div class="modal-grid-wrapper">
+                <div class="modal-item-column">
+                    <div class="modal-column-label">TOP (상의)</div>
+                    <div id="modalTopImgs" class="modal-img-container"></div>
+                    <div class="modal-item-name" id="modalTopName">-</div>
+                    <div class="modal-item-meta" id="modalTopMeta">-</div>
+                </div>
+
+                <div class="modal-item-column">
+                    <div class="modal-column-label">BOTTOM (하의)</div>
+                    <div id="modalBottomImg" class="modal-img-box"></div>
+                    <div class="modal-item-name" id="modalBottomName">-</div>
+                    <div class="modal-item-meta" id="modalBottomMeta">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal-overlay" onclick="closeDeleteModal(event)">
+        <div class="modal-content" style="max-width: 450px; padding: 30px;" onclick="event.stopPropagation()">
+            <div class="modal-body-title"
+                style="margin-bottom: 15px; color: #ef4444; border-bottom: none; padding-bottom: 0;">⚠️ 스크랩 삭제</div>
+            <p style="margin-bottom: 25px; font-size: 15px; line-height: 1.5; color: #57606a;" id="deleteModalMessage">이
+                코디 조합을 스크랩북에서 삭제하시겠습니까?</p>
+
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="confirmDeleteBtn" class="back-btn"
+                    style="background: #ef4444; color: white; border: none; padding: 10px 22px; font-size: 14px; border-radius: 8px;">삭제</button>
+                <button class="back-btn" onclick="closeDeleteModal()"
+                    style="padding: 10px 22px; font-size: 14px; border-radius: 8px;">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 삭제 대기 중인 스크랩 ID 임시 보관 변수
+        let currentDeleteScrapId = null;
+
+        // 하트 버튼 클릭 시 삭제 커스텀 모달 열기
+        function unlikeStyleFromServer(scrapId) {
+            currentDeleteScrapId = scrapId;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        // 삭제 커스텀 모달 닫기
+        function closeDeleteModal(event) {
+            if (event && event.target !== document.getElementById('deleteModal')) return;
+            document.getElementById('deleteModal').style.display = 'none';
+            currentDeleteScrapId = null;
+        }
+
+        // 삭제 모달 내 '삭제' 버튼 클릭 이벤트 리스너
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+            if (!currentDeleteScrapId) return;
+
+            fetch(`/api/scraps/delete/${currentDeleteScrapId}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        const targetCard = document.getElementById(`scrap-card-${currentDeleteScrapId}`);
+                        if (targetCard) targetCard.remove();
+
+                        const remainingCards = document.querySelectorAll('.scrap-card');
+                        if (remainingCards.length === 0) {
+                            location.reload();
+                        }
+                    } else {
+                        // 에러 발생 시에도 유연하게 메시지 노출 처리
+                        document.getElementById('deleteModalMessage').innerText = data.error || "스크랩 해제 처리 중 오류가 발생했습니다.";
+                        setTimeout(() => { closeDeleteModal(); }, 1500);
+                        return;
+                    }
+                    closeDeleteModal();
+                })
+                .catch(err => {
+                    console.error("스크랩 삭제 연동 오류:", err);
+                    closeDeleteModal();
+                });
+        });
+
+        // 더블클릭 상세 모달 열기
+        function openCodiModal(cardElement) {
+            const title = cardElement.getAttribute('data-title');
+            const topCombo = JSON.parse(cardElement.getAttribute('data-top'));
+            const bottom = JSON.parse(cardElement.getAttribute('data-bottom'));
+
+            document.getElementById('modalTitle').innerText = title;
+
+            const topImgsContainer = document.getElementById('modalTopImgs');
+            topImgsContainer.innerHTML = '';
+
+            topCombo.forEach(top => {
+                const imgBox = document.createElement('div');
+                imgBox.className = 'modal-img-box';
+                if (top.image_url) {
+                    imgBox.style.backgroundImage = `url('${top.image_url}')`;
+                } else {
+                    imgBox.innerHTML = '<i class="fas fa-tshirt"></i>';
+                }
+                topImgsContainer.appendChild(imgBox);
+            });
+
+            document.getElementById('modalTopName').innerText = topCombo.map(t => t.name).join(' + ');
+            document.getElementById('modalTopMeta').innerText = `핏: ${topCombo.map(t => t.fit).join('/')} | 색상: ${topCombo.map(t => t.color).join(',')}`;
+
+            const bottomImgBox = document.getElementById('modalBottomImg');
+            bottomImgBox.innerHTML = '';
+            if (bottom.image_url) {
+                bottomImgBox.style.backgroundImage = `url('${bottom.image_url}')`;
+            } else {
+                bottomImgBox.innerHTML = '<i class="fas fa-socks"></i>';
+            }
+
+            document.getElementById('modalBottomName').innerText = bottom.name;
+            document.getElementById('modalBottomMeta').innerText = `핏: ${bottom.fit} | 색상: ${bottom.color}`;
+
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        // 상세 모달 닫기
+        function closeCodiModal(event) {
+            if (event && event.target !== document.getElementById('detailModal') && event.target.className !== 'modal-close-btn') return;
+            document.getElementById('detailModal').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
