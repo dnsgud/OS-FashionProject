@@ -382,6 +382,68 @@ def clothes_detail(cloth_id):
 
     return render_template('clothes_detail.html', cloth=cloth_data)
 
+@app.route('/api/update_password', methods=['POST'])
+def update_password_api():
+    login_id = session.get('login_id')
+    access_token = session.get('access_token')  # 세션에서 Auth 토큰 추출
+    data = request.json
+    
+    print("\n==================================")
+    print(f"🔒 [디버그] 비밀번호 변경 시도")
+    print(f" - 세션 login_id: {login_id}")
+    print("==================================\n")
+    
+    # 토큰 검증 추가
+    if not login_id or not access_token:
+        return jsonify({"status": "fail", "message": "로그인 세션이 만료되었습니다. 다시 로그인해주세요."}), 401
+        
+    current_pw = data.get('currentPw')
+    new_pw = data.get('newPw')
+    
+    try:
+        # 1. DB에서 현재 유저의 기존 비밀번호(pw) 가져오기
+        user_data = supabase.table("users").select("pw").eq("login_id", login_id).execute()
+        
+        if not user_data.data:
+            return jsonify({"status": "fail", "message": "회원 정보를 찾을 수 없습니다."}), 404
+            
+        db_password = user_data.data[0].get("pw")
+        
+        # 2. 기존 비밀번호 대조
+        if db_password != current_pw:
+            return jsonify({"status": "fail", "message": "기존 비밀번호가 올바르지 않습니다."}), 400
+
+        # 3. 🔥 [핵심 추가] Supabase Auth 서버의 실제 비밀번호 갱신 요청
+        import requests
+        auth_url = f"{os.getenv('SUPABASE_URL')}/auth/v1/user"
+        headers = {
+            "apikey": os.getenv("SUPABASE_KEY"),
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        auth_response = requests.put(auth_url, headers=headers, json={"password": new_pw})
+
+        # 인증 서버 갱신 실패 시 즉시 차단
+        if auth_response.status_code not in [200, 204]:
+            print(f"❌ [디버그] Auth 서버 갱신 실패: {auth_response.text}")
+            return jsonify({"status": "fail", "message": "인증 서버 비밀번호 변경 권한이 없습니다."}), 500
+            
+        # 4. Auth 갱신 성공 시, DB users 테이블 pw 컬럼 동기화
+        update_response = supabase.table("users").update({
+            "pw": new_pw 
+        }).eq("login_id", login_id).execute()
+        
+        if not update_response.data:
+            return jsonify({"status": "fail", "message": "비밀번호 DB 업데이트에 실패했습니다."}), 400
+            
+        print(f"✅ [디버그] Auth 서버 및 DB 비밀번호 동시 변경 성공")
+        return jsonify({"status": "success", "message": "비밀번호가 성공적으로 변경되었습니다."}), 200
+        
+    except Exception as e:
+        print("\n❌ [디버그] 비밀번호 변경 중 에러 발생!")
+        traceback.print_exc()
+        return jsonify({"status": "fail", "message": "서버 시스템 통신 중 오류가 발생했습니다."}), 500
+    
 @app.route('/api/clothes/update/<int:cloth_id>', methods=['POST'])
 def update_cloth_api(cloth_id):
     if 'user_email' not in session: return jsonify({"error": "로그인이 필요합니다."}), 401
