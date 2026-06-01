@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -153,3 +154,189 @@
 </body>
 
 </html>
+=======
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 사진 등록 - Look_Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #64748b;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        .registration-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .upload-box {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .upload-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .upload-box i {
+            font-size: 3.5rem;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+
+        .upload-box p {
+            font-size: 1rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-align: center;
+            margin: 0;
+        }
+
+        .save-btn {
+            padding: 18px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .save-btn:hover {
+            background: #4338ca;
+        }
+
+        #file-input {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="my_closet" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+    </header>
+    <main>
+        <h1 class="page-title">AI로 옷 분석하기</h1>
+
+        <form id="upload-form" action="{{ url_for('ai_analysis') }}" method="POST" enctype="multipart/form-data">
+            <div class="registration-card">
+                <div class="upload-box" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-arrow-up" id="upload-icon"></i>
+                    <p id="upload-text">클릭해서 사진 선택하기</p>
+                    <img id="preview-img" src="" alt="미리보기">
+                </div>
+
+                <button type="button" class="save-btn" onclick="goToAnalysis()">분석 요청하기</button>
+            </div>
+
+            <input type="file" id="file-input" name="ai_clothes_img" accept="image/*"
+                onchange="handleFileSelect(event)">
+        </form>
+    </main>
+
+    <script>
+        let selectedImageData = "";
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                selectedImageData = e.target.result;
+
+                const previewImg = document.getElementById('preview-img');
+                previewImg.src = selectedImageData;
+                previewImg.style.display = 'block';
+                document.getElementById('upload-icon').style.display = 'none';
+                document.getElementById('upload-text').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function goToAnalysis() {
+            if (!selectedImageData) {
+                alert('분석할 옷 사진을 먼저 선택해줘!');
+                return;
+            }
+
+            // 1. 결과 화면(result.html)에서 애니메이션과 함께 사진을 띄울 수 있도록 로컬 스토리지에 저장
+            localStorage.setItem('analyzingImg', selectedImageData);
+
+            // 2. Flask 서버(app.py)로 실제 이미지 파일을 전송하여 AI 분석 요청
+            document.getElementById('upload-form').submit();
+        }
+    </script>
+</body>
+
+</html>
+>>>>>>> 4c4afd5667fd797b04b4b86e7c6f4cbe599d09ff
