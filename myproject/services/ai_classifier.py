@@ -3,7 +3,7 @@ from PIL import Image
 import collections
 
 # 1. AI 모델 초기화: 서버가 켜질 때 딱 한 번만 로드되도록 함 (서버 속도 최적화)
-print("🚀 패션 분석 AI 엔진 시동 중 (정확도 강화 버전 3-네 모서리 픽셀 분석)")
+print(" 패션 분석 AI 엔진 시동 중 (정확도 강화 버전 3-네 모서리 픽셀 분석)")
 detector = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
 
 # AI가 분석한 영어 결과를 DB 테이블 규격에 맞는 한글 데이터로 치환함
@@ -100,7 +100,7 @@ def analyze_cloth(image_path):
             "name": TRANSLATE_MAP.get(name_eng, "의류"),
             "color": hex_color, 
             "style": [TRANSLATE_MAP.get(style_eng, "캐주얼")], 
-            "ai_tags": [main_eng, sub_eng, name_eng],  # 삭제되었던 AI 원본 태그 보관 복구!
+            "ai_tags": [main_eng, sub_eng, name_eng],  # 삭제되었던 AI 원본 태그 보관 복구
             "is_verified": False                       # 사용자 확인 전 기본값 FALSE 설정
         }
     except Exception as e:
