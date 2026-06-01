@@ -100,7 +100,7 @@ def _execute_signup_pipeline(clean_data):
         name=clean_data["name"]           # [추가]
     )
     
-    # DB 저장은 sign_up_user 내부에서 통합 처리되므로 성공 여부만 반환한다
+    # DB 저장은 sign_up_user 내부에서 통합 처리되므로 성공 여부만 반환
     if auth_success:
         return True
     
@@ -171,4 +171,21 @@ def check_email_duplicate(email):
 
     # 미존재 데이터 확인 시 신규 사용 가능 이메일 승인
     print(f"[DB 로그] 사용 가능 이메일: {email}")
+    return True
+
+def check_nickname_duplicate(nickname):
+    # 빈 값 입력 방지 및 예외 처리 로직
+    if not nickname:
+        return False
+
+    # 공통 쿼리 모듈을 활용한 닉네임 데이터 DB 조회
+    result = _execute_duplicate_query('nickname', nickname)
+
+    # 조회 결과 존재 시 기가입 닉네임으로 분류하여 사용 불가로 판별
+    if result is None or len(result) > 0:
+        print(f"[알고리즘 경고] 중복 닉네임 감지: {nickname}")
+        return False
+
+    # 미존재 데이터 확인 시 신규 사용 가능 닉네임으로 승인
+    print(f"[DB 로그] 사용 가능 닉네임: {nickname}")
     return True

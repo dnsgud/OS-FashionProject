@@ -36,7 +36,7 @@ except ImportError:
     pass
 
 def _filter_modified_profile_data(input_data, current_profile):
-    # 프론트엔드 전송 데이터 중 실질적 변경이 발생한 항목만 이중 필터링하는 내부 로직이다
+    # 프론트엔드 전송 데이터 중 실질적 변경이 발생한 항목만 이중 필터링하는 내부 로직
     clean_data = {}
     
     # 1. 이름 데이터 (중복 검사 없이 형식 무결성만 확인 후 그대로 갱신한다)
@@ -52,9 +52,9 @@ def _filter_modified_profile_data(input_data, current_profile):
             else:
                 raise ValueError("닉네임 이중 검증 실패 (형식 오류 또는 중복)")
                 
-    # [수정 사항] 기획 변경으로 인해 아이디(login_id) 수정 로직은 전면 철거되었다.
+    
                 
-    # 3. 이메일 데이터 변경 시 무결성 및 중복 검증을 수행한다
+    # 3. 이메일 데이터 변경 시 무결성 및 중복 검증을 수행
     if "email" in input_data:
         new_email = input_data["email"].strip()
         if new_email != current_profile.get("email"):
@@ -68,7 +68,7 @@ def _filter_modified_profile_data(input_data, current_profile):
 def update_member_profile(current_login_id, input_data):
     # 최종 확인 버튼 클릭 시 변경된 유효 데이터를 일괄적으로 갱신하는 제어 로직
     try:
-        # 기존 프로필 상태를 로드하여 변경 기준점으로 삼는다
+        # 기존 프로필 상태를 로드하여 변경 기준점
         current_profile = fetch_user_profile(current_login_id)
         if not current_profile:
             return False
@@ -137,7 +137,7 @@ def fetch_user_body_profile(login_id):
         return None
     
 def _filter_body_profile_data(input_data):
-    # 입력받은 키, 몸무게, 체형 데이터의 무결성과 정상 범위를 판별하는 필터링 로직이다
+    # 입력받은 키, 몸무게, 체형 데이터의 무결성과 정상 범위를 판별하는 필터링 로직
     clean_data = {}
     
     # 1. 키 데이터 검증 (문자열 방어 및 100.0cm ~ 250.0cm 허용)
@@ -147,7 +147,7 @@ def _filter_body_profile_data(input_data):
             if 100.0 <= height <= 250.0:
                 clean_data["height"] = round(height, 1)
         except ValueError:
-            pass # 숫자가 아닌 값이 들어오면 무시하고 필터링한다
+            pass # 숫자가 아닌 값이 들어오면 무시하고 필터링
             
     # 2. 몸무게 데이터 검증 (문자열 방어 및 30.0kg ~ 200.0kg 허용)
     if "weight" in input_data and input_data["weight"]:
@@ -166,18 +166,18 @@ def _filter_body_profile_data(input_data):
     return clean_data
 
 def update_user_body_profile(current_login_id, input_data):
-    # 하단 확인 버튼 클릭 시 정제된 체형 데이터를 DB에 일괄 반영하는 제어 로직이다
+    # 하단 확인 버튼 클릭 시 정제된 체형 데이터를 DB에 일괄 반영하는 제어 로직
     try:
-        # 필터링 헬퍼 함수를 호출하여 유효한 숫자 및 카테고리 데이터만 추출한다
+        # 필터링 헬퍼 함수를 호출하여 유효한 숫자 및 카테고리 데이터만 추출
         clean_data = _filter_body_profile_data(input_data)
         
-        # 검증을 통과한 데이터가 존재할 경우 DB 일괄 업데이트 쿼리를 수행한다
+        # 검증을 통과한 데이터가 존재할 경우 DB 일괄 업데이트 쿼리를 수행
         if clean_data:
             response = supabase.table('users').update(clean_data).eq('login_id', current_login_id).execute()
             print(f"[DB 로그] 체형 정보 갱신 처리 완료: {clean_data}")
             return bool(response.data)
             
-        print("[알고리즘 로그] 유효한 체형 변경 데이터가 없어 업데이트가 생략되었다")
+        print("[알고리즘 로그] 유효한 체형 변경 데이터가 없어 업데이트가 생략")
         return True
         
     except Exception as e:
@@ -185,15 +185,15 @@ def update_user_body_profile(current_login_id, input_data):
         return False
     
 def _verify_current_password(login_id, current_pw):
-    # 입력받은 현재 비밀번호와 DB에 저장된 비밀번호의 일치 여부를 대조하는 유틸리티이다
+    # 입력받은 현재 비밀번호와 DB에 저장된 비밀번호의 일치 여부를 대조하는 유틸리티
     if not login_id or not current_pw:
         return False
         
     try:
-        # DB에서 사용자의 기존 암호(pw)만 단일 조회한다
+        # DB에서 사용자의 기존 암호(pw)만 단일 조회
         query = supabase.table('users').select('pw').eq('login_id', login_id).execute()
         
-        # 조회된 데이터가 존재하고 입력값과 완전히 일치할 경우 승인(True)을 반환한다
+        # 조회된 데이터가 존재하고 입력값과 완전히 일치할 경우 승인(True)을 반환
         if query.data and query.data[0].get('pw') == current_pw:
             return True
             
@@ -205,14 +205,14 @@ def _verify_current_password(login_id, current_pw):
         return False
     
 def authorize_profile_edit(login_id, current_pw):
-    # 회원정보 수정 화면 진입 전 비밀번호를 검증하여 접근 권한 및 데이터를 부여하는 컨트롤러이다
+    # 회원정보 수정 화면 진입 전 비밀번호를 검증하여 접근 권한 및 데이터를 부여하는 컨트롤러
     
-    # 1단계에서 만든 검증 모듈을 호출하여 일치 여부를 판별한다
+    # 1단계에서 만든 검증 모듈을 호출하여 일치 여부를 판별
     is_authorized = _verify_current_password(login_id, current_pw)
     
     if is_authorized:
         print(f"[DB 로그] 회원정보 수정 화면 진입 보안 승인 완료: {login_id}")
-        # 보안 통과 시, 프론트엔드 입력칸에 뿌려줄 기존 데이터를 fetch_user_profile을 재사용해 반환한다
+        # 보안 통과 시, 프론트엔드 입력칸에 뿌려줄 기존 데이터를 fetch_user_profile을 재사용해 반환
         return fetch_user_profile(login_id)
         
     print("[알고리즘 에러] 비밀번호 불일치로 회원정보 수정 접근이 거부되었다")

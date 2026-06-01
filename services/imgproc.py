@@ -17,7 +17,7 @@ key = os.getenv("SUPABASE_KEY")
 supabase = create_client(url, key)
 
 # ==========================================
-# 1. 의류 사진 업로드 및 AI 분석 파이프라인 (첫 번째 코드 유지)
+# 1. 의류 사진 업로드 및 AI 분석 파이프라인 
 # ==========================================
 def process_user_upload(file_path, user_email): 
     storage_path = f"cloth_{int(time.time())}.jpg" 
@@ -54,7 +54,7 @@ def process_user_upload(file_path, user_email):
             "style": ai_result["style"],                     
             "fit": "레귤러핏",                                 # [추가] AI 분석 불가 항목: 임시 기본 핏 부여
             "image_url": image_url,                          
-            "ai_tags": ai_result.get("ai_tags", []),         # 삭제되었던 AI 원본 태그 DB 저장 복구!
+            "ai_tags": ai_result.get("ai_tags", []),         
             "is_verified": False
         }
 
@@ -72,7 +72,7 @@ def process_user_upload(file_path, user_email):
 
 
 # ==========================================
-# 2. AI 분석 결과 승인 및 수정 모듈 (user_email 구조로 변경)
+# 2. AI 분석 결과 승인 및 수정 모듈 
 # ==========================================
 def confirm_ai_analysis(cloth_id, user_email):
     """AI 분석 결과 정확, 사용자가 승인하는 DB 로직"""
@@ -85,7 +85,7 @@ def confirm_ai_analysis(cloth_id, user_email):
         return None
 
 def modify_and_confirm_ai_analysis(cloth_id, user_email, modified_data):
-    """사용자가 직접 수정한 데이터(핏, 온도 포함)를 반영하고 최종 승인 처리하는 로직이다."""
+    """사용자가 직접 수정한 데이터(핏, 온도 포함)를 반영하고 최종 승인 처리하는 로직"""
     try:
         update_data = modified_data.copy()
         update_data["is_verified"] = True
@@ -97,7 +97,7 @@ def modify_and_confirm_ai_analysis(cloth_id, user_email, modified_data):
         if 'color' in update_data:
             update_data['color'] = _sanitize_color_input(update_data['color'])
             
-        # 프론트엔드에서 fit 속성을 넘겨주면 update_data 딕셔너리에 포함되어 자동으로 DB를 덮어쓴다.
+        # 프론트엔드에서 fit 속성을 넘겨주면 update_data 딕셔너리에 포함되어 자동으로 DB를 덮어씀
         response = supabase.table('clothes').update(update_data).eq('id', cloth_id).eq('user_email', user_email).execute()
         return response.data
     except Exception as e:
@@ -106,10 +106,10 @@ def modify_and_confirm_ai_analysis(cloth_id, user_email, modified_data):
 
 
 # ==========================================
-# 3. 수동 의류 등록 모듈 (사진 업로드 및 Fit 확장 버전)
+# 3. 수동 의류 등록 모듈 
 # ==========================================
 def _is_valid_hex(color_str):
-    """[알고리즘] 순수하게 헥사코드 형식이 맞는지 True/False만 반환하는 순수 함수이다."""
+    """[알고리즘] 순수하게 헥사코드 형식이 맞는지 True/False만 반환하는 순수 함수"""
     if not color_str or not isinstance(color_str, str):
         return False
         
@@ -117,7 +117,7 @@ def _is_valid_hex(color_str):
     return bool(re.match(pattern, color_str))
 
 def _sanitize_color_input(color_str):
-    """[알고리즘] 색상 값을 검증, 실패 시 안전한 기본값을 반환하는 래퍼 함수이다."""
+    """[알고리즘] 색상 값을 검증, 실패 시 안전한 기본값을 반환하는 래퍼 함수"""
     if _is_valid_hex(color_str):
         return color_str
     else:
@@ -125,7 +125,7 @@ def _sanitize_color_input(color_str):
         return "#FFFFFF"
 
 def _upload_to_storage(file_path):
-    """[스토리지] 수동 등록 시 넘어온 이미지를 Supabase에 업로드하고 URL을 반환한다."""
+    """[스토리지] 수동 등록 시 넘어온 이미지를 Supabase에 업로드하고 URL을 반환"""
     if not file_path or not os.path.exists(file_path):
         return None
     
@@ -139,7 +139,7 @@ def _upload_to_storage(file_path):
         return None
 
 def build_manual_cloth_data(user_email, input_data, image_url=None):
-    """프론트엔드 전달 수동 입력 데이터를 DB 스키마에 맞게 구조화한다."""
+    """프론트엔드 전달 수동 입력 데이터를 DB 스키마에 맞게 구조화"""
     raw_color = input_data.get("color", "#FFFFFF")
     safe_color = _sanitize_color_input(raw_color)
     input_data["color"] = safe_color  
@@ -158,9 +158,9 @@ def build_manual_cloth_data(user_email, input_data, image_url=None):
     }
 
 def insert_manual_cloth_to_db(user_email, input_data, file_path=None):
-    """구조화된 수동 입력 데이터를 Supabase DB에 직접 저장한다."""
+    """구조화된 수동 입력 데이터를 Supabase DB에 직접 저장"""
     try:
-        # 사진 파일이 전달된 경우 스토리지에 먼저 업로드한다.
+        # 사진 파일이 전달된 경우 스토리지에 먼저 업로드
         image_url = None
         if file_path:
             print("[알고리즘 로그] 수동 등록 이미지 스토리지 업로드 시도 중...")
@@ -176,7 +176,7 @@ def insert_manual_cloth_to_db(user_email, input_data, file_path=None):
 
 def handle_cloth_registration(register_type, user_email, payload, file_path=None):
     """
-    사용자의 선택(register_type)에 따라 데이터 흐름을 분기하는 통합 알고리즘이다.
+    사용자의 선택(register_type)에 따라 데이터 흐름을 분기하는 통합 알고리즘
     """
     if register_type == 'photo':
         print("[알고리즘 로그] 사진 등록 방식 선택 -> AI 분석 파이프라인으로 라우팅")
@@ -184,7 +184,7 @@ def handle_cloth_registration(register_type, user_email, payload, file_path=None
         
     elif register_type == 'manual':
         print("[알고리즘 로그] 직접 등록 방식 선택 -> 수동 DB 저장 파이프라인으로 라우팅")
-        # 수동 등록 시 텍스트 딕셔너리(payload)와 사진(file_path)을 함께 넘기도록 구조를 개선했다.
+        # 수동 등록 시 텍스트 딕셔너리(payload)와 사진(file_path)을 함께 넘기도록 구조를 개선
         return insert_manual_cloth_to_db(user_email, payload, file_path)
         
     else:
@@ -192,10 +192,10 @@ def handle_cloth_registration(register_type, user_email, payload, file_path=None
         return None
 
 # ==========================================
-# 4. 옷장 데이터 수정 및 삭제 모듈 (user_email 구조로 변경)
+# 4. 옷장 데이터 수정 및 삭제 모듈 
 # ==========================================
 def _filter_closet_keys(edit_data):
-    """[알고리즘] 허용된 컬럼만 통과시키는 내부 필터링 함수이다."""
+    """[알고리즘] 허용된 컬럼만 통과시키는 내부 필터링 함수"""
     allowed = ['main_category', 'sub_category', 'name', 'temp_level', 'color', 'style', 'fit', 'is_verified'] 
     filtered = {k: v for k, v in edit_data.items() if k in allowed}
     return filtered
@@ -222,7 +222,7 @@ def _execute_closet_update_query(cloth_id, user_email, clean_data):
     print(f"DEBUG: DB에서 찾은 데이터 개수: {len(check.data)}")
     
     if len(check.data) == 0:
-        print("DEBUG: 실패! DB에 해당 조건의 데이터가 없습니다.")
+        print("DEBUG: 실패! DB에 해당 조건의 데이터가 없음")
         return None
 
     # 2. 업데이트 수행
@@ -281,7 +281,7 @@ def delete_closet_cloth(cloth_id, user_email):
             print(f"[DB 로그] 옷장 의류 데이터 영구 삭제 완료: {cloth_id}")
             return True
             
-        print(f"[DB 경고] 삭제할 의류 데이터가 없거나 본인 소유가 아니다: {cloth_id}")
+        print(f"[DB 경고] 삭제할 의류 데이터가 없거나 본인 소유가 아님: {cloth_id}")
         return False
         
     except Exception as e:

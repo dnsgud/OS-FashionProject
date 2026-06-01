@@ -85,7 +85,7 @@ def analyze_cloth(image_path):
         # 3. 픽셀 기반 헥사 코드 직접 추출
         hex_color = get_hex_color(image)
 
-        # [보정 로직 복구 완료] 상세 명칭 결과에 따라 상위 카테고리를 강제 교정
+        #  상세 명칭 결과에 따라 상위 카테고리를 강제 교정
         if name_eng == "hooded sweatshirt":
             main_eng, sub_eng = "top", "innerwear"
         elif name_eng in ["heavy coat", "knit cardigan"]:
@@ -100,7 +100,7 @@ def analyze_cloth(image_path):
             "name": TRANSLATE_MAP.get(name_eng, "의류"),
             "color": hex_color, 
             "style": [TRANSLATE_MAP.get(style_eng, "캐주얼")], 
-            "ai_tags": [main_eng, sub_eng, name_eng],  # 삭제되었던 AI 원본 태그 보관 복구!
+            "ai_tags": [main_eng, sub_eng, name_eng],  # 삭제되었던 AI 원본 태그 보관 복구
             "is_verified": False                       # 사용자 확인 전 기본값 FALSE 설정
         }
     except Exception as e:
