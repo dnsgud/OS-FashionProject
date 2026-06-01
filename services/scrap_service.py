@@ -74,3 +74,17 @@ def get_user_scraps_with_details(user_email):
                 continue
 
             bottom_detail = bottom_details_list[0]
+            
+            # 4. 프론트엔드 맞춤 포맷 바인딩
+            scrapped_outfits_list.append({
+                "scrap_id": scrap_id,
+                "title": db_title,
+                "custom_title": db_title,
+                "top_combo": top_combo_details,
+                "bottom": bottom_detail,
+                "created_at": scrap["created_at"]
+            })
+
+        return {"success": True, "scraps": scrapped_outfits_list}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
