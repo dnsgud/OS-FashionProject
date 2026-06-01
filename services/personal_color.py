@@ -121,3 +121,62 @@ def _classify_season(hex_color):
             season = "가을 웜톤 (Autumn Warm)"
             
     return season
+
+# ==========================================
+# 4. 메인 파이프라인: 퍼스널 컬러 진단 및 의류 색상 추천
+# ==========================================
+def analyze_personal_color(image_path):
+    try:
+        print(f"\n[AI 로직 로그] 퍼스널 컬러 진단 시작 (파일: {image_path})")
+        
+        image = Image.open(image_path)
+        
+        # 외부 함수(get_hex_color) 대신 이 파일 내의 가장 정확했던 정밀 피부톤 추출 함수 사용
+        face_hex_color = extract_pure_skin_color(image)
+        print(f"[AI 로직 로그] 피부톤 헥사코드 추출 완료: {face_hex_color}")
+        
+        season_result = _classify_season(face_hex_color)
+        print(f"[AI 로직 로그] 퍼스널 컬러 판별 완료: {season_result}")
+        
+        return {
+            "status": "success",
+            "skin_tone_hex": face_hex_color,
+            "personal_color_season": season_result,
+            "recommended_clothes_colors": RECOMMENDED_COLORS.get(season_result, [])
+        }
+        
+    except Exception as e:
+        print(f"\n[AI 로직 에러] 퍼스널 컬러 분석 실패")
+        print(f"에러 메시지: {e}")
+        traceback.print_exc()
+        return {
+            "status": "error",
+            "error_message": str(e)
+        }
+
+# ==========================================
+# 5. 로컬 환경 단독 테스트 블록
+# ==========================================
+if __name__ == "__main__":
+    test_image_path = "test_face.jpg"
+    
+    if os.path.exists(test_image_path):
+        print("========== 로컬 알고리즘 테스트 시작 ==========")
+        
+        result = analyze_personal_color(test_image_path)
+        
+        if result.get("status") == "success":
+            print("\n[최종 진단 결과 확인]")
+            print(f"▶ 추출된 피부톤(Hex): {result['skin_tone_hex']}")
+            print(f"▶ 진단된 퍼스널 컬러: {result['personal_color_season']}")
+            
+            print("\n[추천 의류 색상 목록]")
+            for color in result["recommended_clothes_colors"]:
+                print(f" - {color['name']} (색상코드: {color['hex']})")
+        else:
+            print("\n[테스트 에러] 분석 중 문제가 발생")
+            print(result.get("error_message"))
+            
+        print("\n===============================================")
+    else:
+        print(f"[테스트 실패] '{test_image_path}' 파일을 찾을 수 없음. 테스트할  사진을 준비 필요")
