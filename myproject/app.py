@@ -9,7 +9,6 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, s
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
-# 전역 변수 초기화
 supabase = None
 fetch_weather_forecast = None
 process_user_upload = None
@@ -19,26 +18,24 @@ verify_and_get_login_id = None
 request_find_password = None
 verify_password_reset_code = None
 reset_password_and_auto_login = None
+add_scrap_to_db = None
+delete_scrap_from_db = None
+get_user_scraps_with_details = None
 
 try:
-    # 환경 설정
     from config import supabase
     from weather_service import fetch_weather_forecast
-    
-    # 코어 서비스
     from auth_service import sign_up_user, login_user, get_email_by_login_id, fetch_user_profile
     from services.imgproc import update_closet_cloth, delete_closet_cloth, process_user_upload, modify_and_confirm_ai_analysis, delete_unverified_cloth
     from services.recommend_clothes import recommend_clothes_logic
     from services.userprofile import update_account_password, change_profile_password, _filter_body_profile_data
     from services.auth import _validate_password_match
-    
-    # 계정 복구 서비스
+    from services.scrap_service import add_scrap_to_db, delete_scrap_from_db, get_user_scraps_with_details
     from services.account_recovery import (
         request_find_id, verify_and_get_login_id, request_find_password, 
         verify_password_reset_code, reset_password_and_auto_login
     )
     print("✅ 모든 서비스 모듈 로드 및 임포트 완료")
-
 except Exception as e:
     print(f"❌ 모듈 로드 중 치명적 오류 발생: {e}")
 
@@ -50,18 +47,16 @@ app = Flask(__name__, static_folder='static', static_url_path='/static')
 CORS(app, supports_credentials=True)
 app.secret_key = "my_fashion_app_secret_1234"
 
-# 업로드 폴더 설정
 UPLOAD_FOLDER = 'static/uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-
-# 날씨 API 캐싱 레이어 시스템
 WEATHER_CACHE = {
     "data": None,
     "last_updated": None
 }
 
+# 날씨 API 호출 결과를 10분간 캐싱하여 반환하는 함수
 def get_cached_weather():
     now = datetime.now()
     if WEATHER_CACHE["data"] and WEATHER_CACHE["last_updated"]:
@@ -79,18 +74,19 @@ def get_cached_weather():
 
 fetch_weather = get_cached_weather
 
-# 세션 유지 및 전역 변수 설정
+# 모든 요청 전에 세션 유지 시간을 제어하는 함수
 @app.before_request
 def make_session_permanent():
     session.permanent = True
     app.permanent_session_lifetime = timedelta(minutes=30)
 
+# 전역 템플릿 영역에 세션 로그인 여부 변수를 주입하는 함수
 @app.context_processor
 def inject_user():
     is_logged_in = 'user_email' in session or 'login_id' in session
     return dict(logged_in=is_logged_in)
 
-# 아이디 / 비밀번호 찾기 API 라우터 통신 레이어
+# 아이디 찾기 인증번호 발송을 요청하는 API 라우터
 @app.route('/api/find-id/request', methods=['POST'])
 def api_request_find_id():
     data = request.get_json()
@@ -100,6 +96,7 @@ def api_request_find_id():
     if request_find_id(name, email): return jsonify({"success": True, "message": "입력하신 이메일로 4자리 인증번호가 발송되었습니다."}), 200
     return jsonify({"success": False, "error": "등록되지 않은 이름이거나 이메일 주소입니다."}), 400
 
+# 아이디 찾기 인증번호를 대조 및 검증하는 API 라우터
 @app.route('/api/find-id/verify', methods=['POST'])
 def api_verify_find_id():
     data = request.get_json()  
@@ -111,6 +108,7 @@ def api_verify_find_id():
     if login_id: return jsonify({"success": True, "login_id": login_id}), 200
     return jsonify({"success": False, "error": "인증번호가 일치하지 않거나 만료되었습니다."}), 400
 
+# 비밀번호 찾기 통과 후 최종 재설정을 처리하는 API 라우터
 @app.route('/api/find-pw/reset', methods=['POST'])
 def api_reset_pw():
     data = request.get_json()
@@ -123,6 +121,7 @@ def api_reset_pw():
         return jsonify({"success": True, "message": "비밀번호가 성공적으로 변경되었습니다."}), 200
     return jsonify({"success": False, "error": "비밀번호 변경 중 오류가 발생했습니다."}), 400
 
+# 비밀번호 찾기 본인 인증번호 발송을 처리하는 API 라우터
 @app.route('/api/find-pw/request', methods=['POST'])
 def api_request_find_pw():
     data = request.get_json()
@@ -706,7 +705,17 @@ def cancel_clothes():
         print(f"[서버 에러] cancel_clothes 내부 오류: {str(e)}")
         return jsonify({"error": f"서버 오류 발생: {str(e)}"}), 500
     
-# 회원 마이페이지 프로필 메인 대시보드 조회 라우터
+# 내 즐겨찾기 스크랩북 개인화 룩북 페이지 보관함 이동 라우터
+@app.route('/my_scrap')
+def my_scrap():
+    user_email = session.get('user_email')
+    if not user_email: return redirect(url_for('login'))
+    
+    result = get_user_scraps_with_details(user_email) if get_user_scraps_with_details else {"scraps": []}
+    scraps_list = result.get("scraps", []) if result.get("success") else []
+    return render_template('my_scrap.html', user_email=user_email, scraps=scraps_list)
+
+# 회원 본인의 기본 인적 사항 마이페이지 룩북 프로필 조회 라우터
 @app.route('/my_profile')
 def my_profile():
     user_email = session.get('user_email')
@@ -744,7 +753,7 @@ def update_user_info_api():
         traceback.print_exc() 
         return jsonify({"status": "fail", "message": "DB 통신 중 오류가 발생했습니다."}), 500
 
-# 이메일 주소의 가입 중복 및 무결성 패턴 검증 API 라우터
+# 가입 폼 내 주소 중복성 유무 체크 제어 API 라우터
 @app.route('/api/check-email', methods=['POST'])
 def check_email():
     data = request.get_json()
@@ -762,7 +771,7 @@ def check_email():
         print(f"이메일 중복 확인 에러: {e}")
         return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
 
-# 서비스 내부 닉네임 수동 변경 시 중복 검사 API 라우터
+# 마이페이지 내 닉네임 중복 유무 실시간 체크 제어 API 라우터
 @app.route('/api/check-nickname', methods=['POST'])
 def check_nickname():
     data = request.get_json()
@@ -809,7 +818,7 @@ def update_body_info():
         print(f"[DB 에러] 체형 정보 업데이트 실패: {e}")
         return jsonify({"status": "error", "message": "서버 오류로 저장에 실패했습니다."}), 500
 
-# 프로필 민감정보 수정 진입 전 기존 패스워드 일치 유무를 검증하는 API 라우터
+# 프로필 편집 진입 전 기존 비밀번호 일치 유무를 검증하는 API 라우터
 @app.route('/api/verify_password', methods=['POST'])
 def verify_password_api():
     data = request.json
@@ -825,9 +834,9 @@ def verify_password_api():
         else:
             return jsonify({"status": "fail", "message": "비밀번호가 일치하지 않습니다."}), 400
     except Exception as e:
-        return jsonify({"status": "fail", "message": "서버 검증 중 오류가 발생했습니다."}), 500Prefix
-
-# 회원가입 진행 시 아이디 사용 가능 유무 실시간 중복 체크 API 라우터
+        return jsonify({"status": "fail", "message": "서버 검증 중 오류가 발생했습니다."}), 500
+    
+# 가입 단계에서 사용자가 입력한 중복 아이디 존재 여부를 가리는 API 라우터
 @app.route('/api/check-id', methods=['POST'])
 def check_id():
     data = request.get_json()
@@ -845,7 +854,7 @@ def check_id():
         print(f"아이디 중복 확인 에러: {e}")
         return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
     
-# 로컬 개발 환경용 단독 스크립트 실행 여부를 판별하는 조건문
+# 메인 파일로 로컬 터미널 단독 실행되었을 때 Flask 내장 백서버를 띄우는 조건문
 if __name__ == '__main__':
     print("\n🚀 패션 앱 서버 웹 서비스 구동 중...")
     app.run(host='0.0.0.0', port=5000, debug=True)
