@@ -95,3 +95,29 @@ def extract_pure_skin_color(image):
     avg_b = sum(p[2] for p in skin_pixels) // len(skin_pixels)
     
     return '#{:02x}{:02x}{:02x}'.format(avg_r, avg_g, avg_b).upper()
+
+# ==========================================
+# 3. 피부톤 기반 4계절 퍼스널 컬러 분류 알고리즘 (연예인 데이터 기반 고도화)
+# ==========================================
+def _hex_to_rgb(hex_str):
+    hex_str = hex_str.lstrip('#')
+    return tuple(int(hex_str[i:i+2], 16) for i in (0, 2, 4))
+
+def _classify_season(hex_color):
+    r, g, b = _hex_to_rgb(hex_color)
+    
+    luminance = (0.299 * r) + (0.587 * g) + (0.114 * b)
+    is_cool_tone = b > (g * 0.88) # 0.88  (정밀한 쿨톤 판별)
+    
+    if is_cool_tone:
+        if luminance > 160:       # 여름 쿨톤의 투명함
+            season = "여름 쿨톤 (Summer Cool)"
+        else:
+            season = "겨울 쿨톤 (Winter Cool)"
+    else:
+        if luminance > 160:       # 봄 웜톤의 맑음
+            season = "봄 웜톤 (Spring Warm)"
+        else:
+            season = "가을 웜톤 (Autumn Warm)"
+            
+    return season
