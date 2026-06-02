@@ -887,7 +887,65 @@ def check_id():
     except Exception as e:
         print(f"아이디 중복 확인 에러: {e}")
         return jsonify({"error": "서버 통신 중 오류가 발생했습니다."}), 500
-    
+
+# 퍼스널 컬러 분석 및 얼굴 사진 업로드 처리 API 라우터
+@app.route('/analyze_personal_color', methods=['POST'])
+def api_analyze_personal_color():
+    user_email = session.get('user_email')
+    if not user_email: 
+        return jsonify({"error": "로그인이 필요"}), 401
+
+    # 프론트엔드 FormData의 키값 'image_file' 매칭
+    if 'image_file' not in request.files: 
+        return jsonify({"error": "사진 파일이 누락"}), 400
+        
+    file = request.files['image_file']
+    if file.filename == '': 
+        return jsonify({"error": "선택된 파일이 없음"}), 400
+
+    # 분석을 위한 임시 로컬 저장
+    filename = secure_filename(file.filename)
+    ext = os.path.splitext(filename)[1]
+    unique_filename = f"temp_face_{uuid.uuid4().hex}{ext}"
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+    file.save(file_path)
+
+    try:
+        print(f"🚀 [app.py] 퍼스널 컬러 엔진 시동: {user_email}")
+        
+        # 1. AI 퍼스널 컬러 분석 실행
+        result = analyze_personal_color(file_path)
+        
+        if result.get("status") == "success":
+            season_str = result.get("personal_color_season", "")
+            
+            # 2. 프론트엔드 JS 로직에 맞게 한글 결과를 영문 키워드로 치환
+            tone_keyword = "spring"
+            if "여름" in season_str: 
+                tone_keyword = "summer"
+            elif "가을" in season_str: 
+                tone_keyword = "autumn"
+            elif "겨울" in season_str: 
+                tone_keyword = "winter"
+
+            # 3. DB 저장 없이 프론트가 요구하는 포맷으로 응답 반환
+            return jsonify({
+                "status": "success",
+                "tone": tone_keyword
+            }), 200
+        else:
+            return jsonify({"error": result.get("error_message", "분석 실패")}), 500
+            
+    except Exception as e:
+        print(f"❌ 퍼스널 컬러 분석 라우터 에러: {e}")
+        traceback.print_exc()
+        return jsonify({"error": "서버 통신 중 오류가 발생"}), 500
+        
+    finally:
+        # 4. 일회성 분석이므로 로컬에 임시 저장된 사진 파일 즉시 파기
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
 # 메인 파일로 로컬 터미널 단독 실행되었을 때 Flask 내장 백서버를 띄우는 조건문
 if __name__ == '__main__':
     print("\n🚀 패션 앱 서버 웹 서비스 구동 중...")
