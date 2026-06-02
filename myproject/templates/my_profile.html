@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - 내 프로필</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f6f8fa;
+            color: #24292f;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            display: flex;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        /* 왼쪽 메뉴 */
+        .sidebar {
+            width: 250px;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .profile-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: none;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .menu-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .menu-btn.active {
+            background: #0969da;
+            color: white;
+        }
+
+        /* 오른쪽 콘텐츠 영역 */
+        .content {
+            flex: 1;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 10px;
+            padding: 40px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #d0d7de;
+            padding-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row input {
+            flex: 1;
+        }
+
+        .check-btn {
+            width: 120px;
+            border: none;
+            border-radius: 6px;
+            background: #238636;
+            color: white;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            background: #0969da;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .info-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f6f8fa;
+            border-radius: 8px;
+            border: 1px solid #d0d7de;
+        }
+
+        .description {
+            color: #57606a;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* 단계별 화면 전환용 스타일 (회원정보 수정에서 사용) */
+        .step-container {
+            display: none;
+        }
+
+        .step-container.active {
+            display: block;
+        }
+
+        /* 코디 가중치 조절 슬라이더 영역 스타일 */
+        .weight-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .weight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .weight-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .weight-value {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0969da;
+            background: #e0f2fe;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .weight-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e2e8f0;
+            border-radius: 3px;
+            outline: none;
+            padding: 0;
+            border: none;
+        }
+
+        .weight-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0969da;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .weight-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .range-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* 커스텀 알림 모달 레이아웃 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 400px;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-text {
+            font-size: 16px;
+            color: #24292f;
+            font-weight: 600;
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        .modal-close-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #0969da;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: #0c57b4;
+        }
+
+        /* 다크모드 대응 통합 가드 스타일 */
+        body.dark-mode {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .sidebar,
+        body.dark-mode .content,
+        body.dark-mode .info-box {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .menu-btn {
+            background: #1e293b;
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .menu-btn:hover {
+            background: #334155;
+        }
+
+        body.dark-mode .menu-btn.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select {
+            background: #0f172a;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+
+        body.dark-mode .section-title {
+            border-color: #334155;
+        }
+
+        /* 다크모드 전용 코디 가중치 조절 슬라이더 스타일 */
+        body.dark-mode .weight-item {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        body.dark-mode .weight-name {
+            color: #f1f5f9;
+        }
+
+        body.dark-mode .weight-value {
+            color: #818cf8;
+            background: #312e81;
+        }
+
+        body.dark-mode .weight-slider {
+            background: #334155;
+        }
+
+        body.dark-mode .weight-slider::-webkit-slider-thumb {
+            background: #6366f1;
+        }
+
+        /* 다크모드 전용 커스텀 모달 스타일 */
+        body.dark-mode .modal-content {
+            background: #1e293b;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .modal-text {
+            color: #f8fafc;
+        }
+
+        body.dark-mode .modal-close-btn {
+            background: #6366f1;
+        }
+
+        body.dark-mode .modal-close-btn:hover {
+            background: #4f46e5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        // 전역 다크모드 테마 상태 가드 적용
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <div class="container">
+
+        <div class="sidebar">
+
+            <div class="profile-title">
+                👤 내 프로필
+            </div>
+
+            <button class="menu-btn active" onclick="showTab('profile', this)">
+                회원정보 수정
+            </button>
+
+            <button class="menu-btn" onclick="showTab('password', this)">
+                비밀번호 변경
+            </button>
+
+            <button class="menu-btn" onclick="showTab('body', this)">
+                체형정보 수정
+            </button>
+
+            <button class="menu-btn" onclick="showTab('weight-setting', this)">
+                ⚙️ 코디 가중치 조정
+            </button>
+
+            <hr style="border: 0; height: 1px; background: #d0d7de; margin: 15px 0;">
+
+            <a href="{{ url_for('home_page') }}" class="menu-btn"
+                style="color: #57606a; display: inline-block; text-decoration: none; width: 100%;">
+                🏠 홈으로 가기
+            </a>
+
+        </div>
+
+        <div class="content">
+
+            <div id="profile" class="tab-content active">
+
+                <div class="section-title">
+                    회원정보 수정
+                </div>
+
+                <div id="infoStep1" class="step-container active">
+                    <div class="form-group">
+                        <label>안전을 위해 현재 비밀번호를 입력해주세요.</label>
+                        <input type="password" id="infoCurrentPw" placeholder="현재 비밀번호 입력">
+                    </div>
+                    <button class="save-btn" onclick="verifyInfoPassword()">
+                        확인
+                    </button>
+                </div>
+
+                <div id="infoStep2" class="step-container">
+                    <div class="form-group">
+                        <label>닉네임</label>
+                        <div class="row">
+                            <input type="text" id="userNickname" value="{{ users.nickname if users else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>이메일</label>
+                        <div class="row">
+                            <input type="email" id="userEmail" value="{{ users.email if users else '' }}">
+                            <button class="check-btn" onclick="checkEmail()">중복확인</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>이름</label>
+                        <select id="userName">
+                            {% if users %}
+                            <option value="{{ users.name }}" selected>{{ users.name }}</option>
+                            {% else %}
+                            <option value="">사용자 정보 없음</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <button class="save-btn" onclick="updateUserInfo()">수정하기</button>
+                </div>
+
+            </div>
+
+            <div id="password" class="tab-content">
+
+                <div class="section-title">
+                    비밀번호 변경
+                </div>
+
+                <div class="form-group">
+                    <label>기존 비밀번호</label>
+                    <input type="password" id="pwCurrentPw" placeholder="기존 비밀번호를 입력하세요">
+                </div>
+
+                <div class="form-group">
+                    <label>새 비밀번호</label>
+                    <input type="password" id="newPw" placeholder="새 비밀번호를 입력하세요 (6자 이상)">
+                </div>
+
+                <div class="form-group">
+                    <label>새 비밀번호 확인</label>
+                    <input type="password" id="confirmPw" placeholder="새 비밀번호를 한번 더 입력하세요">
+                </div>
+
+                <button class="save-btn" onclick="changePassword()">
+                    비밀번호 변경 완료
+                </button>
+
+            </div>
+
+            <div id="body" class="tab-content">
+
+                <div class="section-title">
+                    체형정보 수정
+                </div>
+
+                <div class="form-group">
+                    <label>키(cm)</label>
+                    <input type="number" id="bodyHeight" value="{{ users.height if users and users.height else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>몸무게(kg)</label>
+                    <input type="number" id="bodyWeight" value="{{ users.weight if users and users.weight else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>체형</label>
+                    <select id="bodyType" onchange="updateDescription()">
+                        <option value="역삼각형" {% if users and users.body_shape=='역삼각형' %}selected{% endif %}>역삼각형
+                        </option>
+                        <option value="삼각형" {% if users and users.body_shape=='삼각형' %}selected{% endif %}>삼각형</option>
+                        <option value="일자형" {% if users and users.body_shape=='일자형' %}selected{% endif %}>일자형</option>
+                    </select>
+                </div>
+
+                <div class="info-box" id="bodyDescription">
+                    {% if users and users.body_shape == '삼각형' %}
+                    하체 비율이 상대적으로 큰 체형입니다.
+                    {% elif users and users.body_shape == '일자형' %}
+                    상체와 하체 비율이 비슷한 체형입니다.
+                    {% else %}
+                    넓은 어깨와 좁은 허리를 가진 체형입니다.
+                    {% endif %}
+                </div>
+
+                <br>
+
+                <button class="save-btn" onclick="saveBodyInfo()">
+                    저장하기
+                </button>
+
+            </div>
+
+            <div id="weight-setting" class="tab-content">
+
+                <div class="section-title">
+                    코디 가중치 조정
+                </div>
+
+                <p class="description" style="margin-bottom: 25px; font-size: 15px; line-height: 1.5;">
+                    각 요소가 옷을 추천할 때 반영되는 가중치(0.1 ~ 2.0)를 설정해 줘. 수치가 높을수록 해당 스타일 요소를 우선적으로 반영해서 매칭해 줄게!
+                </p>
+
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-name">✨ 스타일 가중치</span>
+                        <span class="weight-value" id="val-style">1.0</span>
+                    </div>
+                    <div class="slider-container">
+                        <span class="range-label">0.1</span>
+                        <input type="range" class="weight-slider" id="weight-style" min="0.1" max="2.0" step="0.1"
+                            value="1.0" oninput="updateWeightValue('style')">
+                        <span class="range-label">2.0</span>
+                    </div>
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-name">🎨 색상 가중치</span>
+                        <span class="weight-value" id="val-color">1.0</span>
+                    </div>
+                    <div class="slider-container">
+                        <span class="range-label">0.1</span>
+                        <input type="range" class="weight-slider" id="weight-color" min="0.1" max="2.0" step="0.1"
+                            value="1.0" oninput="updateWeightValue('color')">
+                        <span class="range-label">2.0</span>
+                    </div>
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-name">🌡️ 온도 가중치</span>
+                        <span class="weight-value" id="val-temperature">1.0</span>
+                    </div>
+                    <div class="slider-container">
+                        <span class="range-label">0.1</span>
+                        <input type="range" class="weight-slider" id="weight-temperature" min="0.1" max="2.0" step="0.1"
+                            value="1.0" oninput="updateWeightValue('temperature')">
+                        <span class="range-label">2.0</span>
+                    </div>
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-header">
+                        <span class="weight-name">📏 핏 가중치</span>
+                        <span class="weight-value" id="val-fit">1.0</span>
+                    </div>
+                    <div class="slider-container">
+                        <span class="range-label">0.1</span>
+                        <input type="range" class="weight-slider" id="weight-fit" min="0.1" max="2.0" step="0.1"
+                            value="1.0" oninput="updateWeightValue('fit')">
+                        <span class="range-label">2.0</span>
+                    </div>
+                </div>
+
+                <br>
+
+                <button class="save-btn" onclick="saveWeights()">
+                    가중치 저장하기
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="customModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-text" id="modalMessage">
+                코디 가중치 설정이 정상적으로 저장되었습니다.
+            </div>
+            <button class="modal-close-btn" onclick="closeModal(null)">확인</button>
+        </div>
+    </div>
+
+    <script>
+        // 모달 제어용 글로벌 상태값 및 헬퍼 함수
+        let pendingReload = false;
+
+        function openModal(message, shouldReload = false) {
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('customModal').classList.add('active');
+            pendingReload = shouldReload;
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === document.getElementById('customModal')) {
+                document.getElementById('customModal').classList.remove('active');
+                if (pendingReload) {
+                    location.reload();
+                }
+            }
+        }
+
+        // 회원정보 수정 API 연동
+        async function updateUserInfo() {
+            const nickname = document.getElementById('userNickname').value;
+            const email = document.getElementById('userEmail').value;
+            const name = document.getElementById('userName').value;
+
+            try {
+                const response = await fetch('/api/update_user_info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nickname, email, name })
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    openModal("회원 정보가 수정되었습니다.", true);
+                } else {
+                    openModal(result.message || "수정 실패");
+                }
+            } catch (error) {
+                console.error("통신 에러:", error);
+                openModal("서버 연결 중 오류가 발생했습니다.");
+            }
+        }
+
+        async function saveBodyInfo() {
+            const height = document.getElementById('bodyHeight').value;
+            const weight = document.getElementById('bodyWeight').value;
+            const bodyType = document.getElementById('bodyType').value;
+
+            console.log("전송하는 체형 데이터:", { height, weight, bodyType });
+
+            try {
+                const response = await fetch('/api/update_body_info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        height: height,
+                        weight: weight,
+                        bodyType: bodyType
+                    })
+                });
+
+                const result = await response.json();
+                console.log("서버 응답:", result);
+
+                if (result.status === "success") {
+                    openModal("체형 정보가 저장되었습니다.", true);
+                } else {
+                    openModal(result.message || "저장 실패");
+                }
+            } catch (error) {
+                console.error("통신 에러 상세:", error);
+                openModal("서버 연결 오류");
+            }
+        }
+
+        function showTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.sidebar .menu-btn').forEach(button => button.classList.remove('active'));
+
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+
+            if (btn) btn.classList.add('active');
+
+            resetAllTabs();
+
+            if (tabId === 'weight-setting') {
+                loadUserWeightsFromServer();
+            }
+        }
+
+        // 수정된 비밀번호 검증 함수
+        async function verifyInfoPassword() {
+            const inputPw = document.getElementById('infoCurrentPw').value;
+
+            try {
+                const response = await fetch('/api/verify_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: inputPw })
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    document.getElementById('infoStep1').classList.remove('active');
+                    document.getElementById('infoStep2').classList.add('active');
+                } else {
+                    openModal("현재 비밀번호가 올바르지 않습니다.");
+                }
+            } catch (error) {
+                openModal("서버 오류가 발생했습니다.");
+            }
+        }
+
+        // 이메일 중복 확인
+        async function checkEmail() {
+            const email = document.getElementById('userEmail').value;
+
+            if (!email || email.trim() === "") {
+                openModal("이메일을 입력해주세요!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/check-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const result = await response.json();
+                openModal(result.message);
+            } catch (error) {
+                console.error("통신 에러:", error);
+                openModal("서버와 통신하는 도중 오류가 발생했습니다.");
+            }
+        }
+
+        // 모든 탭의 입력 폼과 단계를 초기 상태로 되돌리는 함수
+        function resetAllTabs() {
+            const infoPw = document.getElementById('infoCurrentPw');
+            const curPw = document.getElementById('pwCurrentPw');
+            const nPw = document.getElementById('newPw');
+            const cPw = document.getElementById('confirmPw');
+
+            if (infoPw) infoPw.value = "";
+            if (curPw) curPw.value = "";
+            if (nPw) nPw.value = "";
+            if (cPw) cPw.value = "";
+
+            const step1 = document.getElementById('infoStep1');
+            const step2 = document.getElementById('infoStep2');
+            if (step1 && step2) {
+                step1.classList.add('active');
+                step2.classList.remove('active');
+            }
+        }
+
+        function updateDescription() {
+            const value = document.getElementById('bodyType').value;
+            const box = document.getElementById('bodyDescription');
+
+            if (value === '역삼각형') {
+                box.innerHTML = '넓은 어깨와 좁은 허리를 가진 체형입니다.';
+            } else if (value === '삼각형') {
+                box.innerHTML = '하체 비율이 상대적으로 큰 체형입니다.';
+            } else {
+                box.innerHTML = '상체와 하체 비율이 비슷한 체형입니다.';
+            }
+        }
+
+        async function changePassword() {
+            const currentPw = document.getElementById('pwCurrentPw').value;
+            const newPw = document.getElementById('newPw').value;
+            const confirmPw = document.getElementById('confirmPw').value;
+
+            if (!currentPw || !newPw || !confirmPw) {
+                openModal("모든 항목을 입력해주세요.");
+                return;
+            }
+
+            if (newPw.length < 6) {
+                openModal("새 비밀번호는 6자 이상이어야 합니다.");
+                return;
+            }
+
+            if (newPw !== confirmPw) {
+                openModal("새 비밀번호가 서로 일치하지 않습니다.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/update_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPw, newPw })
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    openModal("비밀번호 변경 완료!", true);
+                } else {
+                    openModal(result.message || "비밀번호 변경에 실패했습니다.");
+                }
+            } catch (error) {
+                openModal("서버 연결 중 오류가 발생했습니다.");
+            }
+        }
+
+        // 가중치 슬라이더 실시간 수치 변경 핸들러
+        function updateWeightValue(type) {
+            const slider = document.getElementById(`weight-${type}`);
+            const valueDisplay = document.getElementById(`val-${type}`);
+            valueDisplay.innerText = parseFloat(slider.value).toFixed(1);
+        }
+
+        // 가중치 정보 저장 API 연동 처리 함수
+        async function saveWeights() {
+            const weightStyle = document.getElementById('weight-style').value;
+            const weightColor = document.getElementById('weight-color').value;
+            const weightTemperature = document.getElementById('weight-temperature').value;
+            const weightFit = document.getElementById('weight-fit').value;
+
+            const weightData = {
+                style: parseFloat(weightStyle),
+                color: parseFloat(weightColor),
+                temperature: parseFloat(weightTemperature),
+                fit: parseFloat(weightFit)
+            };
+
+            console.log("전송하는 가중치 데이터:", weightData);
+
+            try {
+                const response = await fetch('/api/update_weight_info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(weightData)
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    openModal("코디 가중치 설정이 정상적으로 저장되었습니다.", true);
+                } else {
+                    openModal(result.message || "저장 실패");
+                }
+            } catch (error) {
+                console.error("통신 에러:", error);
+                openModal("서버 연결 중 오류가 발생했습니다.");
+            }
+        }
+
+        // 페이지 진입 시 기존 DB 가중치 스펙을 읽어와 UI 슬라이더 위치를 맞춰주는 함수
+        async function loadUserWeightsFromServer() {
+            try {
+                const response = await fetch('/api/get_weight_info');
+                const result = await response.json();
+                
+                if (result.status === "success" && result.data) {
+                    const w = result.data;
+                    
+                    // 1. 슬라이더 핸들 위치 복원
+                    document.getElementById('weight-style').value = w.style;
+                    document.getElementById('weight-color').value = w.color;
+                    document.getElementById('weight-temperature').value = w.temperature;
+                    document.getElementById('weight-fit').value = w.fit;
+                    
+                    // 2. 우측 텍스트 배지(Lv 수치) 복원
+                    document.getElementById('val-style').innerText = parseFloat(w.style).toFixed(1);
+                    document.getElementById('val-color').innerText = parseFloat(w.color).toFixed(1);
+                    document.getElementById('val-temperature').innerText = parseFloat(w.temperature).toFixed(1);
+                    document.getElementById('val-fit').innerText = parseFloat(w.fit).toFixed(1);
+                }
+            } catch (error) {
+                console.error("서버 가중치 정보 동기화 실패:", error);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

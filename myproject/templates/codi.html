@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>맞춤 코디 추천 - Look_Up</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         :root {
             --primary: #4f46e5;
@@ -14,121 +17,583 @@
             --text: #0f172a;
             --text-light: #64748b;
             --border: #e2e8f0;
+            --heart: #ef4444;
         }
 
         body {
-            font-family: 'Pretendard', sans-serif;
             background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
+            margin: 0;
         }
 
         .container {
-            max-width: 900px; width: 100%;
-            padding: 60px 20px; box-sizing: border-box;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px 20px 60px 20px;
+            box-sizing: border-box;
+            text-align: center;
+            font-family: 'Pretendard', sans-serif;
+            color: var(--text);
+        }
+
+        .container * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 150%;
+            right: 0;
+            background: white;
+            min-width: 140px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 10px 0;
+            z-index: 1000;
+            border: 1px solid #f1f5f9;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f8fafc;
+            color: var(--primary);
+        }
+
+        .header-section h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .header-section p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .temp-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #eff6ff;
+            color: #3b82f6;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .style-group-container {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .style-group {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            white-space: nowrap;
+            padding: 5px 5px 12px 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .style-group::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .style-group::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .style-group::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .style-group::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .style-btn {
+            background: white;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 0 0 calc(25% - 8px);
+            min-width: 100px;
+            box-sizing: border-box;
             text-align: center;
         }
 
-        /* 헤더 섹션 */
-        .header-section h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
-        .header-section p { font-size: 1.1rem; color: var(--text-light); margin-bottom: 30px; }
+        @media (max-width: 768px) {
+            .style-btn { flex: 0 0 calc(33.33% - 7px); }
+        }
 
-        /* 기온 및 버튼 영역 */
-        .action-card {
-            background: white; border-radius: 24px; padding: 30px;
-            border: 1px solid var(--border); margin-bottom: 40px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        @media (max-width: 480px) {
+            .style-btn { flex: 0 0 calc(45% - 5px); }
         }
-        .temp-tag {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 8px 16px; background: #eff6ff; color: #3b82f6;
-            border-radius: 20px; font-weight: 700; margin-bottom: 20px;
+
+        .style-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
+
+        .style-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
         .recommend-btn {
-            background: var(--primary); color: white; border: none;
-            padding: 16px 40px; font-size: 1.2rem; font-weight: 700;
-            border-radius: 14px; cursor: pointer; transition: all 0.2s;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
             box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
         }
-        .recommend-btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
 
-        /* 결과 영역 (순위별 리스트) */
-        .result-area { display: none; width: 100%; animation: fadeInUp 0.5s ease; }
-        
-        .rank-section { margin-bottom: 40px; text-align: left; }
-        .rank-title { 
-            display: inline-block; padding: 6px 14px; border-radius: 10px;
-            font-size: 0.9rem; font-weight: 800; margin-bottom: 15px;
+        .recommend-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
         }
-        .rank-1 { background: #e0e7ff; color: #4f46e5; } /* 1순위 강조 */
-        .rank-others { background: #f1f5f9; color: #475569; }
 
-        /* 상하의 세트 카드 가로 정렬 */
+        .nav-scrap-btn {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 16px 25px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-scrap-btn:hover {
+            background: #f5f3ff;
+            transform: translateY(-2px);
+        }
+
+        .result-area {
+            display: none;
+            width: 100%;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .rank-section {
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .rank-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .rank-title {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .rank-1 {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .rank-others {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .heart-save-btn {
+            background: white;
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #cbd5e1;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        .heart-save-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--heart);
+            color: var(--heart);
+        }
+
+        .heart-save-btn.active {
+            color: var(--heart);
+            border-color: var(--heart);
+        }
+
         .codi-set-wrapper {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-            background: white; border: 1px solid var(--border);
-            border-radius: 24px; padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .item-card { text-align: center; }
-        .item-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; margin-bottom: 15px; }
-        
-        /* 💡 레이어드 상의 유연 렌더링용 내부 플렉스 박스 확장 패치 */
-        .clothes-flex-row {
-            display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%;
+        .codi-set-wrapper:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
         }
 
-        .single-item-node { width: 110px; text-align: center; }
+        .item-card {
+            text-align: center;
+        }
+
+        .item-card .item-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
 
         .item-img-box {
-            width: 100px; height: 130px; background: #f8fafc;
-            border-radius: 16px; display: flex; justify-content: center;
-            align-items: center; margin: 0 auto 10px auto; border: 1px solid #f1f5f9;
+            width: 100%;
+            aspect-ratio: 1.2/1;
+            background: #f8fafc;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 3rem;
+            color: #cbd5e1;
+            background-size: cover;
+            background-position: center;
         }
-        .item-img-box img {
-            width: 100%; height: 100%; object-fit: cover; border-radius: 16px;
-        }
-        .item-name { font-size: 0.95rem; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-desc { font-size: 0.8rem; color: var(--text-light); }
 
-        /* 하단 팁 박스 */
+        .item-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .item-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
         .tip-box {
-            background: #eef2ff; color: #4338ca; padding: 18px 25px;
-            border-radius: 16px; text-align: left; font-weight: 600;
-            display: flex; align-items: center; gap: 12px; margin-top: 20px;
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 18px 25px;
+            border-radius: 16px;
+            text-align: left;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
         }
 
-        /* 로딩 스피너 및 메세지 공용 디자인 */
-        .status-message { font-size: 1.1rem; color: #94a3b8; padding: 40px 0; font-weight: 600; }
-        .spinner { animation: spin 1s linear infinite; font-size: 2rem; color: #4f46e5; margin-bottom: 12px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .empty-msg {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+            font-weight: 600;
         }
+
+        /* 🎯 배경 레이어 오버레이 강제 중앙 정렬 수립 */
+        .modal-overlay {
+            display: none;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(5px) !important;
+            z-index: 9999 !important;
+            justify-content: center !important;
+            align-items: center !important;
+            animation: fadeIn 0.2s ease;
+            box-sizing: border-box !important;
+        }
+
+        /* 🎯 [핵심 수정] 외부 style.css의 우측 하단 배치를 완벽히 깨부수고 중앙 정렬 고정 */
+        .modal-overlay .modal-content {
+            background: white !important;
+            width: 95% !important;
+            max-width: 680px !important;
+            border-radius: 24px !important;
+            padding: 35px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+            animation: scaleUp 0.2s ease;
+            text-align: center !important;
+            
+            /* 외부 속성 완전 무력화 */
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            margin: auto !important; /* Flex 레이아웃 내부에서 완벽한 수직/수평 중앙 정렬 보장 */
+            transform: none !important;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 22px;
+            right: 24px;
+            background: none;
+            border: none;
+            font-size: 26px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover { color: #475569; }
+
+        .modal-body-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .modal-grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 550px) {
+            .modal-grid-wrapper { grid-template-columns: 1fr; gap: 16px; }
+        }
+
+        .modal-item-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-column-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: #4f46e5;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-img-box {
+            width: 100%;
+            aspect-ratio: 1.1/1;
+            background-color: #ffffff;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.8rem;
+            color: #cbd5e1;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-item-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #0f172a;
+        }
+
+        .modal-item-meta {
+            font-size: 0.88rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* 입력창 모달 및 확인창 모달 너비 최적화 */
+        .input-modal-content { max-width: 420px !important; padding: 30px !important; }
+
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .modal-input:focus { border-color: var(--primary); }
+        .modal-btn-group { display: flex; gap: 10px; }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-confirm { background: var(--primary); color: white; }
+        .modal-cancel { background: #f1f5f9; color: #475569; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 600px) {
             .codi-set-wrapper { grid-template-columns: 1fr; }
         }
     </style>
 </head>
+
 <body>
 
-    <div class="container">
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="{{ url_for('home_page') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+            </div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('guide_main') }}" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-book"></i> Guide
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('codi_page') }}" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-tshirt"></i> Codi
+                    </a>
+                </li>
+                <li class="dropdown-wrapper">
+                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;" onclick="toggleDropdown(event)">
+                        <i class="fas fa-user"></i> My
+                    </a>
+                    <div class="dropdown-menu" id="my-dropdown">
+                        <a href="{{ url_for('my_closet') }}">👗 내 옷장</a>
+                        <a href="{{ url_for('my_scrap') }}">🔖 스크랩북</a>
+                        <a href="{{ url_for('my_profile') }}">⚙️ 스타일 설정</a>
+                    </div>
+                </li>
+                <li>
+                    {% if logged_in %}
+                    <a href="{{ url_for('logout') }}" class="login-btn" style="background-color: #ef4444; text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="login-btn" style="text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
         <header class="header-section">
             <h1>오늘 당신을 위한 맞춤 코디</h1>
             <p>내 옷장 아이템으로 날씨에 맞는 완벽한 조합을 만들어 줄게!</p>
         </header>
 
         <section class="action-card">
-            <div class="temp-tag" id="realtime-temp-display">
-                <i class="fas fa-thermometer-half"></i> 실시간 날씨 로딩 중...
+            <div class="temp-tag">
+                <i class="fas fa-thermometer-half"></i> 날씨 분석 중...
             </div>
-            <br>
-            <button class="recommend-btn" id="btn-recommend-trigger">코디 추천받기</button>
+
+            <div class="style-group-container">
+                <div class="style-group">
+                    <button class="style-btn active" onclick="selectStyle('캐주얼')">캐주얼</button>
+                    <button class="style-btn" onclick="selectStyle('데이트')">데이트</button>
+                    <button class="style-btn" onclick="selectStyle('포멀')">포멀</button>
+                    <button class="style-btn" onclick="selectStyle('스트릿')">스트릿</button>
+                    <button class="style-btn" onclick="selectStyle('밀리터리룩')">밀리터리룩</button>
+                    <button class="style-btn" onclick="selectStyle('애슬레저')">애슬레저</button>
+                    <button class="style-btn" onclick="selectStyle('고프코어')">고프코어</button>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="recommend-btn" onclick="recommendCodi()">코디 추천받기</button>
+                <button class="nav-scrap-btn" onclick="location.href='/my_scrap'">
+                    <i class="fas fa-bookmark"></i> 스크랩북 보기
+                </button>
+            </div>
         </section>
 
         <div id="result-container" class="result-area"></div>
@@ -136,104 +601,400 @@
         <div id="tip-area" class="result-area">
             <div class="tip-box">
                 <i class="fas fa-lightbulb" style="color: #fbbf24;"></i>
-                <span id="weather-tip">로딩된 추천 매칭의 전체 스코어 및 밸런스를 고려하여 착용을 추천합니다.</span>
+                <span id="weather-tip">내 옷장 상태에 기반하여 유연한 매칭 가이드를 산출하고 있습니다.</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="detailModal" class="modal-overlay" onclick="closeCodiModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="closeCodiModal()">&times;</button>
+            <div class="modal-body-title" id="modalTitle">코디 상세보기</div>
+            <div class="modal-grid-wrapper"></div>
+        </div>
+    </div>
+
+    <div id="inputModal" class="modal-overlay">
+        <div class="modal-content input-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-body-title" style="font-size: 18px; margin-bottom: 15px;">스크랩 이름 지정</div>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 15px;">이 코디의 멋진 이름을 지정해줘!</p>
+            <input type="text" id="customTitleInput" class="modal-input" placeholder="예: 캠퍼스 등교 룩, 주말 데이트">
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-cancel" onclick="closeInputModal()">취소</button>
+                <button class="modal-btn modal-confirm" id="inputModalConfirmBtn">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertModal" class="modal-overlay" onclick="closeAlertModal(event)">
+        <div class="modal-content input-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-body-title" id="alertModalTitle" style="font-size: 18px; margin-bottom: 15px; border-bottom: none; padding-bottom: 0;">알림</div>
+            <p style="font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px;" id="alertModalMessage">-</p>
+            <div style="display: flex; justify-content: center;">
+                <button class="modal-btn modal-confirm" onclick="closeAlertModal()" style="max-width: 120px; padding: 10px;">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal-overlay" onclick="closeConfirmModal(event)">
+        <div class="modal-content input-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-body-title" style="font-size: 18px; margin-bottom: 15px; border-bottom: none; padding-bottom: 0;">오늘의 코디 착용</div>
+            <p style="font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px;">오늘 이 코디를 입고 외출하시겠습니까?<br>착용 횟수 데이터가 즉시 누적됩니다.</p>
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-cancel" onclick="closeConfirmModal()">취소</button>
+                <button class="modal-btn modal-confirm" id="confirmModalConfirmBtn">입기</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 페이지가 켜지자마자 백엔드에서 날씨를 읽어와서 상단 기온 태그를 교체합니다.
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                const res = await fetch('/api/recommend?tpo=캐주얼');
-                if(res.ok) {
-                    const info = await res.json();
-                    document.getElementById('realtime-temp-display').innerHTML = `<i class="fas fa-thermometer-half"></i> 현재 기온: ${info.current_temp}°C`;
-                }
-            } catch(e) {
-                document.getElementById('realtime-temp-display').innerHTML = `<i class="fas fa-thermometer-half"></i> 현재 기온: 18°C (기본)`;
-            }
-        });
+        let selectedStyle = '캐주얼';
+        let currentRecommendations = [];
+        let pendingClothIds = [];
 
-        // [코디 추천받기] 버튼 동적 클릭 처리기
-        document.getElementById('btn-recommend-trigger').addEventListener('click', async function() {
+        function toggleDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const dropdown = document.getElementById('my-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        window.onclick = function (event) {
+            const myMenuBtn = document.getElementById('my-menu-btn');
+            const dropdownMenu = document.getElementById('my-dropdown');
+
+            if (myMenuBtn && !myMenuBtn.contains(event.target)) {
+                if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.remove('show');
+                }
+            }
+        }
+
+        function showAlertModal(title, message) {
+            document.getElementById('alertModalTitle').innerText = title;
+            document.getElementById('alertModalMessage').innerText = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+
+        function closeAlertModal(event) {
+            if (event && event.target !== document.getElementById('alertModal')) return;
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        function showConfirmModal(clothIds) {
+            pendingClothIds = clothIds;
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function closeConfirmModal(event) {
+            if (event && event.target !== document.getElementById('confirmModal')) return;
+            document.getElementById('confirmModal').style.display = 'none';
+            pendingClothIds = [];
+        }
+
+        function closeInputModal() {
+            document.getElementById('inputModal').style.display = 'none';
+        }
+
+        function selectStyle(styleName) {
+            selectedStyle = styleName;
+            const buttons = document.querySelectorAll('.style-btn');
+            buttons.forEach(btn => {
+                if (btn.innerText === styleName) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function recommendCodi() {
             const container = document.getElementById('result-container');
-            
-            // 로딩 메시지 및 회전 스피너 작동
-            container.innerHTML = `
-                <div class="status-message">
-                    <div class="spinner"><i class="fas fa-circle-notch"></i></div>
-                    <div>내 옷장 보관함을 분석하여 최적의 레이어드를 조합 중입니다...</div>
-                </div>`;
+            container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-spin"></i> 내 옷장 데이터 실시간 가치 점수 연산 중...</div>';
             container.style.display = 'block';
 
-            try {
-                // 1단계: 파이썬 서버 데이터 요청
-                const response = await fetch('/api/recommend?tpo=캐주얼');
-                if(!response.ok) throw new Error("등록된 내 옷 데이터를 찾을 수 없거나 로그인이 필요합니다.");
-                
-                const data = await response.json();
-                const outfits = data.recommendations; // 최대 5개 코디 리스트
+            fetch(`/api/recommend?tpo=${encodeURIComponent(selectedStyle)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const currentTemp = data.current_temp !== undefined ? data.current_temp : '--';
+                    const sensoryTemp = data.sensory_temp !== undefined ? data.sensory_temp : '--';
+                    document.querySelector('.temp-tag').innerHTML = `<i class="fas fa-thermometer-half"></i> 현재 기온: ${currentTemp}°C | 체감 온도: ${sensoryTemp}°C`;
 
-                if(!outfits || outfits.length === 0) {
-                    container.innerHTML = `<div class="status-message">⚠️ 현재 기온 대역 및 가이드 레벨에 맞는 의류가 부족합니다. 먼저 마이룸에서 상·하의 옷을 등록해 주세요!</div>`;
-                    return;
-                }
+                    if (data.message) {
+                        document.getElementById('weather-tip').innerText = data.message;
+                        document.getElementById('tip-area').style.display = 'block';
+                    }
 
-                container.innerHTML = ''; // 로딩창 초기화
+                    container.innerHTML = '';
+                    const recs = data.recommendations;
+                    currentRecommendations = recs || [];
 
-                // 2단계: 수신받은 리스트 순회하며 가로 정렬 카드 드로잉
-                outfits.forEach((outfit, i) => {
-                    const rankClass = (i === 0) ? 'rank-1' : 'rank-others';
-                    const rankText = (i + 1) + '순위 추천 코디 (종합 평점: ' + outfit.total_score + '점)';
+                    if (!recs || recs.length === 0) {
+                        container.innerHTML = '<div class="empty-msg">👗 현재 추천 조건 범위에 부합하는 상/하의 조합 데이터가 옷장에 부족합니다.</div>';
+                        return;
+                    }
 
-                    // 상의 묶음 데이터 파싱 (이너 단독, 혹은 이너+아우터 동시 처리 자동 순회)
-                    const topItemsHtml = outfit.top_combo.map(top => `
-                        <div class="single-item-node">
-                            <div class="item-img-box">
-                                <img src="${top.image_url || 'https://via.placeholder.com/100x130?text=LookUp'}" onerror="this.src='https://via.placeholder.com/100x130?text=LookUp'">
-                            </div>
-                            <div class="item-name">${top.name}</div>
-                            <div class="item-desc">${top.sub_category}</div>
-                        </div>
-                    `).join('');
+                    recs.forEach((outfit, i) => {
+                        const rankClass = (i === 0) ? 'rank-1' : 'rank-others';
+                        const rankText = `${selectedStyle} ${i + 1}순위 추천 코디`;
 
-                    const section = document.createElement('div');
-                    section.className = 'rank-section';
-                    section.innerHTML = `
-                        <span class="rank-title ${rankClass}">${i === 0 ? '<i class="fas fa-crown"></i> ' : ''}${rankText}</span>
-                        <div class="codi-set-wrapper">
-                            <div class="item-card">
-                                <div class="item-label">TOP (상의 조합)</div>
-                                <div class="clothes-flex-row">
-                                    ${topItemsHtml}
+                        const topIds = outfit.top_combo ? outfit.top_combo.map(t => t.id).filter(id => id != null) : [];
+                        const bottomId = outfit.bottom ? outfit.bottom.id : null;
+                        const shoesId = outfit.shoes ? outfit.shoes.id : null;
+
+                        let totalClothIds = [...topIds];
+                        if (bottomId) totalClothIds.push(bottomId);
+                        if (shoesId) totalClothIds.push(shoesId);
+
+                        const innerItem = outfit.top_combo ? outfit.top_combo.find(t => t.sub_category === '이너') : null;
+                        const outerItem = outfit.top_combo ? outfit.top_combo.find(t => t.sub_category === '아우터') : null;
+
+                        const section = document.createElement('div');
+                        section.className = 'rank-section';
+
+                        let htmlContent = `
+                            <div class="rank-header">
+                                <span class="rank-title ${rankClass}">
+                                    ${i === 0 ? '<i class="fas fa-crown"></i> ' : ''}${rankText}
+                                    <span style="font-weight: 800; color: var(--primary); margin-left: 6px;">• ${outfit.fashion_score || 0}점</span>
+                                </span>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button style="background: var(--primary); color: white; border: none; padding: 8px 16px; font-size: 0.85rem; font-weight: 700; border-radius: 20px; cursor: pointer;"
+                                            onclick="event.stopPropagation(); showConfirmModal(${JSON.stringify(totalClothIds)})">
+                                        <i class="fas fa-check"></i> 오늘 이 옷 입기
+                                    </button>
+                                    <button class="heart-save-btn" onclick="event.stopPropagation(); prepareScrap(${i}, '${rankText}', this)">
+                                        🤍
+                                    </button>
                                 </div>
                             </div>
-                            <div class="item-card">
-                                <div class="item-label">BOTTOM (하의)</div>
-                                <div class="clothes-flex-row">
-                                    <div class="single-item-node">
-                                        <div class="item-img-box">
-                                            <img src="${outfit.bottom.image_url || 'https://via.placeholder.com/100x130?text=LookUp'}" onerror="this.src='https://via.placeholder.com/100x130?text=LookUp'">
-                                        </div>
-                                        <div class="item-name">${outfit.bottom.name}</div>
-                                        <div class="item-desc">하의</div>
+                            <div class="codi-set-wrapper" onclick="openCodiModalFromIndex(${i}, '${rankText}')">
+                        `;
+
+                        if (outerItem) {
+                            htmlContent += `
+                                <div class="item-card">
+                                    <div class="item-label" style="color: #ef4444;">OUTER (아우터)</div>
+                                    <div class="item-img-box" style="${outerItem.image_url ? `background-image:url('${outerItem.image_url}');` : ''}">
+                                        ${!outerItem.image_url ? '<i class="fas fa-tshirt"></i>' : ''}
                                     </div>
+                                    <div class="item-name">${outerItem.name || '이름 없음'}</div>
+                                    <div class="item-desc">핏: ${outerItem.fit || '-'} | 색상: ${outerItem.color || '-'}</div>
+                                </div>
+                            `;
+                        }
+
+                        if (innerItem) {
+                            htmlContent += `
+                                <div class="item-card">
+                                    <div class="item-label">TOP (이너)</div>
+                                    <div class="item-img-box" style="${innerItem.image_url ? `background-image:url('${innerItem.image_url}');` : ''}">
+                                        ${!innerItem.image_url ? '<i class="fas fa-tshirt"></i>' : ''}
+                                    </div>
+                                    <div class="item-name">${innerItem.name || '이름 없음'}</div>
+                                    <div class="item-desc">핏: ${innerItem.fit || '-'} | 색상: ${innerItem.color || '-'}</div>
+                                </div>
+                            `;
+                        }
+
+                        if (outfit.bottom) {
+                            htmlContent += `
+                                <div class="item-card">
+                                    <div class="item-label">BOTTOM (하의)</div>
+                                    <div class="item-img-box" style="${outfit.bottom.image_url ? `background-image:url('${outfit.bottom.image_url}');` : ''}">
+                                        ${!outfit.bottom.image_url ? '<i class="fas fa-socks"></i>' : ''}
+                                    </div>
+                                    <div class="item-name">${outfit.bottom.name || '이름 없음'}</div>
+                                    <div class="item-desc">핏: ${outfit.bottom.fit || '-'} | 색상: ${outfit.bottom.color || '-'}</div>
+                                </div>
+                            `;
+                        }
+
+                        htmlContent += `
+                                <div class="item-card">
+                                    <div class="item-label">SHOES (신발)</div>
+                                    <div class="item-img-box" style="${outfit.shoes && outfit.shoes.image_url ? `background-image:url('${outfit.shoes.image_url}');` : ''}">
+                                        ${!(outfit.shoes && outfit.shoes.image_url) ? '<i class="fa-solid fa-shoe-prints"></i>' : ''}
+                                    </div>
+                                    <div class="item-name">${outfit.shoes ? outfit.shoes.name : '기본 매칭 단화'}</div>
+                                    <div class="item-desc">핏: ${outfit.shoes ? outfit.shoes.fit : '스탠다드'} | 색상: ${outfit.shoes ? outfit.shoes.color : '#64748b'}</div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                    container.appendChild(section);
+                        `;
+
+                        section.innerHTML = htmlContent;
+                        container.appendChild(section);
+                    });
+
+                    window.scrollTo({ top: container.offsetTop - 20, behavior: 'smooth' });
+                })
+                .catch(err => {
+                    console.error("추천 처리 통신 에러 발생:", err);
+                    container.innerHTML = '<div class="empty-msg">❌ 데이터를 불러오는 중 연동 오류가 발생했습니다.</div>';
                 });
+        }
 
-                // 결과 노출 및 팁 가이드 출력
-                document.getElementById('tip-area').style.display = 'block';
-                window.scrollTo({ top: container.offsetTop - 20, behavior: 'smooth' });
+        function openCodiModalFromIndex(index, defaultTitle) {
+            const outfit = currentRecommendations[index];
+            if (!outfit) return;
 
-            } catch(err) {
-                container.innerHTML = `<div class="status-message" style="color: #ef4444;">❌ 오류: ${err.message}</div>`;
+            document.getElementById('modalTitle').innerText = defaultTitle;
+            const gridWrapper = document.querySelector('.modal-grid-wrapper');
+            gridWrapper.innerHTML = '';
+
+            if (outfit.top_combo) {
+                outfit.top_combo.forEach(top => {
+                    const topCol = document.createElement('div');
+                    topCol.className = 'modal-item-column';
+                    const label = top.sub_category === '아우터' ? 'OUTER (아우터)' : 'TOP (이너)';
+                    const labelColor = top.sub_category === '아우터' ? '#ef4444' : '#4f46e5';
+                    topCol.innerHTML = `
+                        <div class="modal-column-label" style="color: ${labelColor};">${label}</div>
+                        <div class="modal-img-box" style="${top.image_url ? `background-image:url('${top.image_url}')` : ''}">
+                            ${!top.image_url ? '<i class="fas fa-tshirt"></i>' : ''}
+                        </div>
+                        <div class="modal-item-name">${top.name || '이름 없음'}</div>
+                        <div class="modal-item-meta">핏: ${top.fit || '-'} | 색상: ${top.color || '-'}</div>
+                    `;
+                    gridWrapper.appendChild(topCol);
+                });
             }
+
+            if (outfit.bottom) {
+                const bottomCol = document.createElement('div');
+                bottomCol.className = 'modal-item-column';
+                bottomCol.innerHTML = `
+                    <div class="modal-column-label">BOTTOM (하의)</div>
+                    <div class="modal-img-box" style="${outfit.bottom.image_url ? `background-image:url('${outfit.bottom.image_url}')` : ''}">
+                        ${!outfit.bottom.image_url ? '<i class="fas fa-socks"></i>' : ''}
+                    </div>
+                    <div class="modal-item-name">${outfit.bottom.name || '이름 없음'}</div>
+                    <div class="modal-item-meta">핏: ${outfit.bottom.fit || '-'} | 색상: ${outfit.bottom.color || '-'}</div>
+                `;
+                gridWrapper.appendChild(bottomCol);
+            }
+
+            const shoesCol = document.createElement('div');
+            shoesCol.className = 'modal-item-column';
+            const shoesImgUrl = outfit.shoes ? outfit.shoes.image_url : null;
+            shoesCol.innerHTML = `
+                <div class="modal-column-label">SHOES (신발)</div>
+                <div class="modal-img-box" style="${shoesImgUrl ? `background-image:url('${shoesImgUrl}')` : ''}">
+                    ${!shoesImgUrl ? '<i class="fa-solid fa-shoe-prints"></i>' : ''}
+                </div>
+                <div class="modal-item-name">${outfit.shoes ? outfit.shoes.name : '코디 매칭 구두'}</div>
+                <div class="modal-item-meta">핏: ${outfit.shoes ? outfit.shoes.fit : '스탠다드'} | 색상: ${outfit.shoes ? outfit.shoes.color : '#000'}</div>
+            `;
+            gridWrapper.appendChild(shoesCol);
+
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeCodiModal(event) {
+            if (event && event.target !== document.getElementById('detailModal') && event.target.className !== 'modal-close-btn') return;
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        function prepareScrap(index, defaultRankText, btn) {
+            if (btn.classList.contains('active')) return;
+            const outfit = currentRecommendations[index];
+            if (!outfit) return;
+
+            const topIds = outfit.top_combo ? outfit.top_combo.map(t => t.id) : [];
+            const bottomId = outfit.bottom ? outfit.bottom.id : null;
+            const shoesId = outfit.shoes ? outfit.shoes.id : null;
+
+            const inputModal = document.getElementById('inputModal');
+            const inputField = document.getElementById('customTitleInput');
+
+            inputField.value = '';
+            inputField.placeholder = defaultRankText;
+            inputModal.style.display = 'flex';
+
+            document.getElementById('inputModalConfirmBtn').onclick = function () {
+                let customTitle = inputField.value.trim();
+                if (customTitle === "") {
+                    customTitle = defaultRankText;
+                }
+                inputModal.style.display = 'none';
+                saveScrapToServer(topIds, bottomId, shoesId, customTitle, btn);
+            };
+        }
+
+        function saveScrapToServer(topIds, bottomId, shoesId, customTitle, btn) {
+            fetch('/api/scraps', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    top_ids: topIds,
+                    bottom_id: bottomId,
+                    shoes_id: shoesId,
+                    custom_title: customTitle
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        btn.classList.add('active');
+                        btn.innerHTML = '❤️';
+                        showAlertModal('💖 스크랩 완료', `[${customTitle}] 코디 조합이 서버 스크랩북에 안전하게 적재되었습니다.`);
+                    } else {
+                        showAlertModal('⚠️ 인증 오류', data.error || '스크랩 저장 중 인증 오류가 발생했습니다.');
+                    }
+                })
+                .catch(err => {
+                    console.error("스크랩 통신 실패 에러:", err);
+                    showAlertModal('❌ 통신 실패', '서버와 연결하는 도중 오류가 발생했습니다.');
+                });
+        }
+
+        function executeWearOutfit() {
+            if (pendingClothIds.length === 0) return;
+            document.getElementById('confirmModal').style.display = 'none';
+
+            fetch('/api/clothes/wear-outfit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cloth_ids: pendingClothIds })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showAlertModal('👟 착용 완료', data.message);
+                        setTimeout(() => { location.reload(); }, 1500);
+                    } else {
+                        showAlertModal('⚠️ 처리 실패', data.error || '착용 데이터 반영 중 오류가 발생했습니다.');
+                    }
+                })
+                .catch(err => {
+                    console.error("착용 데이터 통신 에러:", err);
+                    showAlertModal('❌ 통신 실패', '서버와 연결하는 도중 시스템 오류가 발생했습니다.');
+                })
+                .finally(() => {
+                    pendingClothIds = [];
+                });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const confirmBtn = document.getElementById('confirmModalConfirmBtn');
+            if (confirmBtn) {
+                confirmBtn.onclick = executeWearOutfit;
+            }
+
+            fetch(`/api/recommend?tpo=${encodeURIComponent(selectedStyle)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const currentTemp = data.current_temp !== undefined ? data.current_temp : '--';
+                    const sensoryTemp = data.sensory_temp !== undefined ? data.sensory_temp : '--';
+                    document.querySelector('.temp-tag').innerHTML =
+                        `<i class="fas fa-thermometer-half"></i> 현재 기온: ${currentTemp}°C | 체감 온도: ${sensoryTemp}°C`;
+                })
+                .catch(err => {
+                    console.error("초기 날씨 분석 통신 실패:", err);
+                    document.querySelector('.temp-tag').innerHTML = `<i class="fas fa-thermometer-half"></i> 날씨 분석 실패`;
+                });
         });
     </script>
 </body>
+
 </html>

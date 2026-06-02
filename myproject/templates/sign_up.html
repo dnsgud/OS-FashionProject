@@ -126,10 +126,8 @@
             margin-left: 6px;
         }
 
+        /* 알림창 대신 메시지를 띄워줄 영역 디자인 스타일 */
         .flash-messages {
-            background-color: #fef2f2;
-            border: 1px solid #fca5a5;
-            color: #ef4444;
             padding: 14px;
             border-radius: 14px;
             margin-bottom: 25px;
@@ -139,17 +137,69 @@
             text-align: left;
             display: none;
         }
+
+        /* 에러 발생 시 적용할 스타일 */
+        .flash-messages.error-style {
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #ef4444;
+        }
+
+        /* 성공 혹은 사용 가능 안내 시 적용할 스타일 */
+        .flash-messages.success-style {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #94a3b8;
+        }
     </style>
 </head>
 
 <body>
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
     <header>
         <nav>
             <div class="logo">
                 <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
-                <li><a href="{{ url_for('guide_page') }}" class="nav-link"
+                <li><a href="{{ url_for('guide_main') }}" class="nav-link"
                         style="color: inherit; text-decoration: none;"><i class="fas fa-book"></i> Guide</a></li>
                 <li><a href="{{ url_for('codi_page') }}" class="nav-link"
                         style="color: inherit; text-decoration: none;"><i class="fas fa-tshirt"></i> Codi</a></li>
@@ -161,7 +211,7 @@
                         <a href="{{ url_for('my_scrap') }}">🔖 스크랩북</a>
                         <a href="{{ url_for('my_profile') }}">⚙️ 스타일 설정</a>
                     </div>
-                </li>
+                    </ </li>
                 <li>
                     {% if logged_in %}
                     <a href="{{ url_for('logout') }}" class="login-btn"
@@ -187,11 +237,24 @@
 
             <form class="signup-form" onsubmit="submitRegister(event)">
                 <div class="form-group">
+                    <label for="user-name">이름</label>
+                    <input type="text" id="user-name" class="form-control" placeholder="이름을 입력하세요" required>
+                </div>
+
+                <div class="form-group">
                     <label for="user-email">이메일 주소</label>
                     <div class="input-wrapper">
                         <input type="email" id="user-email" class="form-control" placeholder="example@email.com"
                             required>
                         <button type="button" class="check-btn" onclick="checkEmailDuplicate()">중복확인</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="user-id">아이디</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="user-id" class="form-control" placeholder="아이디를 입력하세요" required>
+                        <button type="button" class="check-btn" onclick="checkIdDuplicate()">중복확인</button>
                     </div>
                 </div>
 
@@ -222,45 +285,193 @@
         </div>
     </main>
 
+    <footer>
+        <div class="footer-content"
+            style="max-width: 800px; margin: 40px auto; padding: 20px; text-align: center; font-size: 0.85rem; color: #64748b; line-height: 1.6; border-top: 1px solid #f1f5f9;">
+            <div class="footer-links"
+                style="margin-bottom: 15px; display: flex; justify-content: center; gap: 20px; font-weight: 600;">
+                <a href="#" onclick="event.preventDefault(); openPolicyModal('terms')"
+                    style="color: #475569; text-decoration: none;">이용약관</a>
+                <a href="#" onclick="event.preventDefault(); openPolicyModal('privacy')"
+                    style="color: #475569; text-decoration: none;">개인정보 처리방침</a>
+            </div>
+            <p class="footer-info">
+                주식회사 코디픽 | 대표: 김코디 | 사업자등록번호: 123-45-67890<br>
+                충청북도 청주시 서원구 충대로 1 (충북대학교)<br>
+                이메일: contact@codipick.com | 통신판매업신고: 2026-청주-1234
+            </p>
+            <p class="footer-copyright" style="margin-top: 10px; color: #94a3b8;">
+                &copy; 2026 CODI PICK. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <div id="policy-modal" class="modal-overlay" onclick="if(event.target == this) closePolicyModal()">
+        <div class="modal-content"
+            style="width: 90%; max-width: 450px; max-height: 70vh; overflow-y: auto; text-align: left; padding: 40px 30px; box-sizing: border-box;">
+            <button class="close-btn" onclick="closePolicyModal()">&times;</button>
+            <div class="modal-body">
+                <h3 id="policy-title"
+                    style="font-size: 22px; font-weight: 800; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #212529;">
+                    제목</h3>
+                <div id="policy-desc" style="color: #495057; line-height: 1.7; font-size: 14px; white-space: pre-wrap;">
+                    여기에도 약관 내용이 들어갑니다.</div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <button onclick="closePolicyModal()"
+                        style="padding: 12px 40px; background: #212529; color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function toggleDropdown(event) {
             event.preventDefault();
             document.getElementById("my-dropdown").classList.toggle("show");
         }
 
-        // [교정] 기존 동기식 전송 탈피 ➡️ app.py의 /api/register JSON 통신 명세 충족
+        // 알림창 대신 상단 메시지 창을 제어해 주는 공용 헬퍼 함수
+        function showMessage(text, isSuccess = false) {
+            const errorBox = document.getElementById('error-box');
+            const errorMsg = document.getElementById('error-msg');
+
+            errorMsg.innerText = text;
+
+            // 상태에 맞춰서 클래스 갈아끼우기
+            if (isSuccess) {
+                errorBox.classList.remove('error-style');
+                errorBox.classList.add('success-style');
+            } else {
+                errorBox.classList.remove('success-style');
+                errorBox.classList.add('error-style');
+            }
+
+            errorBox.style.display = "block";
+            // 메시지 위치로 부드럽게 스크롤 이동
+            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         function submitRegister(event) {
             event.preventDefault();
+            const name = document.getElementById('user-name').value;
+            const username = document.getElementById('user-id').value;
             const email = document.getElementById('user-email').value;
             const nickname = document.getElementById('user-nickname').value;
             const password = document.getElementById('user-password').value;
             const confirm = document.getElementById('user-password-confirm').value;
-            const errorBox = document.getElementById('error-box');
-            const errorMsg = document.getElementById('error-msg');
 
-            if (password.length < 8) { alert('비밀번호는 8자리 이상으로 세팅해 줘!'); return; }
-            if (password !== confirm) { alert('비밀번호 확인이 불일치해!'); return; }
+            if (password.length < 8) {
+                showMessage('❌ 비밀번호는 8자리 이상으로 세팅해 줘!');
+                return;
+            }
+            if (password !== confirm) {
+                showMessage('❌ 비밀번호 확인이 일치하지 않아!');
+                return;
+            }
 
             fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email, password: password, nickname: nickname })
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    nickname: nickname,
+                    username: username,
+                    name: name,
+                    gender: '미선택'
+                })
             })
                 .then(async res => {
                     if (res.ok) {
-                        alert('회원가입 성공! 로그인 화면으로 갈게.');
+                        // 성공했을 때만 사용자 동선 안내를 위해 예외적으로 alert 창 유지 혹은 리다이렉트 처리
+                        alert('회원가입 성공! 로그인 화면으로 이동할게.');
                         location.href = "{{ url_for('login') }}";
                     } else {
                         const data = await res.json();
-                        errorMsg.innerText = "❌ " + (data.error || "가입 처리 중 오류 발생");
-                        errorBox.style.display = "block";
+                        showMessage("❌ " + (data.error || "가입 처리 중 오류 발생"));
                     }
                 });
         }
 
-        function checkEmailDuplicate() {
-            if (!document.getElementById('user-email').value) { alert('이메일을 먼저 적어줘!'); return; }
-            alert('사용 가능한 이메일입니다.');
+        async function checkEmailDuplicate() {
+            const emailInput = document.getElementById('user-email').value;
+
+            if (!emailInput) {
+                showMessage('❌ 이메일을 먼저 적어줘!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/check-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: emailInput })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('✨ ' + data.message, true); // 초록색 테두리로 사용 가능 알림
+                } else {
+                    showMessage('❌ ' + data.error); // 빨간색 테두리로 에러 알림
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('❌ 서버와 통신 중 문제가 발생했습니다.');
+            }
+        }
+
+        async function checkIdDuplicate() {
+            const idInput = document.getElementById('user-id').value;
+
+            if (!idInput) {
+                showMessage('❌ 아이디를 먼저 입력해줘!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/check-id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ login_id: idInput })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('✨ ' + data.message, true); // 초록색 테두리로 사용 가능 알림
+                } else {
+                    showMessage('❌ ' + data.error); // 빨간색 테두리로 에러 알림
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('❌ 서버와 통신 중 문제가 발생했습니다.');
+            }
+        }
+
+        const policyData = {
+            terms: {
+                title: "이용약관",
+                content: "제1조 (목적)\n본 약관은 'Look_Up'(이하 '회사')이 제공하는 날씨 기반 코디 추천 서비스의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다."
+            },
+            privacy: {
+                title: "개인정보 처리방침",
+                content: "제1조 (수집하는 개인정보의 항목)\n회사는 원활한 서비스 제공을 위해 회원가입 시 아이디, 비밀번호, 닉네임을 수집합니다."
+            }
+        };
+
+        function openPolicyModal(type) {
+            document.getElementById('policy-title').innerText = policyData[type].title;
+            document.getElementById('policy-desc').innerText = policyData[type].content;
+            document.getElementById('policy-modal').style.display = 'block';
+        }
+
+        function closePolicyModal() {
+            document.getElementById('policy-modal').style.display = 'none';
         }
     </script>
 </body>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Look_Up - 기본 패션 아이템 도감</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f6f8fa;
+            color: #24292f;
+            padding: 50px 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* 🌓 다크모드 대응 통합 가드 스타일 */
+        body.dark-mode {
+            background: #1c1c1e;
+            color: #f2f2f7;
+        }
+
+        body.dark-mode .tab-btn,
+        body.dark-mode .item-card,
+        body.dark-mode .back-btn {
+            background: #2c2c2e;
+            color: #f2f2f7;
+            border-color: #48484a;
+        }
+
+        body.dark-mode .tab-btn:hover {
+            background: #3a3a3c;
+            color: #ffffff;
+        }
+
+        body.dark-mode .tab-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        body.dark-mode .item-image-box {
+            background: #3a3a3c;
+        }
+
+        body.dark-mode .item-name {
+            color: #ffffff;
+        }
+
+        body.dark-mode .item-colors {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .item-tag {
+            background: #1e293b;
+            color: #6366f1;
+        }
+
+        body.dark-mode .item-tip {
+            background: #1e293b;
+            color: #cbd5e1;
+            border-left-color: #34d399;
+        }
+
+        .guide-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .guide-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .guide-header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .guide-header p {
+            color: #57606a;
+            font-size: 16px;
+        }
+
+        .tab-menu {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #57606a;
+        }
+
+        .tab-btn:hover {
+            background: #f3f4f6;
+            color: #24292f;
+        }
+
+        .tab-btn.active {
+            background: #0969da;
+            color: white;
+            border-color: #0969da;
+        }
+
+        .dict-content {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .dict-content.active {
+            display: grid;
+        }
+
+        .item-card {
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .item-image-box {
+            width: 100%;
+            height: 220px;
+            background: #ffffff;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .item-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 15px;
+        }
+
+        .item-info {
+            padding: 20px;
+        }
+
+        .item-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #0969da;
+            background: #ddf4ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .item-colors {
+            font-size: 14px;
+            color: #24292f;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid #d0d7de;
+        }
+
+        .item-tip {
+            background: #f6f8fa;
+            border-left: 4px solid #238636;
+            padding: 10px 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 14px;
+            color: #57606a;
+            line-height: 1.4;
+        }
+
+        .back-footer {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .back-btn {
+            display: inline-block;
+            text-decoration: none;
+            padding: 12px 25px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background: white;
+            color: #24292f;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <div class="guide-container">
+
+        <div class="guide-header">
+            <h1>🧺 기본 패션 아이템 도감</h1>
+            <p>돌려 입기 좋은 최소한의 필수 아이템 리스트를 확인해보세요.</p>
+        </div>
+
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="changeCategory('tops', this)">상의 (Tops)</button>
+            <button class="tab-btn" onclick="changeCategory('bottoms', this)">하의 (Bottoms)</button>
+            <button class="tab-btn" onclick="changeCategory('outer', this)">아우터 (Outer)</button>
+            <button class="tab-btn" onclick="changeCategory('shoes', this)">신발 (Shoes)</button>
+        </div>
+
+        <div id="tops" class="dict-content active">
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/plain_tshirt.jpg') }}" alt="무지 반팔 티셔츠">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">필수 기본템</span>
+                    <div class="item-name">무지 반팔 티셔츠</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #ffffff;"></span> 화이트
+                        <span class="color-dot" style="background: #000000;"></span> 블랙
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 단품으로 입어도 좋고, 맨투맨이나 셔츠 내부에 이너로 레이어드하여 밑단을 살짝 보여주면 센스 있는 룩이 완성됩니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/sweatshirt.jpg') }}" alt="세미오버핏 맨투맨">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">캐주얼</span>
+                    <div class="item-name">세미오버핏 맨투맨</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #cccccc;"></span> 그레이
+                        <span class="color-dot" style="background: #0a192f;"></span> 네이비
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 너무 꽉 끼지 않고 어깨선이 살짝 내려오는 핏이 예쁩니다. 청바지, 슬랙스 어디에나 매치하기 쉬운 만능 템입니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/oxford_shirt.jpg') }}" alt="옥스퍼드 셔츠">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">댄디/시티보이</span>
+                    <div class="item-name">옥스퍼드 셔츠</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #ffffff;"></span> 화이트
+                        <span class="color-dot" style="background: #a9d3ff;"></span> 블루
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 단추를 채워 단정하게 연출하거나, 흰 티셔츠 위에 아우터처럼 단추를 풀고 가볍게 걸쳐도 훌륭한 코디가 됩니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="bottoms" class="dict-content">
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/cream_jeans.jpg') }}" alt="크림진">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">트렌디 만능템</span>
+                    <div class="item-name">크림진 (아이보리 팬츠)</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #fffdf0;"></span> 크림 / 아이보리
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 상의에 어떤 색상(네이비, 그린, 브라운 등)을 얹어도 다 소화해내는 마법의 바지입니다. 일자핏이나 세미와이드 핏을 추천합니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/raw_denim.jpg') }}" alt="와이드 생지 데님">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">데일리 기본템</span>
+                    <div class="item-name">와이드 생지 데님</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #071130;"></span> 다크블루 (생지)
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 워싱이 없는 깔끔하고 진한 네이비 빛 청바지는 캐주얼 코디의 중심을 단단히 잡아줍니다. 이염 방지 원단으로 고르면 더 좋습니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/slacks.jpg') }}" alt="세미와이드 슬랙스">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">미니멀/남친룩</span>
+                    <div class="item-name">세미와이드 슬랙스</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #000000;"></span> 블랙
+                        <span class="color-dot" style="background: #4a4a4a;"></span> 차콜
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 신발 등 뒤를 살짝 덮는 기장감이 다리를 길어 보이게 만듭니다. 셔츠나 깔끔한 니트와 찰떡궁합입니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="outer" class="dict-content">
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/blouson.jpg') }}" alt="미니멀 자켓 / 블루종">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">미니멀/숏아우터</span>
+                    <div class="item-name">미니멀 자켓 / 블루종</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #000000;"></span> 블랙
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 골반 라인으로 떨어지는 숏한 기장감의 자켓은 비율을 좋아 보이게 만듭니다. 흰 티에 슬랙스 조합 위에 툭 걸쳐보세요.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/hoodie_zipup.jpg') }}" alt="투웨이 후드 집업">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">레이어드 치트키</span>
+                    <div class="item-name">투웨이 후드 집업</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #aaaaaa;"></span> 그레이
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 위아래로 열리는 투웨이 지퍼를 활용해 아래쪽을 살짝 열어주면 이너가 보이면서 훨씬 스타일리시하고 편해 보입니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/mac_coat.jpg') }}" alt="오버핏 맥코트">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">댄디 가을템</span>
+                    <div class="item-name">오버핏 맥코트</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #111f38;"></span> 네이비
+                        <span class="color-dot" style="background: #000000;"></span> 블랙
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 무릎 정도까지 내려오는 깔끔한 싱글 코트입니다. 셔츠나 가벼운 니트 위에 매치하면 포멀하고 지적인 분위기를 낼 수 있습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="shoes" class="dict-content">
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/white_sneakers.jpg') }}" alt="화이트 가죽 스니커즈">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">사기 지수 100%</span>
+                    <div class="item-name">화이트 가죽 스니커즈</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #ffffff;"></span> 화이트
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 불필요한 디테일이나 로고가 없는 깔끔한 단색 스니커즈는 데님, 슬랙스, 트레이닝 팬츠까지 모든 하의에 100% 어울립니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/german_sneakers.jpg') }}" alt="독일군 스니커즈">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">남친룩 정석</span>
+                    <div class="item-name">독일군 스니커즈</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #e2e2e2;"></span> 화이트/생고무창
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 특유의 스웨이드 덧댐 and 베이지색 고무창이 매력적인 신발입니다. 청바지나 크림진 스포티룩, 미니멀룩 어디든 잘 스며듭니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-card">
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/derby_shoes.jpg') }}" alt="블랙 더비 슈즈">
+                </div>
+                <div class="item-info">
+                    <span class="item-tag">클래식/모던</span>
+                    <div class="item-name">블랙 더비 슈즈</div>
+                    <div class="item-colors">
+                        추천 색상:
+                        <span class="color-dot" style="background: #000000;"></span> 무광/은은한 유광 블랙
+                    </div>
+                    <div class="item-tip">
+                        <strong>스타일링 팁:</strong> 앞코가 너무 뾰족하지 않고 둥근 형태의 더비 슈즈는 캐주얼 슬랙스 코디를 할 때 무게감을 꽉 잡아주는 든든한 구두입니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-footer">
+            <a href="{{ url_for('guide_main') }}" class="back-btn">
+                ← 가이드 메인으로 돌아가기
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        function changeCategory(categoryId, btn) {
+            document.querySelectorAll('.dict-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(categoryId).classList.add('active');
+            btn.classList.add('active');
+        }
+    </script>
+
+</body>
+
+</html>

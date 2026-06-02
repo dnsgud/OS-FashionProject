@@ -10,18 +10,120 @@
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--bg);
+            margin: 0;
+        }
+
+        /* 상단 바의 서체 및 정렬 간섭을 막기 위해 본문 영역에만 초기화 범위를 제한합니다 */
         .detail-container {
             max-width: 800px;
             margin: 60px auto;
             padding: 0 20px;
+            font-family: 'Pretendard', sans-serif;
+            color: var(--text);
         }
 
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #868e96;
+        .detail-container * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 150%;
+            right: 0;
+            background: white;
+            min-width: 140px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 10px 0;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text);
             text-decoration: none;
             font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f8fafc;
+            color: var(--primary);
+        }
+
+        /* 본문 인프라 카드 레이아웃 스타일 */
+        .weather-detail-main {
+            background: #fff;
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .current-date-text {
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .main-temp-text {
+            font-size: 3.5rem;
+            margin: 0;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .main-status-text {
+            font-size: 1.3rem;
+            color: #334155;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .weather-sub-info {
+            margin-top: 20px;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .location-badge {
+            margin-top: 25px;
+            font-weight: 700;
+            color: var(--primary);
+            background: #f5f7ff;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
         }
 
         .hourly-section {
@@ -30,7 +132,43 @@
             padding: 30px;
             margin-bottom: 25px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
-            border: 1px solid #f1f5f9;
+            border: 1px solid var(--border);
+        }
+
+        .hourly-list {
+            display: flex;
+            justify-content: space-between;
+            overflow-x: auto;
+            gap: 20px;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        .hourly-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hourly-item {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .hourly-item .time {
+            font-size: 13px;
+            color: #adb5bd;
+            margin-bottom: 10px;
+        }
+
+        .hourly-item i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #4dabf7;
+        }
+
+        .hourly-item .h-temp {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text);
         }
 
         .dust-grid {
@@ -44,7 +182,7 @@
             background: #fff;
             padding: 20px;
             border-radius: 20px;
-            border: 1px solid #f1f5f9;
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             gap: 15px;
@@ -81,25 +219,37 @@
 
         .dust-info strong {
             font-size: 1.05rem;
-            color: #1e293b;
+            color: var(--text);
+        }
+
+        @media (max-width: 500px) {
+            .dust-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 
 <body>
+
     <header>
         <nav>
             <div class="logo">
-                <a href="{{ url_for('home') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+                <a href="{{ url_for('home_page') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
             </div>
             <ul>
-                <li><a href="{{ url_for('guide_page') }}" class="nav-link"
-                        style="color: inherit; text-decoration: none;"><i class="fas fa-book"></i> Guide</a></li>
-                <li><a href="{{ url_for('codi_page') }}" class="nav-link"
-                        style="color: inherit; text-decoration: none;"><i class="fas fa-tshirt"></i> Codi</a></li>
+                <li>
+                    <a href="{{ url_for('guide_main') }}" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-book"></i> Guide
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('codi_page') }}" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-tshirt"></i> Codi
+                    </a>
+                </li>
                 <li class="dropdown-wrapper">
-                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;"
-                        onclick="toggleDropdown(event)"><i class="fas fa-user"></i> My</a>
+                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;" onclick="toggleDropdown(event)">
+                        <i class="fas fa-user"></i> My
+                    </a>
                     <div class="dropdown-menu" id="my-dropdown">
                         <a href="{{ url_for('my_closet') }}">👗 내 옷장</a>
                         <a href="{{ url_for('my_scrap') }}">🔖 스크랩북</a>
@@ -108,11 +258,13 @@
                 </li>
                 <li>
                     {% if logged_in %}
-                    <a href="{{ url_for('logout') }}" class="login-btn"
-                        style="background-color: #ef4444; text-decoration: none; display: inline-block;">Logout</a>
+                    <a href="{{ url_for('logout') }}" class="login-btn" style="background-color: #ef4444; text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
                     {% else %}
-                    <a href="{{ url_for('login') }}" class="login-btn"
-                        style="text-decoration: none; display: inline-block;">Login</a>
+                    <a href="{{ url_for('login') }}" class="login-btn" style="text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
                     {% endif %}
                 </li>
             </ul>
@@ -120,41 +272,59 @@
     </header>
 
     <div class="detail-container">
-        <a href="{{ url_for('home') }}" class="back-btn" style="text-decoration: none; display: inline-block;">
-            <i class="fas fa-arrow-left"></i> 메인으로 돌아가기
-        </a>
-
-        <section class="weather-detail-main"
-            style="background: #fff; padding: 40px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; text-align: center; margin-bottom: 25px;">
-            <span id="current-date" style="color: #64748b; font-size: 1rem; font-weight: 600;"></span>
+        <section class="weather-detail-main">
+            <span id="current-date" class="current-date-text"></span>
 
             {% if hourly_data and hourly_data|length > 0 %}
             {% set current = hourly_data[0] %}
             <div style="font-size: 5rem; color: #f59e0b; margin: 20px 0;">
                 <i class="fa-solid {{ current.get('icon', 'fa-sun') }}"></i>
             </div>
-            <h1 style="font-size: 3.5rem; margin: 0; font-weight: 800;">{{ current.get('temp', '--') }}°C</h1>
-            <p style="font-size: 1.3rem; color: #334155; font-weight: 700; margin-top: 10px;">{{ current.get('status',
-                '맑음') }}</p>
+            <h1 class="main-temp-text">{{ current.get('temp', '--') }}°C</h1>
+            <p class="main-status-text">{{ current.get('status', '맑음') }}</p>
 
-            <div
-                style="margin-top: 20px; font-size: 0.95rem; color: #64748b; font-weight: 600; display: flex; justify-content: center; gap: 20px;">
-                <span><i class="fa-solid fa-droplet" style="color: #3b82f6;"></i> 습도: {{ current.get('humidity', '--')
-                    }}%</span>
-                <span><i class="fa-solid fa-wind" style="color: #64748b;"></i> 풍속: {{ current.get('wind_speed', '0')
-                    }}m/s ({{ current.get('wind_status', '보통') }})</span>
+            <div class="weather-sub-info">
+                <span><i class="fa-solid fa-droplet" style="color: #3b82f6;"></i> 습도: {{ current.get('humidity', '--') }}%</span>
+                <span><i class="fa-solid fa-wind" style="color: #64748b;"></i> 풍속: {{ current.get('wind_speed', '0') }}m/s ({{ current.get('wind_status', '보통') }})</span>
             </div>
             {% else %}
             <div style="font-size: 5rem; color: #f59e0b; margin: 20px 0;">
                 <i class="fa-solid fa-sun"></i>
             </div>
-            <h1 style="font-size: 3.5rem; margin: 0; font-weight: 800;">--°C</h1>
-            <p style="font-size: 1.3rem; color: #334155; font-weight: 700; margin-top: 10px;">날씨 정보가 없습니다</p>
+            <h1 class="main-temp-text">--°C</h1>
+            <p class="main-status-text">날씨 정보가 없습니다</p>
             {% endif %}
 
-            <div
-                style="margin-top: 25px; font-weight: 700; color: #4f46e5; background: #f5f7ff; display: inline-block; padding: 8px 20px; border-radius: 20px;">
+            <div class="location-badge">
                 <i class="fa-solid fa-location-dot"></i> 충청북도 청주시 서원구 충대로 1
+            </div>
+        </section>
+
+        <section class="hourly-section">
+            <h4 style="margin-bottom: 20px; font-weight: 800; font-size: 1.1rem; color: #1e293b; text-align: left;">시간별 기온</h4>
+            <div class="hourly-list">
+                {% if hourly_data and hourly_data|length > 0 %}
+                {% for hour in hourly_data %}
+                <div class="hourly-item">
+                    <p class="time">{{ hour.get('time', loop.index ~ '시') }}</p>
+                    <i class="fa-solid {{ hour.get('icon', 'fa-sun') }}"></i>
+                    <p class="h-temp">{{ hour.get('temp', '--') }}°</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="hourly-item">
+                    <p class="time">오후 3시</p><i class="fas fa-sun"></i>
+                    <p class="h-temp">--°</p>
+                </div>
+                <div class="hourly-item">
+                    <p class="time">오후 6시</p><i class="fas fa-cloud-sun"></i>
+                    <p class="h-temp">--°</p>
+                </div>
+                <div class="hourly-item">
+                    <p class="time">오후 9시</p><i class="fas fa-cloud"></i>
+                    <p class="h-temp">--°</p>
+                </div>
+                {% endif %}
             </div>
         </section>
 
@@ -185,10 +355,24 @@
 
         function toggleDropdown(event) {
             event.preventDefault();
+            event.stopPropagation();
             document.getElementById("my-dropdown").classList.toggle("show");
         }
 
-        window.onload = displayCurrentDate;
+        window.onclick = function (event) {
+            const myMenuBtn = document.getElementById('my-menu-btn');
+            const dropdownMenu = document.getElementById('my-dropdown');
+
+            if (myMenuBtn && !myMenuBtn.contains(event.target)) {
+                if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.remove('show');
+                }
+            }
+        }
+
+        window.onload = () => {
+            displayCurrentDate();
+        };
     </script>
 </body>
 

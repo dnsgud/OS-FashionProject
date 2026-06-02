@@ -8,12 +8,11 @@ class Config:
     SUPABASE_URL = os.getenv("SUPABASE_URL")
     SUPABASE_KEY = os.getenv("SUPABASE_KEY") 
 
-def sign_up_user(email, password, nickname, gender=None):
+def sign_up_user(email, password, nickname, login_id, name, gender=None):
     """
     1단계: Supabase Auth에 계정 생성
-    2단계: 성공 시 public.users 테이블에 추가 정보(닉네임, 성별 등) 동시 저장
+    2단계: 성공 시 public.users 테이블에 확장 정보(아이디, 이름 등) 동시 통합 저장
     """
-    # [1단계] Supabase 내장 인증 시스템(GoTrue)에 가입
     auth_url = f"{Config.SUPABASE_URL}/auth/v1/signup"
     auth_headers = {
         "apikey": Config.SUPABASE_KEY,
@@ -29,64 +28,109 @@ def sign_up_user(email, password, nickname, gender=None):
         
         if auth_response.status_code in [200, 201]:
             auth_json = auth_response.json()
-            
-            # 인증 시스템이 발급한 유저 고유 UUID 추출 (버전별 예외 방지 가드)
             user_id = auth_json.get("id") or auth_json.get("user", {}).get("id")
             
             if not user_id:
-                print("⚠️ Supabase 인증에는 성공했으나, UUID를 가져오지 못했습니다.")
+                print("⚠️ Supabase 인증에는 성공했으나, UUID를 가져오기 실패")
                 return False
                 
-            # [2단계] 생성된 UUID와 회원 정보를 내 'users' 테이블에 강제로 매칭하여 삽입
             db_url = f"{Config.SUPABASE_URL}/rest/v1/users"
             db_headers = {
                 "apikey": Config.SUPABASE_KEY,
-                "Authorization": f"Bearer {Config.SUPABASE_KEY}", # DB 조작을 위한 인증 토큰
+                "Authorization": f"Bearer {Config.SUPABASE_KEY}", 
                 "Content-Type": "application/json",
-                "Prefer": "return=minimal"                       # 불필요한 반환값 생략으로 속도 최적화
+                "Prefer": "return=minimal"                      
             }
             db_data = {
-                "id": user_id,          # auth.users의 UUID와 1:1 매칭
-                "email": email,         # 최적화된 DB 규격 매칭
-                "pw": password,         # DB의 pw NOT NULL 조건 충족
-                "nickname": nickname,   # DB의 nickname NOT NULL 조건 충족
+                "id": user_id,          
+                "login_id": login_id,   
+                "email": email,         
+                "pw": password,         
+                "name": name,           
+                "nickname": nickname,   
                 "gender": gender
             }
             
             db_response = requests.post(db_url, headers=db_headers, json=db_data)
             
             if db_response.status_code in [200, 201]:
-                print(f"🎉 [성공] '{nickname}'님 회원가입 및 테이블 데이터 저장 완료!")
+                print(f"[성공] '{nickname}'님 회원가입 및 테이블 데이터 저장 완료")
                 return True
             else:
-                print(f"❌ [오류] 인증은 되었으나 테이블 저장 실패: {db_response.status_code}, {db_response.text}")
+                print(f" [오류] 인증은 되었으나 테이블 저장 실패: {db_response.status_code}, {db_response.text}")
                 return False
         else:
-            print(f"❌ [Supabase 인증 에러]: {auth_response.status_code}, {auth_response.json()}")
+            print(f" [Supabase 인증 에러]: {auth_response.status_code}, {auth_response.json()}")
             return False
             
     except Exception as e:
         print(f"네트워크 에러: {e}")
         return False
 
-def login_user(email, password):
+def login_user(login_id, password):
     """
-    사용자 정보를 대조하여 인증 토큰을 생성하는 기능 (로그인)
+    Auth 서버를 거치지 않고, public.users DB의 pw 컬럼을 직접 확인
     """
-    url = f"{Config.SUPABASE_URL}/auth/v1/token?grant_type=password"
-    headers = {
+    db_url = f"{Config.SUPABASE_URL}/rest/v1/users?login_id=eq.{login_id}&pw=eq.{password}"
+    db_headers = {
         "apikey": Config.SUPABASE_KEY,
-        "Content-Type": "application/json"
-    }
-    data = {
-        "email": email,
-        "password": password
+        "Authorization": f"Bearer {Config.SUPABASE_KEY}"
     }
     
-    response = requests.post(url, headers=headers, json=data)
+    try:
+        response = requests.get(db_url, headers=db_headers)
+        
+        if response.ok and response.json():
+            user_data = response.json()[0]
+            print(f"[DB 로그] DB 다이렉트 로그인 성공: {login_id}")
+            return user_data 
+            
+        else:
+            print(f" [오류] 아이디 또는 비밀번호 불일치")
+            return None # 일치하는 정보가 없으면 None 반환
+            
+    except Exception as e:
+        print(f"네트워크 에러: {e}")
+        return None
     
-    if response.status_code == 200:
-        return response.json().get("access_token")
-    else:
-        print(f"로그인 실패: {response.json()}")
+def get_email_by_login_id(login_id):
+    try:
+        db_url = f"{Config.SUPABASE_URL}/rest/v1/users?login_id=eq.{login_id}&select=email"
+        db_headers = {
+            "apikey": Config.SUPABASE_KEY,
+            "Authorization": f"Bearer {Config.SUPABASE_KEY}"
+        }
+        response = requests.get(db_url, headers=db_headers)
+        if response.ok and response.json():
+            return response.json()[0].get("email")
+    except Exception as e:
+        print(f"❌ 이메일 조회 실패: {e}")
+    return None    
+
+def fetch_user_profile(login_id):
+    """
+    login_id를 기반으로 public.users 테이블에서 해당 사용자의 
+    모든 정보(닉네임, 이메일, 이름 등)를 가져옴
+    """
+    # Supabase REST API 호출 경로
+    db_url = f"{Config.SUPABASE_URL}/rest/v1/users?login_id=eq.{login_id}"
+    db_headers = {
+        "apikey": Config.SUPABASE_KEY,
+        "Authorization": f"Bearer {Config.SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
+    
+    try:
+        response = requests.get(db_url, headers=db_headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data[0] if data else None
+        else:
+            print(f" [오류] 사용자 정보 조회 실패: {response.status_code}, {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f" [에러] 네트워크 예외 발생: {e}")
         return None
