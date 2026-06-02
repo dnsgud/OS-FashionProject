@@ -33,7 +33,7 @@
             margin: 0;
         }
 
-        /* [업데이트 이식] 정렬 버튼 필터 스타일 영역 */
+        /* 정렬 버튼 필터 스타일 영역 */
         .sort-container {
             display: flex;
             gap: 10px;
@@ -72,19 +72,32 @@
             gap: 8px;
         }
 
-        /* [업데이트 이식] 가로로 옷을 유연하게 밀어 넘기는 스크롤 박스 스타일 */
+        /* 가로 스크롤 박스 스타일 수정 (스크롤바 시각화 및 부드러운 터치 지원) */
         .horizontal-scroll-box {
             display: flex;
             overflow-x: auto;
             gap: 20px;
             padding: 10px 5px 20px 5px;
-            scrollbar-width: none;
-            /* 파이어폭스용 */
+            -webkit-overflow-scrolling: touch; /* 모바일 기기 부드러운 스크롤 */
         }
 
+        /* 웹킷 기반 브라우저(크롬, 사파리, 엣지 등) 스크롤바 커스텀 */
         .horizontal-scroll-box::-webkit-scrollbar {
-            display: none;
-            /* 크롬/사파리용 숨김 처리 */
+            height: 8px; /* 스크롤바 두께 설정 */
+        }
+
+        .horizontal-scroll-box::-webkit-scrollbar-track {
+            background: #f1f5f9; /* 스크롤바 뒷배경 */
+            border-radius: 10px;
+        }
+
+        .horizontal-scroll-box::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* 스크롤바 바 색상 */
+            border-radius: 10px;
+        }
+
+        .horizontal-scroll-box::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* 마우스 올렸을 때 스크롤바 색상 */
         }
 
         .closet-item {
@@ -140,7 +153,7 @@
             width: 100%;
         }
 
-        /* [업데이트 이식] 아래 코드에서 가져온 플로팅 메뉴 버튼(FAB) 추가 스타일 */
+        /* 플로팅 메뉴 버튼(FAB) 추가 스타일 */
         .fab-container {
             position: fixed !important;
             bottom: 40px !important;
@@ -216,7 +229,7 @@
                         <a href="{{ url_for('my_scrap') }}">🔖 스크랩북</a>
                         <a href="{{ url_for('my_profile') }}">⚙️ 스타일 설정</a>
                     </div>
-                </li>
+                </li class="dropdown-wrapper">
                 <li>
                     {% if logged_in %}
                     <a href="{{ url_for('logout') }}" class="login-btn"
@@ -302,7 +315,24 @@
             </div>
         </section>
 
-
+        <section class="category-section">
+            <div class="category-title"><i class="fa-solid fa-shoe-prints"></i> 신발</div>
+            <div class="horizontal-scroll-box">
+                {% set shoes_count = namespace(value=0) %}
+                {% for item in clothes if (item.get('main_category') in ['신발', 'shoes']) %}
+                {% set shoes_count.value = shoes_count.value + 1 %}
+                <a href="{{ url_for('clothes_detail', cloth_id=item.id) }}" class="closet-item"
+                    data-date="{{ item.get('created_at', '') }}" data-views="{{ item.get('total_wear_count', 0) }}">
+                    <img src="{{ item.get('image_url', '') }}" alt="옷"
+                        onerror="this.src='https://via.placeholder.com/140?text=Shoes'">
+                    <div class="item-label">{{ item.get('name', '이름 없음') }}</div>
+                </a>
+                {% endfor %}
+                {% if shoes_count.value == 0 %}
+                <div class="empty-closet-card">등록된 신발이 없습니다.</div>
+                {% endif %}
+            </div>
+        </section>
     </main>
 
     <div class="fab-container">
@@ -322,7 +352,6 @@
             document.getElementById("my-dropdown").classList.toggle("show");
         }
 
-        /* 플러스 버튼을 누르면 위로 두 개의 서브 등록 메뉴가 열리게 처리하는 동작 핸들러 */
         function toggleFab(event) {
             event.preventDefault();
             const menu = document.getElementById('fab-menu');
@@ -342,7 +371,6 @@
                 }
             }
 
-            // 바탕화면 클릭 시 플러스 메뉴 자동으로 닫히는 가드 로직
             if (!event.target.closest('.fab-container')) {
                 const fabMenu = document.getElementById('fab-menu');
                 const fabBtn = document.querySelector('.fab-button');
@@ -353,7 +381,6 @@
             }
         }
 
-        // Rachel 오타를 지우고 순수 함수로 깔끔하게 정리했습니다.
         function sortItems(type, event) {
             const buttons = document.querySelectorAll('.sort-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
@@ -377,7 +404,6 @@
             });
         }
 
-        // 전역 바인딩
         window.sortItems = sortItems;
     </script>
 </body>
