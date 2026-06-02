@@ -1,16 +1,17 @@
 from config import supabase
 
 # 코디 조합과 커스텀 이름을 데이터베이스에 저장하는 함수
-def add_scrap_to_db(user_email, top_ids, bottom_id, title=None): 
+def add_scrap_to_db(user_email, top_ids, bottom_id, shoes_id, custom_title):
     try:
-        data = {
+        insert_payload = {
             "user_email": user_email,
-            "top_ids": top_ids,  
+            "top_ids": top_ids,
             "bottom_id": bottom_id,
-            "title": title
+            "shoes_id": shoes_id,
+            "title": custom_title
         }
-        response = supabase.table("scrapped_outfits").insert(data).execute()
-        return {"success": True, "data": response.data}
+        res = supabase.table("scrapped_outfits").insert(insert_payload).execute()
+        return {"success": True, "data": res.data}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -33,22 +34,21 @@ def delete_scrap_from_db(scrap_id, user_email):
 def get_user_scraps_with_details(user_email):
     try:
         scrap_response = supabase.table("scrapped_outfits") \
-                                 .select("id, top_ids, bottom_id, title, created_at") \
+                                 .select("id, top_ids, bottom_id, shoes_id, title, created_at") \
                                  .eq("user_email", user_email) \
                                  .order("created_at", desc=True) \
                                  .execute()
         raw_scraps = scrap_response.data
-        # 조회된 스크랩 내역이 한 건도 없을 때 빈 배열을 반환하는 조건문
         if not raw_scraps:
             return {"success": True, "scraps": []}
 
         scrapped_outfits_list = []
 
-        # 각 스크랩 데이터를 순회하며 해당하는 상·하의 의류 정보를 개별 매핑하는 반복문
         for scrap in raw_scraps:
             scrap_id = scrap["id"]
             top_ids = scrap["top_ids"]
             bottom_id = scrap["bottom_id"]
+            shoes_id = scrap.get("shoes_id")
             db_title = scrap.get("title")
 
             top_response = supabase.table("clothes") \
@@ -63,7 +63,6 @@ def get_user_scraps_with_details(user_email):
                                      .execute()
             bottom_details_list = bottom_response.data
 
-            # 기존에 스크랩했던 옷이 옷장에서 완전히 영구 삭제되었는지 판단하는 조건문
             if not top_combo_details or not bottom_details_list:
                 continue
 
