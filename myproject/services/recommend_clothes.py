@@ -158,7 +158,17 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
             valid_top_combos.append([inner])
         for outer in outers:
             if abs((inner['temp_level'] + outer['temp_level']) - target_lv) <= TOP_TOLERANCE:
-                valid_top_combos.append([inner, outer])
+                valid_top_combos.append([inner, outer])]
+
+    # 가중치 배열이 제공되지 않았을 때 균등 기본값 설정
+    if not weights:
+        weights = {"style": 1.0, "temp": 1.0, "color": 1.0, "fit": 1.0}
+        
+    total_w = float(sum(weights.values()))
+    w_style = (weights.get("style", 0) / total_w) * 100
+    w_temp = (weights.get("temp", 0) / total_w) * 100
+    w_color = (weights.get("color", 0) / total_w) * 100
+    w_fit = (weights.get("fit", 0) / total_w) * 100
 
     outfits = []
     # 필터링된 모든 상하의 유효 조합들을 매칭하여 4대 평가 점수를 계산하는 반복문
