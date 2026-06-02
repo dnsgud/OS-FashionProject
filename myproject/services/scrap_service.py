@@ -68,12 +68,22 @@ def get_user_scraps_with_details(user_email):
 
             bottom_detail = bottom_details_list[0]
             
+            shoes_detail = None
+            if shoes_id:
+                shoes_response = supabase.table("clothes") \
+                                         .select("id, main_category, sub_category, name, color, fit, image_url") \
+                                         .eq("id", shoes_id) \
+                                         .execute()
+                if shoes_response.data:
+                    shoes_detail = shoes_response.data[0]
+
             scrapped_outfits_list.append({
                 "scrap_id": scrap_id,
                 "title": db_title,
                 "custom_title": db_title,
                 "top_combo": top_combo_details,
                 "bottom": bottom_detail,
+                "shoes": shoes_detail,
                 "created_at": scrap["created_at"]
             })
 
