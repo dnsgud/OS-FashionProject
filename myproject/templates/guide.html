@@ -3,61 +3,210 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Look_Up - Fashion Guide</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--bg);
+            margin: 0;
+        }
+
+        /* 🎯 상단 바 레이아웃 오염을 방지하기 위해 초기화 범위를 본문 컨테이너로 제한 */
+        .guide-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: 'Pretendard', sans-serif;
+            color: var(--text);
+        }
+
+        .guide-container * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 공통 드롭다운 스타일 */
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 150%;
+            right: 0;
+            background: white;
+            min-width: 140px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 10px 0;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f8fafc;
+            color: var(--primary);
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .guide-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .guide-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .guide-card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .guide-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+    </style>
 </head>
 
 <body>
-    <script>
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-        }
-    </script>
 
-    <main class="guide-page-container">
-        <h1 class="guide-main-title">Fashion Guide for Beginners</h1>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="{{ url_for('home_page') }}" style="color: inherit; text-decoration: none;">Look_Up</a>
+            </div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('guide_main') }}" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-book"></i> Guide
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('codi_page') }}" class="nav-link" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-tshirt"></i> Codi
+                    </a>
+                </li>
+                <li class="dropdown-wrapper">
+                    <a href="#" class="nav-link" id="my-menu-btn" style="color: inherit; text-decoration: none;" onclick="toggleDropdown(event)">
+                        <i class="fas fa-user"></i> My
+                    </a>
+                    <div class="dropdown-menu" id="my-dropdown">
+                        <a href="{{ url_for('my_closet') }}">👗 내 옷장</a>
+                        <a href="{{ url_for('my_scrap') }}">🔖 스크랩북</a>
+                        <a href="{{ url_for('my_profile') }}">⚙️ 스타일 설정</a>
+                    </div>
+                </li>
+                <li>
+                    {% if logged_in %}
+                    <a href="{{ url_for('logout') }}" class="login-btn" style="background-color: #ef4444; text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="login-btn" style="text-decoration: none; display: inline-block;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="guide-container">
+        <h1 class="page-title">Fashion Guide for Beginners</h1>
 
         <div class="guide-grid">
-            <!-- section을 a 태그로 감싸서 클릭 가능하게 만듭니다 -->
-            <a href="{{ url_for('guide_dictionary') }}" style="text-decoration: none; color: inherit;">
-                <section class="guide-card">
-                    <h2>🧺 기본 패션 아이템 도감</h2>
-                    <p>돌려 입기 좋은 최소한의 필수 아이템 리스트</p>
-                </section>
+            <a href="{{ url_for('guide_dictionary') }}" class="guide-card">
+                <h2>🧺 기본 패션 아이템 도감</h2>
+                <p>돌려 입기 좋은 최소한의 필수 아이템 리스트</p>
             </a>
-
-            <a href="{{ url_for('body_guide') }}" style="text-decoration: none; color: inherit;">
-                <section class="guide-card">
-                    <h2>👤 체형별 가이드</h2>
-                    <p>자신의 체형에 맞는 최적의 실루엣 추천</p>
-                </section>
+            <a href="{{ url_for('body_guide') }}" class="guide-card">
+                <h2>👤 체형별 가이드</h2>
+                <p>자신의 체형에 맞는 최적의 실루엣 추천</p>
             </a>
-
-            <a href="{{ url_for('tpo_guide') }}" style="text-decoration: none; color: inherit;">
-                <section class="guide-card">
-                    <h2>📅 TPO 가이드</h2>
-                    <p>상황별(캠퍼스, 데이트, 면접) 코디 공식</p>
-                </section>
+            <a href="{{ url_for('tpo_guide') }}" class="guide-card">
+                <h2>📅 TPO 가이드</h2>
+                <p>상황별(캠퍼스, 데이트, 면접) 코디 공식</p>
             </a>
-
-            <a href="{{ url_for('color_guide') }}" style="text-decoration: none; color: inherit;">
-                <section class="guide-card">
-                    <h2>🎨 컬러 매칭</h2>
-                    <p>실패 없는 색 조합 가이드</p>
-                </section>
+            <a href="{{ url_for('color_guide') }}" class="guide-card">
+                <h2>🎨 컬러 매칭</h2>
+                <p>실패 없는 색 조합 가이드</p>
             </a>
-        </div>
-
-        <div class="back-home">
-<<<<<<< HEAD
-            <a href="{{ url_for('home') }}">← 메인으로 돌아가기</a>
-=======
-            <a href="{{ url_for('home_page') }}">← 메인으로 돌아가기</a>
->>>>>>> 5eeb7ff68c128660fd748722c43913e149aec1f5
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // 드롭다운 토글 기능
+        function toggleDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById("my-dropdown").classList.toggle("show");
+        }
+
+        // 헤더 외부 클릭 시 드롭다운 닫기
+        window.onclick = function (event) {
+            const myMenuBtn = document.getElementById('my-menu-btn');
+            const dropdownMenu = document.getElementById('my-dropdown');
+
+            if (myMenuBtn && !myMenuBtn.contains(event.target)) {
+                if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.remove('show');
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>
