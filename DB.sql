@@ -62,7 +62,20 @@ CREATE TABLE IF NOT EXISTS scrapped_outfits (
 );
 
 -- ==========================================
--- 4. 데이터베이스 성능 최적화 (인덱스 설정)
+-- 4. 코디 가중치(user_weights) 테이블
+-- ==========================================
+CREATE TABLE IF NOT EXISTS user_weights (
+    user_email TEXT PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
+    weight_style FLOAT DEFAULT 1.0,       -- 스타일 취향 가중치
+    weight_color FLOAT DEFAULT 1.0,       -- 색상 조화 가중치
+    weight_temperature FLOAT DEFAULT 1.0, -- 날씨 온도 가중치
+    weight_fit FLOAT DEFAULT 1.0,         -- 체형 핏 가중치
+
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==========================================
+-- 5. 인덱스(Index) 최적화 설정
 -- ==========================================
 -- 기온별/카테고리별 추천 연산 속도를 가속하기 위한 복합 인덱스
 CREATE INDEX IF NOT EXISTS idx_clothes_recommend_search 
