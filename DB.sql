@@ -55,7 +55,6 @@ CREATE TABLE IF NOT EXISTS scrapped_outfits (
     top_ids BIGINT[] NOT NULL,                                 
     bottom_id BIGINT REFERENCES clothes(id) ON DELETE CASCADE, 
     shoes_id BIGINT REFERENCES clothes(id) ON DELETE SET NULL,
-
     title TEXT,
     
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -70,17 +69,34 @@ CREATE TABLE IF NOT EXISTS user_weights (
     weight_color FLOAT DEFAULT 1.0,       -- 색상 조화 가중치
     weight_temperature FLOAT DEFAULT 1.0, -- 날씨 온도 가중치
     weight_fit FLOAT DEFAULT 1.0,         -- 체형 핏 가중치
-
+    
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ==========================================
 -- 5. 인덱스(Index) 최적화 설정
 -- ==========================================
--- 기온별/카테고리별 추천 연산 속도를 가속하기 위한 복합 인덱스
+-- 기온별/카테고리별 복합 조건 추천 연산 가속화 인덱스
 CREATE INDEX IF NOT EXISTS idx_clothes_recommend_search 
 ON clothes (user_email, main_category, temp_level, sub_category);
 
--- 내 스크랩 룩북 목록을 빠르게 조회하기 위한 인덱스
+-- 마이 룩북(스크랩 목록) 호출 성능 최적화 인덱스
 CREATE INDEX IF NOT EXISTS idx_scraps_user_search 
 ON scrapped_outfits (user_email);
+
+-- ==========================================
+-- 6. 자동화 스케줄러 (pg_cron) 설정
+-- ==========================================
+-- 1. 확장 기능 활성화
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- 2. 매월 1일 새벽 0시 0분에 실행되는 초기화 작업
+SELECT cron.schedule(
+    'reset-monthly-wear-count-job',
+    '0 0 1 * *',                     -- 크론 표현식 (매월 1일 00시 00분)
+    $$ 
+        UPDATE clothes 
+        SET monthly_wear_count = 0, -- 월간 입은 횟수 초기화
+            last_worn_date = NULL; 
+    $$
+);
