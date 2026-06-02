@@ -460,12 +460,23 @@ def recommend():
             
         user_clothes = []
         user_body_shape = None
-        user_weights = None
+        
+        user_weights = {"style": 1.0, "color": 1.0, "temp": 1.0, "fit": 1.0}
 
         if supabase:
             user_prof = supabase.table("users").select("body_shape").eq("email", user_email).execute()
             if user_prof.data:
                 user_body_shape = user_prof.data[0].get("body_shape")
+
+            weight_res = supabase.table("user_weights").select("*").eq("user_email", user_email).execute()
+            if weight_res.data:
+                w_data = weight_res.data[0]
+                user_weights = {
+                    "style": w_data.get("weight_style", 1.0),
+                    "color": w_data.get("weight_color", 1.0),
+                    "temp": w_data.get("weight_temperature", 1.0),
+                    "fit": w_data.get("weight_fit", 1.0)
+                }
 
             response = supabase.table("clothes").select("*").eq("user_email", user_email).execute()
             user_clothes = response.data
@@ -991,6 +1002,58 @@ def api_analyze_personal_color():
         # 4. 일회성 분석이므로 로컬에 임시 저장된 사진 파일 즉시 파기
         if os.path.exists(file_path):
             os.remove(file_path)
+
+    # 코디 가중치 저장 API 라우터
+@app.route('/api/update_weight_info', methods=['POST'])
+def update_weight_info_api():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({"status": "fail", "message": "로그인 세션이 만료되었습니다. 다시 로그인해주세요."}), 401
+    
+    data = request.json
+    weight_payload = {
+        "user_email": user_email,
+        "weight_style": float(data.get('style', 1.0)),
+        "weight_color": float(data.get('color', 1.0)),
+        "weight_temperature": float(data.get('temperature', 1.0)),
+        "weight_fit": float(data.get('fit', 1.0))
+    }
+    
+    try:
+        # 데이터가 없으면 insert, 이미 있으면 해당 이메일을 기준으로 데이터를 update
+        supabase.table("user_weights").upsert(weight_payload).execute()
+        return jsonify({"status": "success", "message": "코디 가중치 설정이 정상적으로 저장되었습니다."}), 200
+    except Exception as e:
+        print(f"❌ 가중치 저장 중 DB 에러 발생: {e}")
+        return jsonify({"status": "fail", "message": "서버 저장 처리 중 시스템 오류가 발생했습니다."}), 500
+
+# 코디 가중치 불러오기 API 라우터
+@app.route('/api/get_weight_info', methods=['GET'])
+def get_weight_info_api():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({"status": "fail", "message": "로그인이 필요합니다."}), 401
+        
+    try:
+        response = supabase.table("user_weights").select("*").eq("user_email", user_email).execute()
+        if response.data:
+            w = response.data[0]
+            return jsonify({
+                "status": "success",
+                "data": {
+                    "style": w.get("weight_style", 1.0),
+                    "color": w.get("weight_color", 1.0),
+                    "temperature": w.get("weight_temperature", 1.0),
+                    "fit": w.get("weight_fit", 1.0)
+                }
+            }), 200
+        else:
+            return jsonify({
+                "status": "success",
+                "data": {"style": 1.0, "color": 1.0, "temperature": 1.0, "fit": 1.0}
+            }), 200
+    except Exception as e:
+        return jsonify({"status": "fail", "message": str(e)}), 500
 
 # 메인 파일로 로컬 터미널 단독 실행되었을 때 Flask 내장 백서버를 띄우는 조건문
 if __name__ == '__main__':
