@@ -228,7 +228,33 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
 
     tpo_fallback_triggered = bool(target_tpo and max_style_score == 0)
 
+    all_shoes = [c for c in clothes_db if c.get('main_category') in ['신발', 'shoes']]
+
+    # 최종 확정된 TOP 5 코디를 순회하며 최적의 신발 매칭 진행
+    for outfit in final_recommendations:
+        best_shoes = None
+        best_shoes_score = -1
+
+        for shoe in all_shoes:
+            if abs(shoe.get('temp_level', 5) - target_lv) > 2:
+                continue
+
+            shoe_score = 0
+            if target_tpo in shoe.get('style', []):
+                shoe_score += 10
+
+            _, s_s, _ = hex_to_hsl(shoe.get('color', '#ffffff'))
+            if s_s < NEUTRAL_CHROMA: 
+                shoe_score += 5
+
+            if shoe_score > best_shoes_score:
+                best_shoes_score = shoe_score
+                best_shoes = shoe
+
+        outfit['shoes'] = best_shoes    
+
     return {
         "recommendations": final_recommendations,
         "is_tpo_fallback": tpo_fallback_triggered,
+        "sensory_temp": sensory_temp
     }
