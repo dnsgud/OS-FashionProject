@@ -35,6 +35,7 @@ try:
         request_find_id, verify_and_get_login_id, request_find_password, 
         verify_password_reset_code, reset_password_and_auto_login
     )
+    from services.personal_color import analyze_personal_color
     print("✅ 모든 서비스 모듈 로드 및 임포트 완료")
 except Exception as e:
     print(f"❌ 모듈 로드 중 치명적 오류 발생: {e}")
@@ -47,7 +48,7 @@ app = Flask(__name__, static_folder='static', static_url_path='/static')
 CORS(app, supports_credentials=True)
 app.secret_key = "my_fashion_app_secret_1234"
 
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
@@ -339,16 +340,22 @@ def add_clothes():
             ai_tags_list.append(main_category)
         if sub_category:
             ai_tags_list.append(sub_category) 
+            
         if main_category == "상의":
             ai_tags_list.append("top")
         elif main_category == "하의":
             ai_tags_list.append("bottom")
+        elif main_category == "shoes":
+            ai_tags_list.append("shoes")
+
         if sub_category == "아우터":
             ai_tags_list.append("outerwear")
         elif sub_category == "이너":
             ai_tags_list.append("t-shirt") 
         elif sub_category == "바지":
             ai_tags_list.append("pants")
+        elif sub_category in ["운동화", "구두", "스니커즈", "단화", "부츠", "샌들"]:
+            ai_tags_list.append("footwear")
 
         insert_payload = {
             "user_email": user_email,
@@ -453,12 +460,23 @@ def recommend():
             
         user_clothes = []
         user_body_shape = None
-        user_weights = None
+        
+        user_weights = {"style": 1.0, "color": 1.0, "temp": 1.0, "fit": 1.0}
 
         if supabase:
             user_prof = supabase.table("users").select("body_shape").eq("email", user_email).execute()
             if user_prof.data:
                 user_body_shape = user_prof.data[0].get("body_shape")
+
+            weight_res = supabase.table("user_weights").select("*").eq("user_email", user_email).execute()
+            if weight_res.data:
+                w_data = weight_res.data[0]
+                user_weights = {
+                    "style": w_data.get("weight_style", 1.0),
+                    "color": w_data.get("weight_color", 1.0),
+                    "temp": w_data.get("weight_temperature", 1.0),
+                    "fit": w_data.get("weight_fit", 1.0)
+                }
 
             response = supabase.table("clothes").select("*").eq("user_email", user_email).execute()
             user_clothes = response.data
@@ -481,6 +499,7 @@ def recommend():
                 recommendations = algo_result.get("recommendations", [])
                 message = algo_result.get("message", "추천이 완료되었습니다.")
                 is_tpo_fallback = algo_result.get("is_tpo_fallback", False)
+                sensory_temp = algo_result.get("sensory_temp", temp)
             else:
                 recommendations = algo_result
                 message = "추천된 옷이 없습니다."
@@ -490,8 +509,11 @@ def recommend():
             message = "추천 서비스 코드가 활성화되어 있지 않습니다."
             is_tpo_fallback = False
 
+            
+
         return jsonify({
-            "current_temp": temp, 
+            "current_temp": temp,
+            "sensory_temp": sensory_temp,
             "target_tpo": target_tpo, 
             "recommendations": recommendations,
             "message": message,
@@ -738,17 +760,18 @@ def add_scrap_api():
     data = request.get_json()
     top_ids = data.get('top_ids')
     bottom_id = data.get('bottom_id')
+    shoes_id = data.get('shoes_id')
     custom_title = data.get('custom_title', '나의 코디')
 
     if not top_ids or not bottom_id:
         return jsonify({"error": "코디 정보가 누락되었습니다."}), 400
 
-    result = add_scrap_to_db(user_email, top_ids, bottom_id, custom_title)
+    result = add_scrap_to_db(user_email, top_ids, bottom_id, shoes_id, custom_title)
     if result and result.get("success"):
         return jsonify({"message": "스크랩 완료!", "data": result.get("data")}), 201
     else:
         return jsonify({"error": f"스크랩 실패: {result.get('error', '알 수 없는 오류')}"}), 500
-
+    
 # 회원 본인의 기본 인적 사항 마이페이지 룩북 프로필 조회 라우터
 @app.route('/my_profile')
 def my_profile():
@@ -869,7 +892,41 @@ def verify_password_api():
             return jsonify({"status": "fail", "message": "비밀번호가 일치하지 않습니다."}), 400
     except Exception as e:
         return jsonify({"status": "fail", "message": "서버 검증 중 오류가 발생했습니다."}), 500
+
+
+# 오늘 선택한 코디 착용 횟수 업데이트 API
+@app.route('/api/clothes/wear-outfit', methods=['POST'])
+def wear_outfit_api():
+    if 'user_email' not in session and 'login_id' not in session:
+        return jsonify({"error": "로그인이 필요합니다."}), 401
+        
+    data = request.get_json()
+    cloth_ids = data.get('cloth_ids', [])
     
+    if not cloth_ids:
+        return jsonify({"error": "선택된 의류 정보가 없습니다."}), 400
+        
+    try:
+        if not supabase:
+            return jsonify({"error": "데이터베이스 연결이 비활성화 상태입니다."}), 500
+            
+        for cloth_id in cloth_ids:
+            # 현재 wear_count를 조회하여 안전하게 1을 더해주는 로직
+            cloth_res = supabase.table("clothes").select("monthly_wear_count").eq("id", cloth_id).execute()
+            if cloth_res.data:
+                current_count = cloth_res.data[0].get("monthly_wear_count", 0) or 0
+                
+                supabase.table("clothes").update({
+                    "monthly_wear_count": current_count + 1,
+                    "last_worn_date": datetime.now().isoformat()
+                }).eq("id", cloth_id).execute()
+                
+        return jsonify({"status": "success", "message": "오늘의 착용 데이터가 성공적으로 트래킹되었습니다!"}), 200
+        
+    except Exception as e:
+        print(f"❌ 착용 횟수 업데이트 중 에러 발생: {e}")
+        return jsonify({"status": "error", "message": "서버 통신 중 오류가 발생했습니다."}), 500
+
 # 가입 단계에서 사용자가 입력한 중복 아이디 존재 여부를 가리는 API 라우터
 @app.route('/api/check-id', methods=['POST'])
 def check_id():
@@ -945,6 +1002,58 @@ def api_analyze_personal_color():
         # 4. 일회성 분석이므로 로컬에 임시 저장된 사진 파일 즉시 파기
         if os.path.exists(file_path):
             os.remove(file_path)
+
+    # 코디 가중치 저장 API 라우터
+@app.route('/api/update_weight_info', methods=['POST'])
+def update_weight_info_api():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({"status": "fail", "message": "로그인 세션이 만료되었습니다. 다시 로그인해주세요."}), 401
+    
+    data = request.json
+    weight_payload = {
+        "user_email": user_email,
+        "weight_style": float(data.get('style', 1.0)),
+        "weight_color": float(data.get('color', 1.0)),
+        "weight_temperature": float(data.get('temperature', 1.0)),
+        "weight_fit": float(data.get('fit', 1.0))
+    }
+    
+    try:
+        # 데이터가 없으면 insert, 이미 있으면 해당 이메일을 기준으로 데이터를 update
+        supabase.table("user_weights").upsert(weight_payload).execute()
+        return jsonify({"status": "success", "message": "코디 가중치 설정이 정상적으로 저장되었습니다."}), 200
+    except Exception as e:
+        print(f"❌ 가중치 저장 중 DB 에러 발생: {e}")
+        return jsonify({"status": "fail", "message": "서버 저장 처리 중 시스템 오류가 발생했습니다."}), 500
+
+# 코디 가중치 불러오기 API 라우터
+@app.route('/api/get_weight_info', methods=['GET'])
+def get_weight_info_api():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({"status": "fail", "message": "로그인이 필요합니다."}), 401
+        
+    try:
+        response = supabase.table("user_weights").select("*").eq("user_email", user_email).execute()
+        if response.data:
+            w = response.data[0]
+            return jsonify({
+                "status": "success",
+                "data": {
+                    "style": w.get("weight_style", 1.0),
+                    "color": w.get("weight_color", 1.0),
+                    "temperature": w.get("weight_temperature", 1.0),
+                    "fit": w.get("weight_fit", 1.0)
+                }
+            }), 200
+        else:
+            return jsonify({
+                "status": "success",
+                "data": {"style": 1.0, "color": 1.0, "temperature": 1.0, "fit": 1.0}
+            }), 200
+    except Exception as e:
+        return jsonify({"status": "fail", "message": str(e)}), 500
 
 # 메인 파일로 로컬 터미널 단독 실행되었을 때 Flask 내장 백서버를 띄우는 조건문
 if __name__ == '__main__':
