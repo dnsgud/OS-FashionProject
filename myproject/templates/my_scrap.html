@@ -21,7 +21,6 @@
             padding: 50px 20px;
         }
 
-        /* 라이트/다크모드 스타일 */
         body.dark-mode {
             background: #1c1c1e;
             color: #f2f2f7;
@@ -48,7 +47,6 @@
             margin: 0 auto;
         }
 
-        /* 상단 헤더 영역 */
         .scrap-header {
             text-align: center;
             margin-bottom: 40px;
@@ -69,7 +67,6 @@
             color: #aeaeb2;
         }
 
-        /* 스크랩북 그리드 레이아웃 */
         .scrap-grid {
             display: grid;
             grid-template-columns: repeat(1, 1fr);
@@ -105,7 +102,6 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
         }
 
-        /* 코디 시각화 이미지 박스 */
         .item-preview-box {
             width: 100%;
             height: 180px;
@@ -152,7 +148,6 @@
             line-height: 1.5;
         }
 
-        /* 스크랩 취소 하트 버튼 */
         .heart-btn {
             position: absolute;
             top: 10px;
@@ -181,7 +176,6 @@
             transform: scale(1.1);
         }
 
-        /* 텅 빈 상태 디자인 */
         .empty-msg {
             grid-column: 1 / -1;
             text-align: center;
@@ -191,7 +185,6 @@
             line-height: 1.6;
         }
 
-        /* 하단 버튼 */
         .back-footer {
             margin-top: 50px;
             text-align: center;
@@ -213,9 +206,6 @@
             background: #f3f4f6;
         }
 
-        /* ==========================================================================
-           시각적 피드백 제공형 모달 스타일 (상세보기 & 삭제 공통 활용)
-        ========================================================================== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -276,9 +266,10 @@
             border-bottom-color: #48484a;
         }
 
+        /* 아우터 유무에 맞추어 유연한 격자 컬럼을 구축하도록 세팅 변경 */
         .modal-grid-wrapper {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 24px;
         }
 
@@ -414,7 +405,7 @@
             {% for scrap in scraps %}
             <div class="scrap-card" id="scrap-card-{{ scrap.scrap_id }}" ondblclick="openCodiModal(this)"
                 data-title="{{ scrap.custom_title or '저장된 추천 코디' }}" data-top='{{ scrap.top_combo | tojson | safe }}'
-                data-bottom='{{ scrap.bottom | tojson | safe }}' style="cursor: pointer;"
+                data-bottom='{{ scrap.bottom | tojson | safe }}' data-shoes='{{ scrap.shoes | tojson | safe }}' style="cursor: pointer;"
                 title="더블클릭하면 상세 정보를 볼 수 있습니다.">
 
                 <button class="heart-btn"
@@ -439,6 +430,7 @@
                         {% endfor %}<br>
 
                         <strong>하의:</strong> {{ scrap.bottom.name }}<br>
+                        <strong>신발:</strong> {{ scrap.shoes.name if scrap.shoes else '기본 매칭 단화' }}<br>
                         <small style="color: #8c959f;">
                             저장일: {{ scrap.created_at[:10] if scrap.created_at else '날짜 없음' }}
                         </small>
@@ -465,21 +457,7 @@
             <button class="modal-close-btn" onclick="closeCodiModal()">&times;</button>
             <div class="modal-body-title" id="modalTitle">코디 상세보기</div>
 
-            <div class="modal-grid-wrapper">
-                <div class="modal-item-column">
-                    <div class="modal-column-label">TOP (상의)</div>
-                    <div id="modalTopImgs" class="modal-img-container"></div>
-                    <div class="modal-item-name" id="modalTopName">-</div>
-                    <div class="modal-item-meta" id="modalTopMeta">-</div>
-                </div>
-
-                <div class="modal-item-column">
-                    <div class="modal-column-label">BOTTOM (하의)</div>
-                    <div id="modalBottomImg" class="modal-img-box"></div>
-                    <div class="modal-item-name" id="modalBottomName">-</div>
-                    <div class="modal-item-meta" id="modalBottomMeta">-</div>
-                </div>
-            </div>
+            <div class="modal-grid-wrapper"></div>
         </div>
     </div>
 
@@ -500,23 +478,19 @@
     </div>
 
     <script>
-        // 삭제 대기 중인 스크랩 ID 임시 보관 변수
         let currentDeleteScrapId = null;
 
-        // 하트 버튼 클릭 시 삭제 커스텀 모달 열기
         function unlikeStyleFromServer(scrapId) {
             currentDeleteScrapId = scrapId;
             document.getElementById('deleteModal').style.display = 'flex';
         }
 
-        // 삭제 커스텀 모달 닫기
         function closeDeleteModal(event) {
             if (event && event.target !== document.getElementById('deleteModal')) return;
             document.getElementById('deleteModal').style.display = 'none';
             currentDeleteScrapId = null;
         }
 
-        // 삭제 모달 내 '삭제' 버튼 클릭 이벤트 리스너
         document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
             if (!currentDeleteScrapId) return;
 
@@ -534,7 +508,6 @@
                             location.reload();
                         }
                     } else {
-                        // 에러 발생 시에도 유연하게 메시지 노출 처리
                         document.getElementById('deleteModalMessage').innerText = data.error || "스크랩 해제 처리 중 오류가 발생했습니다.";
                         setTimeout(() => { closeDeleteModal(); }, 1500);
                         return;
@@ -547,46 +520,66 @@
                 });
         });
 
-        // 더블클릭 상세 모달 열기
+        // 더블클릭 상세 모달 처리 고도화
         function openCodiModal(cardElement) {
             const title = cardElement.getAttribute('data-title');
             const topCombo = JSON.parse(cardElement.getAttribute('data-top'));
             const bottom = JSON.parse(cardElement.getAttribute('data-bottom'));
+            const shoes = cardElement.getAttribute('data-shoes') ? JSON.parse(cardElement.getAttribute('data-shoes')) : null;
 
             document.getElementById('modalTitle').innerText = title;
 
-            const topImgsContainer = document.getElementById('modalTopImgs');
-            topImgsContainer.innerHTML = '';
+            const gridWrapper = document.querySelector('.modal-grid-wrapper');
+            gridWrapper.innerHTML = '';
 
+            // 1. 상의 정보 (이너/아우터 각각 단독 생성 및 마운트)
             topCombo.forEach(top => {
-                const imgBox = document.createElement('div');
-                imgBox.className = 'modal-img-box';
-                if (top.image_url) {
-                    imgBox.style.backgroundImage = `url('${top.image_url}')`;
-                } else {
-                    imgBox.innerHTML = '<i class="fas fa-tshirt"></i>';
-                }
-                topImgsContainer.appendChild(imgBox);
+                const topCol = document.createElement('div');
+                topCol.className = 'modal-item-column';
+                const label = top.sub_category === '아우터' ? 'OUTER (아우터)' : 'TOP (이너)';
+                const labelColor = top.sub_category === '아우터' ? '#ef4444' : '#4f46e5';
+                
+                topCol.innerHTML = `
+                    <div class="modal-column-label" style="color: ${labelColor};">${label}</div>
+                    <div class="modal-img-box" style="${top.image_url ? `background-image:url('${top.image_url}')` : ''}">
+                        ${!top.image_url ? '<i class="fas fa-tshirt"></i>' : ''}
+                    </div>
+                    <div class="modal-item-name">${top.name}</div>
+                    <div class="modal-item-meta">핏: ${top.fit}</div>
+                `;
+                gridWrapper.appendChild(topCol);
             });
 
-            document.getElementById('modalTopName').innerText = topCombo.map(t => t.name).join(' + ');
-            document.getElementById('modalTopMeta').innerText = `핏: ${topCombo.map(t => t.fit).join('/')} | 색상: ${topCombo.map(t => t.color).join(',')}`;
+            // 2. 하의 정보 마운트
+            const bottomCol = document.createElement('div');
+            bottomCol.className = 'modal-item-column';
+            bottomCol.innerHTML = `
+                <div class="modal-column-label">BOTTOM (하의)</div>
+                <div class="modal-img-box" style="${bottom.image_url ? `background-image:url('${bottom.image_url}')` : ''}">
+                    ${!bottom.image_url ? '<i class="fas fa-socks"></i>' : ''}
+                </div>
+                <div class="modal-item-name">${bottom.name}</div>
+                <div class="modal-item-meta">핏: ${bottom.fit}</div>
+            `;
+            gridWrapper.appendChild(bottomCol);
 
-            const bottomImgBox = document.getElementById('modalBottomImg');
-            bottomImgBox.innerHTML = '';
-            if (bottom.image_url) {
-                bottomImgBox.style.backgroundImage = `url('${bottom.image_url}')`;
-            } else {
-                bottomImgBox.innerHTML = '<i class="fas fa-socks"></i>';
-            }
-
-            document.getElementById('modalBottomName').innerText = bottom.name;
-            document.getElementById('modalBottomMeta').innerText = `핏: ${bottom.fit} | 색상: ${bottom.color}`;
+            // 3. 신발 정보 마운트
+            const shoesCol = document.createElement('div');
+            shoesCol.className = 'modal-item-column';
+            const shoesImgUrl = shoes ? shoes.image_url : null;
+            shoesCol.innerHTML = `
+                <div class="modal-column-label">SHOES (신발)</div>
+                <div class="modal-img-box" style="${shoesImgUrl ? `background-image:url('${shoesImgUrl}')` : ''}">
+                    ${!shoesImgUrl ? '<i class="fa-solid fa-shoe-prints"></i>' : ''}
+                </div>
+                <div class="modal-item-name">${shoes ? shoes.name : '기본 매칭 단화'}</div>
+                <div class="modal-item-meta">핏: ${shoes ? shoes.fit : '스탠다드'}</div>
+            `;
+            gridWrapper.appendChild(shoesCol);
 
             document.getElementById('detailModal').style.display = 'flex';
         }
 
-        // 상세 모달 닫기
         function closeCodiModal(event) {
             if (event && event.target !== document.getElementById('detailModal') && event.target.className !== 'modal-close-btn') return;
             document.getElementById('detailModal').style.display = 'none';

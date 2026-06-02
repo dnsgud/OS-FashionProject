@@ -710,6 +710,10 @@
             if (btn) btn.classList.add('active');
 
             resetAllTabs();
+
+            if (tabId === 'weight-setting') {
+                loadUserWeightsFromServer();
+            }
         }
 
         // 수정된 비밀번호 검증 함수
@@ -872,6 +876,32 @@
             } catch (error) {
                 console.error("통신 에러:", error);
                 openModal("서버 연결 중 오류가 발생했습니다.");
+            }
+        }
+
+        // 페이지 진입 시 기존 DB 가중치 스펙을 읽어와 UI 슬라이더 위치를 맞춰주는 함수
+        async function loadUserWeightsFromServer() {
+            try {
+                const response = await fetch('/api/get_weight_info');
+                const result = await response.json();
+                
+                if (result.status === "success" && result.data) {
+                    const w = result.data;
+                    
+                    // 1. 슬라이더 핸들 위치 복원
+                    document.getElementById('weight-style').value = w.style;
+                    document.getElementById('weight-color').value = w.color;
+                    document.getElementById('weight-temperature').value = w.temperature;
+                    document.getElementById('weight-fit').value = w.fit;
+                    
+                    // 2. 우측 텍스트 배지(Lv 수치) 복원
+                    document.getElementById('val-style').innerText = parseFloat(w.style).toFixed(1);
+                    document.getElementById('val-color').innerText = parseFloat(w.color).toFixed(1);
+                    document.getElementById('val-temperature').innerText = parseFloat(w.temperature).toFixed(1);
+                    document.getElementById('val-fit').innerText = parseFloat(w.fit).toFixed(1);
+                }
+            } catch (error) {
+                console.error("서버 가중치 정보 동기화 실패:", error);
             }
         }
     </script>

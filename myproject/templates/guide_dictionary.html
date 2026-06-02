@@ -46,7 +46,7 @@
             border-color: #6366f1;
         }
 
-        body.dark-mode .item-image-placeholder {
+        body.dark-mode .item-image-box {
             background: #3a3a3c;
         }
 
@@ -74,7 +74,6 @@
             margin: 0 auto;
         }
 
-        /* 상단 헤더 영역 */
         .guide-header {
             text-align: center;
             margin-bottom: 40px;
@@ -91,7 +90,6 @@
             font-size: 16px;
         }
 
-        /* 카테고리 탭 스타일 */
         .tab-menu {
             display: flex;
             justify-content: center;
@@ -122,7 +120,6 @@
             border-color: #0969da;
         }
 
-        /* 도감 카드 그리드 레이아웃 */
         .dict-content {
             display: none;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -133,7 +130,6 @@
             display: grid;
         }
 
-        /* 아이템 카드 스타일 */
         .item-card {
             background: white;
             border: 1px solid #d0d7de;
@@ -148,15 +144,22 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         }
 
-        /* 가상 이미지 플레이스홀더 */
-        .item-image-placeholder {
+        .item-image-box {
             width: 100%;
-            height: 200px;
-            background: #eaeef2;
+            height: 220px;
+            background: #ffffff;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .item-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 15px;
         }
 
         .item-info {
@@ -207,7 +210,6 @@
             line-height: 1.4;
         }
 
-        /* 하단 네비게이션 버튼 (a 태그 변환 대응 공통화 완료) */
         .back-footer {
             margin-top: 50px;
             text-align: center;
@@ -215,9 +217,7 @@
 
         .back-btn {
             display: inline-block;
-            /* a 태그 핏 유지를 위한 블록화 */
             text-decoration: none;
-            /* 밑줄 강제 제거 */
             padding: 12px 25px;
             border: 1px solid #d0d7de;
             border-radius: 6px;
@@ -238,7 +238,6 @@
 <body>
 
     <script>
-        // 테마 엔진 상태 복구 시스템 작동
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
@@ -260,7 +259,9 @@
 
         <div id="tops" class="dict-content active">
             <div class="item-card">
-                <div class="item-image-placeholder">👕</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/plain_tshirt.jpg') }}" alt="무지 반팔 티셔츠">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">필수 기본템</span>
                     <div class="item-name">무지 반팔 티셔츠</div>
@@ -276,7 +277,9 @@
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">👚</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/sweatshirt.jpg') }}" alt="세미오버핏 맨투맨">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">캐주얼</span>
                     <div class="item-name">세미오버핏 맨투맨</div>
@@ -292,7 +295,9 @@
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">👔</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/oxford_shirt.jpg') }}" alt="옥스퍼드 셔츠">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">댄디/시티보이</span>
                     <div class="item-name">옥스퍼드 셔츠</div>
@@ -310,7 +315,9 @@
 
         <div id="bottoms" class="dict-content">
             <div class="item-card">
-                <div class="item-image-placeholder">👖</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/cream_jeans.jpg') }}" alt="크림진">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">트렌디 만능템</span>
                     <div class="item-name">크림진 (아이보리 팬츠)</div>
@@ -325,7 +332,9 @@
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">👖</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/raw_denim.jpg') }}" alt="와이드 생지 데님">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">데일리 기본템</span>
                     <div class="item-name">와이드 생지 데님</div>
@@ -340,7 +349,9 @@
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">👖</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/slacks.jpg') }}" alt="세미와이드 슬랙스">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">미니멀/남친룩</span>
                     <div class="item-name">세미와이드 슬랙스</div>
@@ -358,7 +369,9 @@
 
         <div id="outer" class="dict-content">
             <div class="item-card">
-                <div class="item-image-placeholder">🧥</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/blouson.jpg') }}" alt="미니멀 자켓 / 블루종">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">미니멀/숏아우터</span>
                     <div class="item-name">미니멀 자켓 / 블루종</div>
@@ -373,7 +386,9 @@
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">🧥</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/hoodie_zipup.jpg') }}" alt="투웨이 후드 집업">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">레이어드 치트키</span>
                     <div class="item-name">투웨이 후드 집업</div>
@@ -388,7 +403,9 @@
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">🧥</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/mac_coat.jpg') }}" alt="오버핏 맥코트">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">댄디 가을템</span>
                     <div class="item-name">오버핏 맥코트</div>
@@ -406,7 +423,9 @@
 
         <div id="shoes" class="dict-content">
             <div class="item-card">
-                <div class="item-image-placeholder">👟</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/white_sneakers.jpg') }}" alt="화이트 가죽 스니커즈">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">사기 지수 100%</span>
                     <div class="item-name">화이트 가죽 스니커즈</div>
@@ -421,7 +440,9 @@
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">👟</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/german_sneakers.jpg') }}" alt="독일군 스니커즈">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">남친룩 정석</span>
                     <div class="item-name">독일군 스니커즈</div>
@@ -430,13 +451,15 @@
                         <span class="color-dot" style="background: #e2e2e2;"></span> 화이트/생고무창
                     </div>
                     <div class="item-tip">
-                        <strong>스타일링 팁:</strong> 특유의 스웨이드 덧댐과 베이지색 고무창이 매력적인 신발입니다. 청바지나 크림진 스포티룩, 미니멀룩 어디든 잘 스며듭니다.
+                        <strong>스타일링 팁:</strong> 특유의 스웨이드 덧댐 and 베이지색 고무창이 매력적인 신발입니다. 청바지나 크림진 스포티룩, 미니멀룩 어디든 잘 스며듭니다.
                     </div>
                 </div>
             </div>
 
             <div class="item-card">
-                <div class="item-image-placeholder">👞</div>
+                <div class="item-image-box">
+                    <img src="{{ url_for('static', filename='images/derby_shoes.jpg') }}" alt="블랙 더비 슈즈">
+                </div>
                 <div class="item-info">
                     <span class="item-tag">클래식/모던</span>
                     <div class="item-name">블랙 더비 슈즈</div>
