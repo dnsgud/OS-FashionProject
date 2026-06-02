@@ -186,15 +186,18 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
             temp_score = calculate_temperature_score(top_combo, bottom, target_lv)
             fit_score = calculate_fit_score(top_combo, bottom, user_body_shape)
             
-            if not weights:
-                weights = {"style": 1.0, "color": 1.0, "temp": 1.0, "fit": 1.0}
+            pct_style = (style_score / (len(full_outfit) * 10)) if target_tpo else 1.0
+            pct_temp = (temp_score / 20.0)
+            pct_color = (color_score / 30.0)
+            pct_fit = (fit_score / 20.0)
             
-            fashion_score = (
-                (style_score * weights.get("style", 1.0)) +
-                (color_score * weights.get("color", 1.0)) +
-                (temp_score * weights.get("temp", 1.0)) +
-                (fit_score * weights.get("fit", 1.0))
-            )
+            base_score = int(round(
+                (pct_style * w_style) +
+                (pct_temp * w_temp) +
+                (pct_color * w_color) +
+                (pct_fit * w_fit)
+            ))
+            
             total_wear_count = sum([c.get('monthly_wear_count', 0) for c in full_outfit])
             
             outfits.append({
