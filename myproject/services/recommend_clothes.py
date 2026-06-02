@@ -199,6 +199,8 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
             ))
             
             total_wear_count = sum([c.get('monthly_wear_count', 0) for c in full_outfit])
+            wear_penalty = min(10, total_wear_count * 2)
+            fashion_score = max(0, base_score - wear_penalty)
             
             outfits.append({
                 "top_combo": top_combo,
@@ -212,26 +214,12 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
                 "total_lv": sum([c['temp_level'] for c in top_combo])
             })
 
-    # 연산 결과 만들어진 조화 코디 조합이 한 개도 없을 때 빈 결과를 반환하는 조건문
+    # 추천 후보 코디 조합 데이터가 존재하지 않는 경우 예외 반환
     if not outfits:
         return []
 
     outfits_sorted_by_fashion = sorted(outfits, key=lambda x: x['fashion_score'], reverse=True)
-    highest_score = outfits_sorted_by_fashion[0]['fashion_score']
-
-    SCORE_TOLERANCE = 10
-    
-    top_tier_bucket = [
-        outfit for outfit in outfits_sorted_by_fashion 
-        if (highest_score - outfit['fashion_score']) <= SCORE_TOLERANCE
-    ]
-
-    final_recommendations = sorted(top_tier_bucket, key=lambda x: x['total_wear_count'])[:5]
-
-    # 우수 점수대 코디 세트가 5벌 미만인 경우 나머지 차선책 조합으로 채우는 조건문
-    if len(final_recommendations) < 5:
-        remaining = [o for o in outfits_sorted_by_fashion if o not in top_tier_bucket]
-        final_recommendations.extend(remaining[:5 - len(final_recommendations)])
+    final_recommendations = outfits_sorted_by_fashion[:5]
 
     if final_recommendations:
         max_style_score = max([o['style_score'] for o in final_recommendations])
