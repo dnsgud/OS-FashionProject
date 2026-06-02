@@ -3,11 +3,12 @@ from services.utils.weather_utils import calculate_sensory_temp
 
 BOTTOM_TOLERANCE = 1
 TOP_TOLERANCE = 1
+SHOES_TOLERANCE = 2
 NEUTRAL_CHROMA = 15
 NEUTRAL_LIGHTNESS_LOW = 15
 NEUTRAL_LIGHTNESS_HIGH = 90
 
-# 기온에 따른 목표 두께 레벨을 반환하는 함수
+# 기온별 목표 두께 레벨 반환 함수
 def get_target_level(temp):
     if temp >= 30: return 1
     elif temp >= 25: return 2
@@ -20,7 +21,7 @@ def get_target_level(temp):
     elif temp >= -5: return 9
     else: return 10
 
-# 색상 헥사 코드를 HSL 포맷으로 변환하는 함수
+# HEX 색상 코드를 HSL 포맷으로 변환하는 함수
 def hex_to_hsl(hex_str):
     try:
         hex_str = hex_str.lstrip('#')
@@ -30,20 +31,20 @@ def hex_to_hsl(hex_str):
     except:
         return 0, 0, 0
 
-# 유저가 선택한 TPO 스타일과의 일치도 점수를 계산하는 함수
+# 유저가 선택한 TPO 스타일과의 일치도 점수 계산 함수
 def calculate_style_score(full_outfit, target_tpo):
-    # TPO 스타일이 선택되지 않았을 때 감점 없이 만점을 부여하는 조건문
+    # TPO 스타일이 지정되지 않은 경우 만점 처리
     if not target_tpo:
         return 30
     
     score = 0
-    # 의류 조합 내 아이템들을 순회하며 TPO 태그 일치 여부를 검사하는 반복문
+    # 코디 조합 내 아이템들을 순회하며 스타일 태그 확인
     for cloth in full_outfit:
         if target_tpo in cloth.get('style', []):
             score += 10
     return score
 
-# 상하의 색상 조화 점수를 계산하는 함수
+# 상하의 색상 조화 점수 계산 함수
 def calculate_color_score(top_combo, bottom, target_lv):
     top_hex = top_combo[-1]['color'] 
     bottom_hex = bottom['color']
@@ -59,11 +60,11 @@ def calculate_color_score(top_combo, bottom, target_lv):
     chroma_diff = abs(s1 - s2)
     light_diff = abs(l1 - l2)
 
-    # 상하의 중 하나라도 무채색 계열일 때 기본 조화 점수를 부여하는 조건문
+    # 상의나 하의 중 하나가 무채색일 경우 기본 점수 부여
     if is_top_neutral or is_bottom_neutral:
         score += 20
 
-    # 상하의가 모두 유채색 계열일 때 세부 배색 매칭 규칙을 타는 조건문
+    # 상하의 모두 유채색일 경우 세부 배색 매칭 규칙 적용
     if not is_top_neutral and not is_bottom_neutral:
         if hue_diff < 30:
             score += 20 if light_diff > 20 else 6
@@ -73,13 +74,13 @@ def calculate_color_score(top_combo, bottom, target_lv):
             elif hue_diff > 150:
                 score -= 10
 
-    # 기온 레벨 및 계절 톤에 맞춰 가산점을 판별하는 조건문
+    # 기온 레벨 및 계절별 톤에 따른 가산점 판별
     if target_lv <= 3 and (l1 >= 70 or l2 >= 60): score += 10
     elif target_lv >= 7 and (l1 <= 30 or l2 <= 40): score += 10
 
     return score
 
-# 체감 기온 레벨과 의류 두께 레벨의 오차별 적합도 점수를 계산하는 함수
+# 체감 기온 레벨과 의류 두께 레벨의 오차별 적합도 점수 계산 함수
 def calculate_temperature_score(top_combo, bottom, target_lv):
     top_lv_sum = sum([c['temp_level'] for c in top_combo])
     
@@ -91,7 +92,7 @@ def calculate_temperature_score(top_combo, bottom, target_lv):
     
     return score
 
-# 사용자 신체 실루엣과 의류 핏 간의 조화도 점수를 계산하는 함수
+# 사용자 신체 체형과 의류 핏 간의 조화도 점수 계산 함수
 def calculate_fit_score(top_combo, bottom, user_body_shape):
     top_fit = top_combo[-1].get('fit', '레귤러').strip()
     bottom_fit = bottom.get('fit', '레귤러').strip()
@@ -107,6 +108,7 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
     
     silhouette_score = 10
     
+    # 상의가 레이어드 조합일 때 내부 핏 조화도 검사
     if len(top_combo) == 2:
         inner_fit_str = top_combo[0].get('fit', '레귤러').strip()
         inner_lv = fit_map.get(inner_fit_str, 2)
@@ -120,14 +122,14 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
         
     silhouette_score = max(0, silhouette_score)
 
-    # 신체 체형 프로필 정보가 존재하지 않을 때 계산을 생략하고 패스하는 조건문
+    # 체형 정보가 존재하지 않을 때 기본 점수 반환
     if not user_body_shape:
         return silhouette_score + 10
         
     body_shape = user_body_shape.strip()
     body_score = 10
     
-    # 유저의 세부 체형 유형별 기피 조건에 걸리는지 검사하는 조건문
+    # 사용자 세부 체형별 기피 조건 검사
     if '역삼각형' in body_shape:
         if top_lv == 3:
             body_score = 7
@@ -140,25 +142,28 @@ def calculate_fit_score(top_combo, bottom, user_body_shape):
             
     return silhouette_score + body_score
     
-# 날씨, TPO, 체형 데이터를 총망라하여 최종 코디 룩을 추천하는 메인 연산 함수
+# 날씨, TPO, 체형 데이터를 총망라하여 최종 코디를 추천하는 메인 로직 함수
 def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user_body_shape, clothes_db, weights=None):
     sensory_temp = calculate_sensory_temp(current_temp, humidity, wind_speed)
     target_lv = get_target_level(sensory_temp)
 
     valid_bottoms = [c for c in clothes_db if c.get('main_category') == '하의' 
                      and abs(c['temp_level'] - target_lv) <= BOTTOM_TOLERANCE]
+
+    valid_shoes = [c for c in clothes_db if c.get('main_category') in ['신발', 'shoes']
+                   and abs(c['temp_level'] - target_lv) <= SHOES_TOLERANCE] 
     
     inners = [c for c in clothes_db if c.get('main_category') == '상의' and c.get('sub_category') == '이너']
     outers = [c for c in clothes_db if c.get('main_category') == '상의' and c.get('sub_category') == '아우터']
     
     valid_top_combos = []
-    # 옷장 내 이너 의류들을 순회하며 단품 및 아우터 레이어드 상의 후보를 필터링하는 반복문
+    # 옷장 내 이너와 아우터를 순회하며 기온에 맞는 상의 세트 조합 구성
     for inner in inners:
         if abs(inner['temp_level'] - target_lv) <= TOP_TOLERANCE:
             valid_top_combos.append([inner])
         for outer in outers:
             if abs((inner['temp_level'] + outer['temp_level']) - target_lv) <= TOP_TOLERANCE:
-                valid_top_combos.append([inner, outer])]
+                valid_top_combos.append([inner, outer])
 
     # 가중치 배열이 제공되지 않았을 때 균등 기본값 설정
     if not weights:
@@ -171,7 +176,7 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
     w_fit = (weights.get("fit", 0) / total_w) * 100
 
     outfits = []
-    # 필터링된 모든 상하의 유효 조합들을 매칭하여 4대 평가 점수를 계산하는 반복문
+    # 유효 상하의 조합들을 매칭하여 100점 만점 체계의 최종 패션 점수 연산
     for top_combo in valid_top_combos:
         for bottom in valid_bottoms:
             full_outfit = top_combo + [bottom]
