@@ -504,10 +504,12 @@ def recommend():
                 recommendations = algo_result
                 message = "추천된 옷이 없습니다."
                 is_tpo_fallback = False
+                sensory_temp = temp
         else:
             recommendations = []
             message = "추천 서비스 코드가 활성화되어 있지 않습니다."
             is_tpo_fallback = False
+            sensory_temp = temp
 
             
 

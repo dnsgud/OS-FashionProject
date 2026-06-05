@@ -10,15 +10,15 @@ NEUTRAL_LIGHTNESS_HIGH = 90
 
 # 기온별 목표 두께 레벨 반환 함수
 def get_target_level(temp):
-    if temp >= 30: return 1
-    elif temp >= 25: return 2
-    elif temp >= 21: return 3
-    elif temp >= 17: return 4
-    elif temp >= 13: return 5
-    elif temp >= 9: return 6
-    elif temp >= 5: return 7
-    elif temp >= 0: return 8
-    elif temp >= -5: return 9
+    if temp >= 35: return 1
+    elif temp >= 31: return 2
+    elif temp >= 26: return 3
+    elif temp >= 21: return 4
+    elif temp >= 16: return 5
+    elif temp >= 12: return 6
+    elif temp >= 8: return 7
+    elif temp >= 4: return 8
+    elif temp >= 0: return 9
     else: return 10
 
 # HEX 색상 코드를 HSL 포맷으로 변환하는 함수
@@ -147,14 +147,14 @@ def recommend_clothes_logic(current_temp, humidity, wind_speed, target_tpo, user
     sensory_temp = calculate_sensory_temp(current_temp, humidity, wind_speed)
     target_lv = get_target_level(sensory_temp)
 
-    valid_bottoms = [c for c in clothes_db if c.get('main_category') == '하의' 
+    valid_bottoms = [c for c in clothes_db if c.get('main_category') in ['하의', 'bottom'] 
                      and abs(c['temp_level'] - target_lv) <= BOTTOM_TOLERANCE]
 
     valid_shoes = [c for c in clothes_db if c.get('main_category') in ['신발', 'shoes']
                    and abs(c['temp_level'] - target_lv) <= SHOES_TOLERANCE] 
     
-    inners = [c for c in clothes_db if c.get('main_category') == '상의' and c.get('sub_category') == '이너']
-    outers = [c for c in clothes_db if c.get('main_category') == '상의' and c.get('sub_category') == '아우터']
+    inners = [c for c in clothes_db if c.get('main_category') in ['상의', 'top'] and c.get('sub_category') == '이너']
+    outers = [c for c in clothes_db if c.get('main_category') in ['상의', 'top'] and c.get('sub_category') == '아우터']
     
     valid_top_combos = []
     # 옷장 내 이너와 아우터를 순회하며 기온에 맞는 상의 세트 조합 구성
