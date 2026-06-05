@@ -3,8 +3,8 @@ from services.auth import _validate_password_match
 
 try:
     from config import supabase
-except ImportError:
-    pass
+except ImportError: # pragma: no cover
+    pass            # pragma: no cover
 
 def fetch_user_profile(login_id):
     # 기존 프로필 데이터를 조회하여 프론트엔드 입력칸에 미리 노출하기 위한 로직
@@ -94,24 +94,6 @@ try:
     from auth import _validate_password_match
 except ImportError:
     pass
-
-def update_account_password(login_id, new_pw, new_pw_confirm):
-    
-    # auth.py 모듈을 재사용하여 새 비밀번호 길이 제약(6자) 및 두 입력값 불일치를 검증
-    if not _validate_password_match(new_pw, new_pw_confirm):
-        print("[알고리즘 에러] 새 비밀번호 규격 미달 또는 확인 데이터 불일치 감지")
-        return False
-        
-    try:
-        # 이중 검증 통과 시 DB 레코드를 업데이트
-        response = supabase.table('users').update({'pw': new_pw}).eq('login_id', login_id).execute()
-        
-        print(f"[DB 로그] 신규 비밀번호 다이렉트 갱신 처리 완료: {login_id}")
-        return bool(response.data)
-        
-    except Exception as e:
-        print(f"[DB 에러] 비밀번호 다이렉트 업데이트 쿼리 실행 실패: {e}")
-        return False
 
 def update_account_password(login_id, new_pw, new_pw_confirm):
    

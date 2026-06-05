@@ -9,6 +9,10 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, s
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+
 supabase = None
 fetch_weather_forecast = None
 process_user_upload = None
@@ -39,10 +43,6 @@ try:
     print("✅ 모든 서비스 모듈 로드 및 임포트 완료")
 except Exception as e:
     print(f"❌ 모듈 로드 중 치명적 오류 발생: {e}")
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-if BASE_DIR not in sys.path:
-    sys.path.append(BASE_DIR)
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 CORS(app, supports_credentials=True)
@@ -1056,6 +1056,6 @@ def get_weight_info_api():
         return jsonify({"status": "fail", "message": str(e)}), 500
 
 # 메인 파일로 로컬 터미널 단독 실행되었을 때 Flask 내장 백서버를 띄우는 조건문
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     print("\n🚀 패션 앱 서버 웹 서비스 구동 중...")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)  # pragma: no cover
