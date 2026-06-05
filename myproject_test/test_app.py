@@ -139,3 +139,120 @@ def test_recommend_clothes_py():
     execute_safely(recommend_clothes_logic, 20, 50, 1.0, "캐주얼", "삼각형", mock_full_closet)
     execute_safely(recommend_clothes_logic, -10, 50, 5.0, "포멀", "역삼각형", mock_full_closet)
     execute_safely(recommend_clothes_logic, 35, 90, 0.0, None, "직사각형", [])
+
+def test_auth_py():
+    from myproject.services.auth import _validate_email_format, _validate_password_match, _validate_nickname, _validate_login_id, _validate_name, register_new_user, check_login_id_duplicate, check_email_duplicate, check_nickname_duplicate
+    execute_safely(_validate_email_format, "a@a.com")
+    execute_safely(_validate_email_format, "invalid")
+    execute_safely(_validate_password_match, "valid123", "valid123")
+    execute_safely(_validate_password_match, "short", "short")
+    execute_safely(_validate_nickname, "nick")
+    execute_safely(_validate_nickname, "a")
+    execute_safely(_validate_login_id, "id123")
+    execute_safely(_validate_name, "name")
+    execute_safely(register_new_user, {"login_id": "test", "email": "a@a.com", "password": "pw1234", "password_confirm": "pw1234", "nickname": "nick", "name": "name"})
+    execute_safely(register_new_user, {"login_id": ""})
+    execute_safely(check_login_id_duplicate, "id")
+    execute_safely(check_email_duplicate, "a@a.com")
+    execute_safely(check_nickname_duplicate, "nick")
+    execute_safely(check_login_id_duplicate, None)
+
+def test_imgproc_and_ai_py():
+    from myproject.services.imgproc import process_user_upload, confirm_ai_analysis, modify_and_confirm_ai_analysis, _sanitize_color_input, insert_manual_cloth_to_db, handle_cloth_registration, update_closet_cloth, delete_unverified_cloth, delete_closet_cloth
+    execute_safely(process_user_upload, DUMMY_IMG, "email")
+    execute_safely(confirm_ai_analysis, 1, "e")
+    execute_safely(modify_and_confirm_ai_analysis, 1, "e", {"temp_level": "5", "color": "#000000"})
+    execute_safely(_sanitize_color_input, "#FFFFFF")
+    execute_safely(_sanitize_color_input, "invalid_color")
+    execute_safely(insert_manual_cloth_to_db, "e", {"temp_level": "5"}, DUMMY_IMG)
+    execute_safely(handle_cloth_registration, "photo", "e", {}, DUMMY_IMG)
+    execute_safely(handle_cloth_registration, "manual", "e", {"temp_level": "5"}, DUMMY_IMG)
+    execute_safely(update_closet_cloth, 1, "e", {"temp_level": "5", "color": "#000000"})
+    execute_safely(delete_unverified_cloth, 1, "e")
+    execute_safely(delete_closet_cloth, 1, "e")
+
+    from myproject.services.ai_classifier import analyze_cloth, get_hex_color
+    from myproject.services.personal_color import analyze_personal_color, extract_pure_skin_color, _classify_season
+    try:
+        img = Image.open(DUMMY_IMG)
+        execute_safely(get_hex_color, img)
+        execute_safely(extract_pure_skin_color, img)
+        execute_safely(analyze_cloth, DUMMY_IMG)
+        execute_safely(analyze_personal_color, DUMMY_IMG)
+        execute_safely(analyze_cloth, "wrong.jpg") 
+        execute_safely(analyze_personal_color, "wrong.jpg") 
+        execute_safely(_classify_season, "#FFDAB9")
+        execute_safely(_classify_season, "#000080")
+    except: pass
+
+def test_auth_service_deep_dive():
+    from myproject.auth_service import sign_up_user, login_user, get_email_by_login_id, fetch_user_profile
+    with patch('requests.post') as mock_post:
+        mock_post.return_value.status_code = 400
+        mock_post.return_value.json.return_value = {"error": "bad request"}
+        execute_safely(sign_up_user, "a@a.com", "pw", "nick", "id", "name")
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {} 
+        execute_safely(sign_up_user, "a@a.com", "pw", "nick", "id", "name")
+        mock_auth_resp = MagicMock(status_code=200); mock_auth_resp.json.return_value = {"id": "fake"}
+        mock_db_resp = MagicMock(status_code=500, text="DB Error")
+        mock_post.side_effect = [mock_auth_resp, mock_db_resp]
+        execute_safely(sign_up_user, "a@a.com", "pw", "nick", "id", "name")
+        mock_post.side_effect = Exception("인터넷 끊김")
+        execute_safely(sign_up_user, "a@a.com", "pw", "nick", "id", "name")
+    with patch('requests.get') as mock_get:
+        mock_get.return_value.ok = False
+        mock_get.return_value.status_code = 400
+        execute_safely(login_user, "id", "pw")
+        execute_safely(get_email_by_login_id, "id")
+        execute_safely(fetch_user_profile, "id")
+        mock_get.side_effect = Exception("DB 폭발")
+        execute_safely(login_user, "id", "pw")
+
+def test_account_recovery_deep_dive():
+    import os
+    from myproject.services.account_recovery import (
+        _generate_and_send_code, _verify_email_code, request_find_id,
+        verify_and_get_login_id, request_find_password,
+        verify_password_reset_code, reset_password_and_auto_login, _verification_store
+    )
+    with patch.dict(os.environ, {}, clear=True):
+        execute_safely(_generate_and_send_code, "test@test.com")
+    with patch.dict(os.environ, {"SMTP_EMAIL": "admin", "SMTP_PASSWORD": "pw"}):
+        with patch('smtplib.SMTP') as mock_smtp:
+            execute_safely(_generate_and_send_code, "test@test.com")
+    with patch.dict(os.environ, {"SMTP_EMAIL": "admin", "SMTP_PASSWORD": "pw"}):
+        with patch('smtplib.SMTP', side_effect=Exception("SMTP 장애")):
+            execute_safely(_generate_and_send_code, "test@test.com")
+
+    _verification_store["user@test.com"] = "1234"
+    execute_safely(_verify_email_code, "user@test.com", "9999") 
+    execute_safely(_verify_email_code, "user@test.com", "1234") 
+
+    mock_table.execute.return_value = MockResponse([{"login_id": "testuser"}])
+    with patch('myproject.services.account_recovery._generate_and_send_code', return_value=True):
+        execute_safely(request_find_id, "name", "email@test.com")
+    mock_table.execute.return_value = MockResponse([])
+    execute_safely(request_find_id, "name", "email@test.com")
+    mock_table.execute.side_effect = Exception("DB 폭발")
+    execute_safely(request_find_id, "name", "email@test.com")
+    mock_table.execute.side_effect = None 
+    
+    _verification_store["valid@test.com"] = "0000"
+    mock_table.execute.return_value = MockResponse([{"login_id": "found_id"}])
+    execute_safely(verify_and_get_login_id, "name", "valid@test.com", "0000")
+
+    mock_table.execute.return_value = MockResponse([{"login_id": "testuser"}])
+    with patch('myproject.services.account_recovery._generate_and_send_code', return_value=True):
+        execute_safely(request_find_password, "name", "testuser", "email@test.com")
+    mock_table.execute.return_value = MockResponse([])
+    execute_safely(request_find_password, "name", "wrong", "email@test.com")
+    
+    _verification_store["reset@test.com"] = "7777"
+    execute_safely(verify_password_reset_code, "reset@test.com", "7777") 
+    
+    with patch('myproject.services.account_recovery.update_account_password') as mock_update:
+        mock_update.return_value = True
+        execute_safely(reset_password_and_auto_login, "id", "new_pw", "new_pw")
+        mock_update.return_value = False
+        execute_safely(reset_password_and_auto_login, "id", "bad", "bad")
