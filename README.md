@@ -55,11 +55,14 @@ ngrok http 5000
 
 ### [중요] Unit Test 실행 방법
 
-1. 가상환경이 활성화된 상태인지 확인
-2. 아래 명령어를 실행하여 유닛 테스트 무결성 검증
+1. 가상환경이 활성화된 상태인지 확인(요구라이브러리 설치 여부 확인)
+2. 아래 명령어를 실행하여 pytest 설치 및 유닛 테스트 무결성 검증
 
 ```bash
-pytest
+pip install pytest coverage
+python -m coverage erase
+python -m coverage run --source=myproject,myproject_test -m pytest
+python -m coverage report
 ```
 
 ---
