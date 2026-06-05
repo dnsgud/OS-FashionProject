@@ -10,7 +10,7 @@
 
 ```bash
 git clone https://github.com/dnsgud/OS-FashionProject.git
-cd myproject
+cd OS-FashionProject
 python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt
@@ -48,6 +48,7 @@ pip install -r requirements.txt
 3. ngrok을 통해 만들어진 Forwarding 주소로 외부 브라우저 접속하여 사이트 확인
 
 ```bash
+cd myproject
 python app.py
 ngrok config add-authtoken [메일로_전달된_토큰_값]
 ngrok http 5000
@@ -55,8 +56,9 @@ ngrok http 5000
 
 ### [중요] Unit Test 실행 방법
 
-1. 가상환경이 활성화된 상태인지 확인(요구라이브러리 설치 여부 확인)
-2. 아래 명령어를 실행하여 pytest 설치 및 유닛 테스트 무결성 검증
+1. 가상환경이 활성화된 상태인지 확인(요구 라이브러리 설치 여부 확인)
+2. 실행 경로가 프로젝트 폴더(OS-FashionProject>)인지 확인
+3. 아래 명령어를 실행하여 pytest 설치 및 유닛 테스트 무결성 검증
 
 ```bash
 pip install pytest coverage
