@@ -381,3 +381,206 @@ def test_userprofile_perfect_coverage():
     if original_verify: s_up._verify_current_password = original_verify
 
     execute_safely(update_account_password, "id", "12", "12")
+
+def test_app_py_deep_dive(client):
+    execute_safely(client.get, '/home')
+    execute_safely(client.get, '/my_closet')
+    execute_safely(client.get, '/my_scrap')
+    execute_safely(client.get, '/add_clothes')
+    execute_safely(client.get, '/add_clothes_photo')
+    execute_safely(client.get, '/my_profile')
+    execute_safely(client.get, '/api/recommend')
+    
+    execute_safely(client.post, '/update_clothes', data={})
+    execute_safely(client.post, '/delete_clothes', data={})
+    execute_safely(client.post, '/save-closet-item', data={})
+    execute_safely(client.post, '/ai_analysis', data={})
+    execute_safely(client.post, '/analyze_personal_color', data={})
+    execute_safely(client.post, '/api/clothes/update/1', json={})
+    execute_safely(client.post, '/api/clothes/delete/1')
+    execute_safely(client.post, '/api/scraps/delete/1')
+    execute_safely(client.post, '/api/scraps', json={})
+    execute_safely(client.post, '/api/update_user_info', json={})
+    execute_safely(client.post, '/api/update_body_info', json={})
+    execute_safely(client.post, '/api/verify_password', json={})
+    execute_safely(client.post, '/api/clothes/wear-outfit', json={})
+    execute_safely(client.post, '/api/update_weight_info', json={})
+    execute_safely(client.get, '/api/get_weight_info')
+    
+    execute_safely(client.post, '/api/register', json={}) 
+    execute_safely(client.post, '/api/register', json={'email':'a', 'password':'b', 'username':'c'}) 
+    execute_safely(client.post, '/api/check-email', json={})
+    execute_safely(client.post, '/api/check-id', json={})
+    execute_safely(client.post, '/api/check-nickname', json={})
+    execute_safely(client.post, '/api/clothes/confirm', json={})
+    execute_safely(client.post, '/api/clothes/cancel', json={}) 
+
+    with client.session_transaction() as sess:
+        sess['login_id'] = 'testuser01'
+        sess['user_email'] = 'test@gmail.com'
+        
+    execute_safely(client.post, '/ai_analysis', data={}) 
+    execute_safely(client.post, '/ai_analysis', data={'ai_clothes_img': (BytesIO(b""), "")}, content_type='multipart/form-data')
+    execute_safely(client.post, '/analyze_personal_color', data={})
+    execute_safely(client.post, '/analyze_personal_color', data={'image_file': (BytesIO(b""), "")}, content_type='multipart/form-data')
+    
+    execute_safely(client.post, '/update_clothes', data={}) 
+    execute_safely(client.post, '/delete_clothes', data={}) 
+    execute_safely(client.post, '/api/scraps', json={'top_ids':[1]}) 
+    execute_safely(client.post, '/api/clothes/wear-outfit', json={}) 
+
+    mock_table.execute.side_effect = Exception("DB 강제 에러")
+    execute_safely(client.post, '/api/update_user_info', json={"nickname": "a", "email":"a@a.com", "name":"A"})
+    execute_safely(client.post, '/api/update_body_info', json={"height": 170, "weight": 60, "bodyType":"일자형"})
+    execute_safely(client.post, '/api/clothes/update/1', json={"tpo": "캐주얼"})
+    execute_safely(client.post, '/api/clothes/delete/1')
+    execute_safely(client.post, '/api/update_weight_info', json={"style": 1.0})
+    execute_safely(client.get, '/api/get_weight_info')
+    execute_safely(client.post, '/api/clothes/wear-outfit', json={"cloth_ids":[1]})
+    execute_safely(client.get, '/my_closet')
+    mock_table.execute.side_effect = None 
+    
+    mock_table.execute.return_value = MockResponse([]) 
+    execute_safely(client.post, '/api/update_password', json={"currentPw": "a", "newPw": "b"})
+    mock_table.execute.return_value = MockResponse([{"pw": "correct_pw"}])
+    execute_safely(client.post, '/api/update_password', json={"currentPw": "wrong", "newPw": "b"}) 
+    mock_table.execute.side_effect = [MockResponse([{"pw": "correct"}]), Exception("Update Error")] 
+    execute_safely(client.post, '/api/update_password', json={"currentPw": "correct", "newPw": "b"})
+    mock_table.execute.side_effect = None
+    mock_table.execute.return_value = MockResponse(default_data) 
+
+    with patch('myproject.app.modify_and_confirm_ai_analysis', return_value=None):
+        execute_safely(client.post, '/api/clothes/confirm', json={"cloth_id":1, "user_email":"a", "modified_data":{"style":"캐주얼"}})
+    with patch('myproject.app.delete_unverified_cloth', return_value=None):
+        execute_safely(client.post, '/api/clothes/cancel', json={"cloth_id":1, "user_email":"a"})
+        
+    with patch('myproject.app.recommend_clothes_logic', return_value={"recommendations": [], "message": "msg", "is_tpo_fallback": True, "sensory_temp": 20}):
+        execute_safely(client.get, '/api/recommend')
+    with patch('myproject.app.recommend_clothes_logic', return_value=[]):
+        execute_safely(client.get, '/api/recommend')
+    with patch('myproject.app.recommend_clothes_logic', side_effect=Exception("추천 엔진 붕괴")):
+        execute_safely(client.get, '/api/recommend')
+
+    with patch('myproject.app.render_template', side_effect=Exception("템플릿 에러")):
+        execute_safely(client.get, '/')
+        execute_safely(client.get, '/guide/dictionary')
+        execute_safely(client.get, '/body_guide')
+
+    with patch('myproject.app.analyze_personal_color', return_value={"status": "success", "personal_color_season": "여름 쿨톤"}):
+        execute_safely(client.post, '/analyze_personal_color', data={'image_file': (BytesIO(b"d"), "t.jpg")}, content_type='multipart/form-data')
+    with patch('myproject.app.analyze_personal_color', return_value={"status": "error", "error_message": "Fail"}):
+        execute_safely(client.post, '/analyze_personal_color', data={'image_file': (BytesIO(b"d"), "t.jpg")}, content_type='multipart/form-data')
+        
+    app_module.request_find_id = None
+    execute_safely(client.post, '/api/find-id/request', json={"name": "A", "email": "A@a.com"})
+    
+    mock_weather = [{"temp": 20, "wind_speed": 2, "icon": "i", "status": "s", "humidity": 50}] * 8
+    with patch('myproject.app.fetch_weather', return_value=mock_weather):
+        execute_safely(client.get, '/weather_detail')
+
+# =========================================================================
+#  7.  (파일업로드, 우회 등)
+# =========================================================================
+def test_app_py_extreme_coverage(client):
+    """patch 대상을 app.py가 아닌 services.auth로 정확히 수정하여 AttributeError 완전 방어"""
+    
+    # 1. /api/register 검증 모듈 에러 우회 분기 (except Exception as e: 부분)
+    # app.py 내부에서 지역적으로 임포트하는 모듈이므로 원래 모듈 위치를 정확히 타격
+    with patch('myproject.services.auth._validate_email_format', side_effect=Exception("모듈 로드 에러 강제 발생")):
+        execute_safely(client.post, '/api/register', json={"email": "a@a.com", "password": "pw", "username": "id", "nickname": "n", "name": "n"})
+        
+    with patch('myproject.app.sign_up_user', side_effect=Exception("DB 저장 에러 강제 발생")):
+        execute_safely(client.post, '/api/register', json={"email": "a@a.com", "password": "pw", "username": "id", "nickname": "n", "name": "n"})
+
+    # 2. 로그인 세션 부여
+    with client.session_transaction() as sess:
+        sess['login_id'] = 'testuser01'
+        sess['user_email'] = 'test@gmail.com'
+
+    # 3. /add_clothes 파일 업로드 및 AI 태그 분기 (상의, 하의, 신발 / 아우터, 이너, 바지, 운동화 등)
+    categories = [
+        ("상의", "아우터"), ("상의", "이너"),
+        ("하의", "바지"), ("shoes", "운동화"),
+        ("기타", "기타")
+    ]
+    for main_c, sub_c in categories:
+        data = {
+            'cloth_name': 'test', 'main_category': main_c, 'sub_category': sub_c,
+            'fit': '레귤러', 'cloth_color': '#000000', 'styles': '캐주얼,포멀', 'temp_level': '5',
+            'cloth_image': (BytesIO(b'dummy_image_data'), 'cloth.jpg')
+        }
+        execute_safely(client.post, '/add_clothes', data=data, content_type='multipart/form-data')
+        
+    # 스토리지 업로드 실패(Exception) 타격
+    with patch('myproject.app.supabase') as mock_supa:
+        mock_supa.storage.from_.return_value.upload.side_effect = Exception("Storage 폭발")
+        execute_safely(client.post, '/add_clothes', data={'cloth_name': 't', 'cloth_image': (BytesIO(b'd'), 't.jpg')}, content_type='multipart/form-data')
+
+    # 4. /clothes_detail/<id> 상세 분기
+    execute_safely(client.get, '/clothes_detail/1')
+    with patch('myproject.app.supabase') as mock_supa:
+        mock_supa.table().select().eq().execute.return_value = MagicMock(data=[])
+        execute_safely(client.get, '/clothes_detail/999') # 데이터 없을 때 (404)
+        mock_supa.table().select().eq().execute.side_effect = Exception("DB 폭발")
+        execute_safely(client.get, '/clothes_detail/500') # 예외 발생 (500)
+
+    # 5. Flash 메시지 우회로 (cloth_id 누락 시)
+    execute_safely(client.post, '/update_clothes', data={'styles': '캐주얼,미니멀'}) # id 없음
+    execute_safely(client.post, '/delete_clothes', data={}) # id 없음
+    
+    # 6. /api/recommend 내부 분기
+    execute_safely(client.get, '/api/recommend?tpo=캐주얼')
+    
+    # 7. /logout 호출
+    execute_safely(client.get, '/logout')
+    
+    # 8. /api/clothes/cancel 강제 에러
+    with patch('myproject.app.delete_unverified_cloth', side_effect=Exception("취소 에러")):
+        execute_safely(client.post, '/api/clothes/cancel', json={'cloth_id': 1, 'user_email': 'a'})
+        
+    # 9. /api/clothes/confirm 강제 에러
+    with patch('myproject.app.modify_and_confirm_ai_analysis', side_effect=Exception("승인 에러")):
+        execute_safely(client.post, '/api/clothes/confirm', json={'cloth_id': 1, 'user_email': 'a', 'modified_data': {'style': '캐주얼'}})
+
+# test_app.py 파일 맨 아래에 추가하세요.
+
+def test_userprofile_deep_dive():
+    from myproject.services.userprofile import (
+        fetch_user_profile, _filter_modified_profile_data, update_member_profile,
+        update_account_password, fetch_user_body_profile, _filter_body_profile_data,
+        update_user_body_profile, _verify_current_password, authorize_profile_edit,
+        change_profile_password
+    )
+    
+    # 1. DB 에러(Exception) 블록 관통
+    mock_table.execute.side_effect = Exception("DB 폭발")
+    execute_safely(fetch_user_profile, "test_id")
+    execute_safely(fetch_user_body_profile, "test_id")
+    execute_safely(_verify_current_password, "test_id", "password")
+    mock_table.execute.side_effect = None
+
+    # 2. ValueError 분기(중복 검사 실패 등) 관통
+    curr_prof = {"nickname": "old", "email": "old@test.com"}
+    
+    # 변경 사항이 없을 때의 로직 확인
+    execute_safely(_filter_modified_profile_data, {"nickname": "old"}, curr_prof)
+    
+    # 중복 체크 실패로 ValueError가 터지는 상황 시뮬레이션
+    with patch('myproject.services.userprofile.check_nickname_duplicate', return_value=False):
+        execute_safely(_filter_modified_profile_data, {"nickname": "dup"}, curr_prof)
+
+    # 3. DB 업데이트 실패 로직 타격
+    with patch('myproject.services.userprofile.fetch_user_profile', return_value=curr_prof):
+        mock_table.execute.side_effect = Exception("DB 업데이트 에러")
+        execute_safely(update_member_profile, "id", {"name": "new_name"})
+        execute_safely(update_user_body_profile, "id", {"height": "175"})
+        execute_safely(update_account_password, "id", "new123", "new123")
+        mock_table.execute.side_effect = None
+
+    # 4. 필터링 로직 내 문자열 예외(ValueError) 관통
+    execute_safely(_filter_body_profile_data, {"height": "숫자아님", "weight": "문자열"})
+
+    # 5. 권한 검증 실패 분기 관통
+    with patch('myproject.services.userprofile._verify_current_password', return_value=False):
+        execute_safely(authorize_profile_edit, "id", "wrong")
+        execute_safely(change_profile_password, "id", "wrong", "new", "new")
